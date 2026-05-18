@@ -349,9 +349,9 @@
       }
     }
 
-    // 👤 인증 상태 실시간 리스너 구현 (ID 매핑 완벽 수정 버전!) ✨
+    // 👤 인증 상태 실시간 리스너 구현 (로그인 버튼 실종 완벽 방어 버전!) ✨
     onAuthStateChanged(auth, async (user) => {
-      // 기존 index.html에 맞는 정확한 ID인 'userProfile'로 매핑!
+      // 기존 index.html에 맞는 정확한 ID인 'userProfile' 매핑
       const profileWrap = document.getElementById("userProfile"); 
       const introNotice = document.getElementById("introLoginNotice");
       const lockIcon = document.getElementById("lockIcon");
@@ -374,7 +374,7 @@
         }
         if (introNotice) introNotice.style.display = "none";
         
-        // 🔍 파이어스토어에서 로그인한 유저의 결제 여부 조회!
+        // 🔍 파이어스토어에서 로그인한 유저의 결제 여부 조회
         try {
           const docSnap = await getDoc(doc(db, "users", user.uid));
           if (docSnap.exists() && docSnap.data().isPremiumUnlocked === true) {
@@ -389,13 +389,14 @@
           console.error("결제 내역 조회 에러:", err);
         }
 
-        loadPastResult(user.uid); // 과거 기록 탐색 고고!
+        if (typeof loadPastResult === 'function') loadPastResult(user.uid); 
         
       } else {
         window.currentUser = null;
         isPremiumUnlocked = false; // 로그아웃 시 초기화
         if (lockIcon) lockIcon.style.display = 'inline-block';
         
+        // 💡 [핵심 보강] 로그아웃 상태일 때 버튼이 절대 사라지지 않게 강제 렌더링!
         if (profileWrap) {
           profileWrap.innerHTML = `
             <button class="btn-login-google" onclick="loginWithGoogle()">
