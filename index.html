@@ -955,9 +955,22 @@ var deepQuestions = [
   };
 
   window.switchMode = function(mode) {
-    if (mode === 'deep' && !isPremiumUnlocked) {
-      openPayModal();
-      return;
+    // 🔒 [추가된 방어벽] 심화진단일 때 구글 로그인 상태를 가장 먼저 1순위로 체크!
+    if (mode === 'deep') {
+      var user = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : window.currentUser;
+      
+      // 로그인이 안 되어 있으면 경고창 띄우고 여기서 함수 강제 종료!
+      if (!user) {
+        alert("🔒 종합 심화진단 및 결제를 진행하시려면 먼저 구글 로그인을 해주세요!");
+        if (typeof window.toggleSidebar === 'function') window.toggleSidebar(false); 
+        return; 
+      }
+      
+      // 구글 로그인은 통과했는데, 결제를 아직 안 했다면 그때 결제창 열기!
+      if (!isPremiumUnlocked) {
+        openPayModal();
+        return;
+      }
     }
     window.currentMode = mode;
     document.querySelectorAll('.menu-list .menu-item').forEach(function (el) {
