@@ -1250,20 +1250,47 @@
     window.showScreen('screen-intro');
   }
 
-  btnStart.addEventListener('click', function () { shuffleQuestions(); window.showScreen('screen-quiz'); renderPage(0); });
-  btnPrev.addEventListener('click', function () { if (currentPage > 0) renderPage(currentPage - 1); });
-  btnNext.addEventListener('click', function () {
-  var startIdx = currentPage * itemsPerPage;
-  var endIdx = Math.min(startIdx + itemsPerPage, questions.length);
-  for (var i = startIdx; i < endIdx; i++) { if (answers[i] === 0) return; }
-  if (currentPage === totalPages - 1) {
-    var finalScores = processScores();
-    // ... 이하 동일 ...
-  } else {
-    renderPage(currentPage + 1);
-    window.scrollTo(0, 0); // 👈 화면을 맨 위 6번 항목 위치로 강제 자동 스크롤! 🚀
+  // 1. 시작 버튼 이벤트 (기존 유지)
+  btnStart.addEventListener('click', function () { 
+    shuffleQuestions(); 
+    window.showScreen('screen-quiz'); 
+    renderPage(0); 
+  });
+
+  // 2. 이전 버튼 이벤트 (기존 유지)
+  btnPrev.addEventListener('click', function () { 
+    if (currentPage > 0) renderPage(currentPage - 1); 
+  });
+
+  // 3. 🏁 다음/결과 버튼 통합 제어 함수 (모바일 터치 씹힘 완벽 방어) 🚀
+  function handleNextAction(e) {
+    if (e) {
+      // 모바일 브라우저에서 터치와 클릭이 연속으로 중복 발생해서 씹히는 현상 방지 ㄴㅁㅇ
+      e.preventDefault(); 
+      e.stopPropagation();
+    }
+    
+    var startIdx = currentPage * itemsPerPage;
+    var endIdx = Math.min(startIdx + itemsPerPage, questions.length);
+    for (var i = startIdx; i < endIdx; i++) { 
+      if (answers[i] === 0) return; 
+    }
+    
+    // 마지막 페이지일 때 결과 처리 
+    if (currentPage === totalPages - 1) {
+      var finalScores = processScores();
+      renderFinalResult(finalScores);
+      window.showScreen('screen-result');
+    } else {
+      // 다음 문항 페이지로 이동 및 상단 스크롤
+      renderPage(currentPage + 1);
+      window.scrollTo(0, 0); 
+    }
   }
-});
+
+  // 📱 PC 클릭과 모바일 터치 이벤트 둘 다 칼같이 반응하도록 2개 다 등록함 미쳤지!
+  btnNext.addEventListener('click', handleNextAction);
+  btnNext.addEventListener('touchstart', handleNextAction, { passive: false });
 
   resetQuiz();
 
