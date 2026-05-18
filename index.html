@@ -349,13 +349,16 @@
       }
     }
 
-    // 👤 인증 상태 실시간 리스너 구현
-    onAuthStateChanged(auth, (user) => {
+    // 👤 인증 상태 실시간 리스너 구현 (결제 상태 자동 복구 기능 탑재)
+    onAuthStateChanged(auth, async (user) => {
       const profileWrap = document.getElementById("userProfileWrap");
       const introNotice = document.getElementById("introLoginNotice");
+      const lockIcon = document.getElementById("lockIcon");
       
       if (user) {
         window.currentUser = user; // 전역 바인딩
+        window.firebaseDB = db;    // 하단 스크립트 공유용
+        
         profileWrap.innerHTML = `
           <div class="user-info-flex">
             <img class="user-avatar" src="${user.photoURL || 'https://via.placeholder.com/150'}" alt="profile">
@@ -367,17 +370,36 @@
           <button class="btn-logout" onclick="logoutFirebase()">로그아웃</button>
         `;
         if(introNotice) introNotice.style.display = "none";
+        
+        // 🔍 [영구 해금 핵심] 파이어스토어에서 로그인한 유저의 결제 여부 칼같이 조회!
+        try {
+          const docSnap = await getDoc(doc(db, "users", user.uid));
+          if (docSnap.exists() && docSnap.data().isPremiumUnlocked === true) {
+            isPremiumUnlocked = true; // 새로고침/재로그인해도 프리미엄 상태 락 해제 유지! 미쳤지!
+            if (lockIcon) lockIcon.style.display = 'none'; // 자물쇠 삭제
+            console.log("👑 프리미엄 결제 인증 유저 확인 완료!");
+          } else {
+            isPremiumUnlocked = false;
+            if (lockIcon) lockIcon.style.display = 'inline-block';
+          }
+        } catch (err) {
+          console.error("결제 내역 조회 에러:", err);
+        }
+
         loadPastResult(user.uid); // 과거 기록 탐색 고고!
-     // 변경 후 추천 코드 ✨
-} else {
-  window.currentUser = null;
-  profileWrap.innerHTML = `
-    <button class="btn-login-google" onclick="loginWithGoogle()">
-      <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/web-24dp/logo_googleg_color_24dp.png" width="18" alt="Google"> Google 계정 로그인
-    </button>
-  `;
-  if(introNotice) introNotice.style.display = "flex";
-}
+        
+      } else {
+        window.currentUser = null;
+        isPremiumUnlocked = false; // 로그아웃 시 초기화
+        if (lockIcon) lockIcon.style.display = 'inline-block';
+        
+        profileWrap.innerHTML = `
+          <button class="btn-login-google" onclick="loginWithGoogle()">
+            <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/web-24dp/logo_googleg_color_24dp.png" width="18" alt="Google"> Google 계정 로그인
+          </button>
+        `;
+        if(introNotice) introNotice.style.display = "flex";
+      }
     });
   </script>
 </head>
@@ -1040,11 +1062,34 @@ var deepQuestions = [
     openPayModal();
   };
 
-  btnPaySubmit.addEventListener('click', function() {
+  // 💳 결제 확인 버튼 클릭 시 (구글 로그인 필수 체크 + DB 영구 저장 기능 탑재!) ✨
+  btnPaySubmit.addEventListener('click', async function() {
+    // 🔒 결제 단추를 누르는 순간에도 로그인 상태인지 칼같이 검증!
+    var user = window.currentUser; 
+    if (!user) {
+      alert("🔒 결제를 진행하시려면 먼저 구글 로그인을 완료하셔야 합니다!");
+      closeAllModals();
+      return; // 로그인 안 되어 있으면 여기서 차단!
+    }
+
+    try {
+      // 💾 Firestore의 users 컬렉션 -> 유저 고유 UID 문서에 결제완료 플래그 영구 저장!
+      const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js");
+      await setDoc(doc(window.firebaseDB || db, "users", user.uid), {
+        isPremiumUnlocked: true,
+        paidAt: new Date().toISOString()
+      }, { merge: true });
+      
+      console.log("💳 결제 데이터 DB 저장 완료! 이제 로그아웃해도 리셋 안 됨 ㅇㅋ!");
+    } catch (error) {
+      console.error("DB 결제 기록 저장 실패:", error);
+    }
+    
+    // 프리미엄 락 풀고 화면 전환 고고싱 ㄴㅁㅇ
     isPremiumUnlocked = true;
     if(lockIcon) lockIcon.style.display = 'none';
     closeAllModals();
-    window.switchMode('deep');
+    window.switchMode('deep'); 
   });
 
   window.tryEnterAdmin = function() {
