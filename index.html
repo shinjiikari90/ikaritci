@@ -1391,7 +1391,10 @@ function shuffleQuestions() {
     var startIdx = currentPage * itemsPerPage;
     var endIdx = Math.min(startIdx + itemsPerPage, questions.length);
     for (var i = startIdx; i < endIdx; i++) { 
-      if (answers[i] === 0) return; 
+      if (answers[i] === 0) {
+        alert("⚠️ 아직 체크하지 않은 문항이 있습니다. 모든 항목을 선택해 주세요!");
+        return; 
+      }
     }
     
     // 마지막 페이지일 때 결과 처리 
