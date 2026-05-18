@@ -1253,17 +1253,17 @@
   btnStart.addEventListener('click', function () { shuffleQuestions(); window.showScreen('screen-quiz'); renderPage(0); });
   btnPrev.addEventListener('click', function () { if (currentPage > 0) renderPage(currentPage - 1); });
   btnNext.addEventListener('click', function () {
-    var startIdx = currentPage * itemsPerPage;
-    var endIdx = Math.min(startIdx + itemsPerPage, questions.length);
-    for (var i = startIdx; i < endIdx; i++) { if (answers[i] === 0) return; }
-    if (currentPage === totalPages - 1) {
-      var finalScores = processScores();
-      window.renderFinalResult(finalScores);
-      window.showScreen('screen-result');
-    } else {
-      renderPage(currentPage + 1);
-    }
-  });
+  var startIdx = currentPage * itemsPerPage;
+  var endIdx = Math.min(startIdx + itemsPerPage, questions.length);
+  for (var i = startIdx; i < endIdx; i++) { if (answers[i] === 0) return; }
+  if (currentPage === totalPages - 1) {
+    var finalScores = processScores();
+    // ... 이하 동일 ...
+  } else {
+    renderPage(currentPage + 1);
+    window.scrollTo(0, 0); // 👈 화면을 맨 위 6번 항목 위치로 강제 자동 스크롤! 🚀
+  }
+});
 
   resetQuiz();
 
