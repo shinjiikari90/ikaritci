@@ -349,63 +349,35 @@
       }
     }
 
-    // 👤 인증 상태 실시간 리스너 구현 (로그인 버튼 실종 완벽 방어 버전!) ✨
-    onAuthStateChanged(auth, async (user) => {
-      // 기존 index.html에 맞는 정확한 ID인 'userProfile' 매핑
-      const profileWrap = document.getElementById("userProfile"); 
+    // 👤 인증 상태 실시간 리스너 구현
+    onAuthStateChanged(auth, (user) => {
+      const profileWrap = document.getElementById("userProfileWrap");
       const introNotice = document.getElementById("introLoginNotice");
-      const lockIcon = document.getElementById("lockIcon");
       
       if (user) {
         window.currentUser = user; // 전역 바인딩
-        window.firebaseDB = db;    // 하단 스크립트 공유용
-        
-        if (profileWrap) {
-          profileWrap.innerHTML = `
-            <div class="user-info-flex">
-              <img class="user-avatar" src="${user.photoURL || 'https://via.placeholder.com/150'}" alt="profile">
-              <div class="user-name-mail">
-                <span class="user-name">${user.displayName}</span>
-                <span class="user-email">${user.email}</span>
-              </div>
+        profileWrap.innerHTML = `
+          <div class="user-info-flex">
+            <img class="user-avatar" src="${user.photoURL || 'https://via.placeholder.com/150'}" alt="profile">
+            <div class="user-name-mail">
+              <span class="user-name">${user.displayName}</span>
+              <span class="user-email">${user.email}</span>
             </div>
-            <button class="btn-logout" onclick="logoutFirebase()">로그아웃</button>
-          `;
-        }
-        if (introNotice) introNotice.style.display = "none";
-        
-        // 🔍 파이어스토어에서 로그인한 유저의 결제 여부 조회
-        try {
-          const docSnap = await getDoc(doc(db, "users", user.uid));
-          if (docSnap.exists() && docSnap.data().isPremiumUnlocked === true) {
-            isPremiumUnlocked = true; // 영구 해금 복구!
-            if (lockIcon) lockIcon.style.display = 'none'; 
-            console.log("👑 프리미엄 결제 인증 유저 확인 완료!");
-          } else {
-            isPremiumUnlocked = false;
-            if (lockIcon) lockIcon.style.display = 'inline-block';
-          }
-        } catch (err) {
-          console.error("결제 내역 조회 에러:", err);
-        }
-
-        if (typeof loadPastResult === 'function') loadPastResult(user.uid); 
-        
-      } else {
-        window.currentUser = null;
-        isPremiumUnlocked = false; // 로그아웃 시 초기화
-        if (lockIcon) lockIcon.style.display = 'inline-block';
-        
-        // 💡 [핵심 보강] 로그아웃 상태일 때 버튼이 절대 사라지지 않게 강제 렌더링!
-        if (profileWrap) {
-          profileWrap.innerHTML = `
-            <button class="btn-login-google" onclick="loginWithGoogle()">
-              <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/web-24dp/logo_googleg_color_24dp.png" width="18" alt="Google"> Google 계정 로그인
-            </button>
-          `;
-        }
-        if (introNotice) introNotice.style.display = "flex";
-      }
+          </div>
+          <button class="btn-logout" onclick="logoutFirebase()">로그아웃</button>
+        `;
+        if(introNotice) introNotice.style.display = "none";
+        loadPastResult(user.uid); // 과거 기록 탐색 고고!
+     // 변경 후 추천 코드 ✨
+} else {
+  window.currentUser = null;
+  profileWrap.innerHTML = `
+    <button class="btn-login-google" onclick="loginWithGoogle()">
+      <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/web-24dp/logo_googleg_color_24dp.png" width="18" alt="Google"> Google 계정 로그인
+    </button>
+  `;
+  if(introNotice) introNotice.style.display = "flex";
+}
     });
   </script>
 </head>
@@ -423,7 +395,7 @@
   <div class="sidebar-top">
     <div class="sidebar-title">🧭 TCI 성격 진단</div>
     
-    <div class="user-profile-box" id="userProfile"></div>
+    <div class="user-profile-box" id="userProfileWrap"></div>
 
     <ul class="menu-list">
       <li class="menu-item active" id="menu-brief" onclick="switchMode('brief')">
@@ -1068,34 +1040,11 @@ var deepQuestions = [
     openPayModal();
   };
 
-  // 💳 결제 확인 버튼 클릭 시 (구글 로그인 필수 체크 + DB 영구 저장 기능 탑재!) ✨
-  btnPaySubmit.addEventListener('click', async function() {
-    // 🔒 결제 단추를 누르는 순간에도 로그인 상태인지 칼같이 검증!
-    var user = window.currentUser; 
-    if (!user) {
-      alert("🔒 결제를 진행하시려면 먼저 구글 로그인을 완료하셔야 합니다!");
-      closeAllModals();
-      return; // 로그인 안 되어 있으면 여기서 차단!
-    }
-
-    try {
-      // 💾 Firestore의 users 컬렉션 -> 유저 고유 UID 문서에 결제완료 플래그 영구 저장!
-      const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js");
-      await setDoc(doc(window.firebaseDB || db, "users", user.uid), {
-        isPremiumUnlocked: true,
-        paidAt: new Date().toISOString()
-      }, { merge: true });
-      
-      console.log("💳 결제 데이터 DB 저장 완료! 이제 로그아웃해도 리셋 안 됨 ㅇㅋ!");
-    } catch (error) {
-      console.error("DB 결제 기록 저장 실패:", error);
-    }
-    
-    // 프리미엄 락 풀고 화면 전환 고고싱 ㄴㅁㅇ
+  btnPaySubmit.addEventListener('click', function() {
     isPremiumUnlocked = true;
     if(lockIcon) lockIcon.style.display = 'none';
     closeAllModals();
-    window.switchMode('deep'); 
+    window.switchMode('deep');
   });
 
   window.tryEnterAdmin = function() {
