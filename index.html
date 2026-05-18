@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>기질 및 성격 7차원 자가진단 (비공식 간이판)</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      background: #f4f6fb;
+      color: #222;
+      min-height: 100vh;
+      padding-bottom: 40px;
+    }
+    .app-header {
+      background: linear-gradient(135deg, #4776e6, #8e54e9);
+      color: #fff;
+      padding: 28px 20px 22px;
+      text-align: center;
+    }
+    .app-header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.3px; }
+    .app-header p  { font-size: 0.82rem; opacity: 0.88; margin-top: 6px; line-height: 1.5; }
+    .progress-wrap {
+      background: #dde3f0;
+      height: 6px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .progress-bar {
+      height: 6px;
+      background: linear-gradient(90deg, #4776e6, #8e54e9);
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+    .progress-text {
+      text-align: center;
+      font-size: 0.78rem;
+      color: #666;
+      padding: 6px 0 2px;
+      background: #f4f6fb;
+    }
+    .screen { display: none; }
+    .screen.active { display: block; }
+    .intro-card {
+      margin: 24px 16px;
+      background: #fff;
+      border-radius: 18px;
+      padding: 26px 20px;
+      box-shadow: 0 2px 16px rgba(71,118,230,0.10);
+    }
+    .intro-card h2 { font-size: 1.1rem; color: #4776e6; margin-bottom: 14px; font-weight: 700; }
+    .intro-card p  { font-size: 0.9rem; line-height: 1.7; color: #444; margin-bottom: 10px; }
+    .dim-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 16px 0;
+    }
+    .dim-badge {
+      border-radius: 12px;
+      padding: 12px 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-align: center;
+      line-height: 1.4;
+    }
+    .dim-badge.t { background: #eef2ff; color: #3730a3; }
+    .dim-badge.c { background: #fdf4ff; color: #7e22ce; }
+    .notice-box {
+      background: #fff8e1;
+      border-left: 4px solid #f59e0b;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 0.82rem;
+      color: #92400e;
+      line-height: 1.6;
+      margin-top: 16px;
+    }
+    .start-btn {
+      display: block;
+      width: 100%;
+      margin-top: 24px;
+      padding: 16px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #4776e6, #8e54e9);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: opacity 0.2s;
+    }
+    .start-btn:active { opacity: 0.85; }
+    .q-container { padding: 16px; }
+    .q-card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 22px 18px 18px;
+      box-shadow: 0 2px 12px rgba(71,118,230,0.08);
+      margin-bottom: 16px;
+    }
+    .q-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .q-num {
+      background: linear-gradient(135deg, #4776e6, #8e54e9);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .q-text {
+      font-size: 0.97rem;
+      line-height: 1.7;
+      color: #1a1a2e;
+      font-weight: 500;
+      margin-bottom: 20px;
+    }
+    .likert-wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 6px;
+    }
+    .likert-option { flex: 1; text-align: center; }
+    .likert-option input[type="radio"] { display: none; }
+    .likert-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .likert-circle {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 2px solid #c7d2fe;
+      background: #f0f4ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #6366f1;
+      transition: all 0.18s ease;
+    }
+    .likert-option input:checked + .likert-label .likert-circle {
+      background: linear-gradient(135deg, #4776e6, #8e54e9);
+      border-color: transparent;
+      color: #fff;
+      transform: scale(1.15);
+      box-shadow: 0 4px 12px rgba(71,118,230,0.35);
+    }
+    .likert-desc {
+      font-size: 0.62rem;
+      color: #888;
+      line-height: 1.3;
+      max-width: 54px;
+    }
+    .likert-option input:checked + .likert-label .likert-desc {
+      color: #4776e6;
+      font-weight: 600;
+    }
+    .nav-row {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0 0;
+    }
+    .nav-btn {
+      flex: 1;
+      padding: 13px;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .nav-btn:active { opacity: 0.82; transform: scale(0.98); }
+    .btn-prev { background: #e8eaf6; color: #3d5afe; }
+    .btn-next { background: linear-gradient(135deg, #4776e6, #8e54e9); color: #fff; }
+    .btn-next:disabled { background: #c7d2fe; cursor: not-allowed; }
+    .result-wrap { padding: 16px; }
+    .result-header {
+      background: linear-gradient(135deg, #4776e6, #8e54e9);
+      border-radius: 18px;
+      padding: 22px 18px;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .result-header h2 { font-size: 1.15rem; font-weight: 700; }
+    .result-header p  { font-size: 0.82rem; opacity: 0.88; margin-top: 6px; line-height: 1.5; }
+    .section-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #555;
+      letter-spacing: 0.5px;
+      margin: 18px 0 10px;
+      padding-left: 4px;
+    }
+    .dim-result-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    }
+    .dim-result-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .dim-result-name { font-size: 0.95rem; font-weight: 700; color: #1a1a2e; }
+    .dim-result-score {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #4776e6;
+      background: #eef2ff;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .bar-track {
+      background: #f0f0f6;
+      border-radius: 8px;
+      height: 10px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 8px;
+      width: 0%;
+      transition: width 0.8s cubic-bezier(.4,0,.2,1);
+    }
+    .level-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 8px;
+      display: inline-block;
+    }
+    .level-high { background: #fce7f3; color: #9d174d; }
+    .level-mid  { background: #fef3c7; color: #92400e; }
+    .level-low  { background: #dbeafe; color: #1e40af; }
+    .dim-result-desc {
+      font-size: 0.82rem;
+      color: #555;
+      line-height: 1.65;
+      margin-top: 8px;
+      border-top: 1px solid #f0f0f6;
+      padding-top: 8px;
+    }
+    .summary-box {
+      background: #fff;
+      border-radius: 14px;
+      padding: 18px 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      margin-bottom: 12px;
+      border: 1px solid #e0e4f0;
+    }
+    .summary-box.highlight {
+      background: linear-gradient(to bottom right, #ffffff, #f4f7ff);
+      border: 2px solid #4776e6;
+    }
+    .summary-box h3 { font-size: 0.95rem; font-weight: 700; color: #333; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+    .summary-box p  { font-size: 0.85rem; color: #555; line-height: 1.65; }
+    .type-title { font-size: 1.1rem; font-weight: 700; color: #4776e6; margin-bottom: 8px; }
+    .restart-btn {
+      display: block;
+      width: 100%;
+      margin-top: 20px;
+      padding: 16px;
+      border: none;
+      border-radius: 14px;
+      background: #e8eaf6;
+      color: #4776e6;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .restart-btn:active { opacity: 0.85; }
+    .disclaimer {
+      font-size: 0.75rem;
+      color: #999;
+      text-align: center;
+      margin-top: 20px;
+      line-height: 1.6;
+      padding: 0 8px;
+    }
+    
+    /* 🎨 신규 추가: 공유 섹션 스타일 */
+    .share-container {
+      background: #fff;
+      border-radius: 14px;
+      padding: 20px 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      margin-top: 24px;
+      text-align: center;
+    }
+    .share-container h4 {
+      font-size: 0.9rem;
+      color: #333;
+      margin-bottom: 14px;
+      font-weight: 700;
+    }
+    .share-buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .share-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #555;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .share-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      color: #fff;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+      transition: transform 0.15s;
+    }
+    .share-btn:active .share-icon { transform: scale(0.92); }
+    .icon-kakao { background: #FEE500; color: #3A1D1D; }
+    .icon-line  { background: #06C755; color: #fff; }
+    .icon-insta { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); color: #fff; }
+    .icon-link  { background: #747d8c; color: #fff; }
+  </style>
+</head>
+<body>
+
+<!-- INTRO -->
+<div id="screen-intro" class="screen active">
+  <div class="app-header">
+    <h1>🧬 기질 및 성격 7차원 자가진단</h1>
+    <p>Cloninger 성격 모델 기반 (비공식 간이판)</p>
+  </div>
+  <div class="intro-card">
+    <h2>검사 소개</h2>
+    <p>Robert Cloninger 박사의 심리생물학적 성격 모델에 기초한 간이 자가진단입니다. <strong>타고난 기질(4가지)</strong>과 <strong>후천적 성격(3가지)</strong>, 총 7개 차원을 측정합니다.</p>
+    <p style="color: #4776e6; font-weight: 600; margin: 12px 0;">✨ 이 검사 기법은 최근 유행하고 있는 이혼 상담 TV 프로그램에서 언급될만큼 개인의 타고난 기질 확인에 유용하다고 인정받고 있습니다.</p>
+    <div class="dim-grid">
+      <div class="dim-badge t">🔍 자극추구 (NS)</div>
+      <div class="dim-badge t">🛡 위험회피 (HA)</div>
+      <div class="dim-badge t">🤝 사회적민감성 (RD)</div>
+      <div class="dim-badge t">💪 인내력 (PS)</div>
+      <div class="dim-badge c">🌟 자율성 (SD)</div>
+      <div class="dim-badge c">❤️ 연대감 (CO)</div>
+      <div class="dim-badge c">🌌 자기초월 (ST)</div>
+    </div>
+    <p>각 문항을 읽고 <strong>자신에게 해당하는 정도</strong>를 1~5점으로 선택해 주세요.</p>
+    <p>총 <strong>42문항</strong> / 소요시간 약 <strong>5~7분</strong></p>
+    <div class="notice-box">
+      ⚠️ 이 검사는 공개된 이론 정보 기반의 <strong>비공식 간이 검사</strong>입니다. 임상적 진단 목적으로 사용할 수 없습니다.
+    </div>
+    <button class="start-btn" id="btnStart">검사 시작하기 →</button>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="screen-quiz" class="screen">
+  <div class="progress-wrap">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+  <p class="progress-text" id="progressText">0 / 42</p>
+  <div class="q-container">
+    <div id="quizBlock"></div>
+    
+    <div class="nav-row">
+      <button class="nav-btn btn-prev" id="btnPrev">← 이전</button>
+      <button class="nav-btn btn-next" id="btnNext">다음 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="screen-result" class="screen">
+  <div class="app-header">
+    <h1>📊 검사 결과</h1>
+    <p>기질 및 성격 7차원 프로파일</p>
+  </div>
+  <div class="result-wrap" id="resultWrap"></div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var questions = [
+    { dim:"NS", text:"새롭고 낯선 상황을 만나면 흥분되고 에너지가 넘친다." },
+    { dim:"NS", text:"여러 가지 일을 동시에 시도하는 것을 즐긴다." },
+    { dim:"NS", text:"예측하기 어려운 상황이 오히려 매력적으로 느껴진다." },
+    { dim:"NS", text:"규칙이나 관례를 무시하고 싶을 때가 자주 있다." },
+    { dim:"NS", text:"충동적으로 결정을 내리는 편이다." },
+    { dim:"NS", text:"모험적이고 스릴 있는 활동을 즐기는 편이다." },
+    { dim:"HA", text:"앞으로 일어날 일들에 대해 걱정하는 편이다." },
+    { dim:"HA", text:"낯선 사람이나 새로운 상황을 접하면 긴장하거나 불안해진다." },
+    { dim:"HA", text:"실패할 가능성이 있으면 시도하기가 두렵다." },
+    { dim:"HA", text:"위험하거나 불확실한 상황은 피하고 싶다." },
+    { dim:"HA", text:"불안하거나 걱정되면 쉽게 피로해진다." },
+    { dim:"HA", text:"다른 사람들보다 수줍음을 많이 타는 편이다." },
+    { dim:"RD", text:"다른 사람의 감정을 쉽게 파악하고 공감한다." },
+    { dim:"RD", text:"가깝고 친한 사람의 인정과 지지가 내게 매우 중요하다." },
+    { dim:"RD", text:"슬픈 이야기나 영화를 보면 쉽게 눈물이 난다." },
+    { dim:"RD", text:"다른 사람이 나에게 실망할까 봐 신경 쓰인다." },
+    { dim:"RD", text:"사람들과 따뜻한 관계를 맺는 것이 내 삶에서 중요하다." },
+    { dim:"RD", text:"친밀한 관계를 오래 유지하려고 노력하는 편이다." },
+    { dim:"PS", text:"결과가 불확실해도 한 번 시작한 일은 끝까지 해낸다." },
+    { dim:"PS", text:"즉각적인 보상이 없어도 꾸준히 노력할 수 " },
+    { dim:"PS", text:"어려운 상황에서도 쉽게 포기하지 않는다." },
+    { dim:"PS", text:"오래 걸리는 목표도 꾸준히 추진하는 편이다." },
+    { dim:"PS", text:"지루하고 반복적인 일도 완수하려고 노력한다." },
+    { dim:"PS", text:"실패하더라도 다시 도전하는 끈기가 있다." },
+    { dim:"SD", text:"나는 내 삶의 목적과 방향을 명확히 알고 있다." },
+    { dim:"SD", text:"나 자신의 장단점을 객관적으로 받아들인다." },
+    { dim:"SD", text:"내가 세운 목표를 위해 스스로를 규율하고 조절할 수 있다." },
+    { dim:"SD", text:"나는 내 감정과 행동에 책임감을 느낀다." },
+    { dim:"SD", text:"어려운 상황에서도 자신을 믿는 편이다." },
+    { dim:"SD", text:"내 가치관과 신념에 따라 결정을 내린다." },
+    { dim:"CO", text:"다른 사람의 입장에서 생각하는 것이 자연스럽다." },
+    { dim:"CO", text:"사회 전체의 이익을 위해 내 이익을 양보할 수 있다." },
+    { dim:"CO", text:"다른 사람을 도울 때 진심으로 기쁨을 느낀다." },
+    { dim:"CO", text:"나는 사람들과 협력하는 것을 좋아한다." },
+    { dim:"CO", text:"다른 사람의 감정을 이해하고 배려하려 노력한다." },
+    { dim:"CO", text:"공동체의 일원으로서 역할을 다하려 한다." },
+    { dim:"ST", text:"가끔 자신이 우주나 자연의 일부라고 느끼는 순간이 있다." },
+    { dim:"ST", text:"일상적인 것에서도 깊은 의미나 아름다움을 발견한다." },
+    { dim:"ST", text:"삶 속에서 신비롭거나 초월적인 경험을 한 적이 있다." },
+    { dim:"ST", text:"물질적인 것보다 정신적이고 영적인 가치를 중시한다." },
+    { dim:"ST", text:"나는 나 자신보다 더 큰 무언가에 속해 있다는 느낌을 받는다." },
+    { dim:"ST", text:"창의적이고 영감 어린 경험을 자주 한다." }
+  ];
+
+  var dimInfo = {
+    NS: { name:"자극추구",
+          high:"새롭고 자극적인 것을 적극적으로 추구하며, 흥분과 모험을 즐깁니다. 창의적이고 활동적이나 충동성이 높을 수 있습니다.",
+          mid: "새로운 자극과 안정감 사이에서 균형을 유지합니다.",
+          low: "안정적이고 신중하며, 변화보다는 익숙한 것을 선호합니다." },
+    HA: { name:"위험회피",
+          high:"위험하고 불확실성을 경계하고 피하려 합니다. 신중하고 조심스러우며 불안과 걱정을 느끼기 쉽습니다.",
+          mid: "적절히 주의하면서도 필요시 도전하는 균형적 성향입니다.",
+          low: "낙관적이고 두려움이 적으며, 위험에도 자신감 있게 대처합니다." },
+    RD: { name:"사회적민감성",
+          high:"타인의 감정과 사회적 신호에 민감하게 반응하며, 따뜻한 인간관계를 중시합니다.",
+          mid: "공감 능력과 독립성 사이에서 균형을 유지합니다.",
+          low: "타인의 평가에 덜 의존적이며, 독립적·실용적으로 행동합니다." },
+    PS: { name:"인내력",
+          high:"즉각적 보상 없이도 끈기 있게 목표를 추진합니다. 성실하고 근면하며 책임감이 강합니다.",
+          mid: "필요에 따라 꾸준함과 유연함을 조율하는 편입니다.",
+          low: "즉각적 결과를 선호하며, 장기 목표보다 현재에 집중합니다." },
+    SD: { name:"자율성",
+          high:"삶의 목적이 뚜렷하고 자기 규율이 강합니다. 책임감 및 자기효능감이 높은 성숙한 성격입니다.",
+          mid: "자기 목표와 외부 의존 사이에서 균형을 이루고 있습니다.",
+          low: "타인이나 환경에 영향을 많이 받으며, 자기 방향 설정에 어려움이 있을 수 있습니다." },
+    CO: { name:"연대감",
+          high:"타인을 깊이 배려하고 협력을 중시합니다. 공감 능력이 높고 공동체 의식이 강합니다.",
+          mid: "개인 이익과 공동체 가치를 균형 있게 고려합니다.",
+          low: "자기 이익 중심으로 사고하는 경향이 있으며, 팀워크보다 독립을 선호합니다." },
+    ST: { name:"자기초월",
+          high:"자신을 넘어 우주·자연과의 일체감을 느끼며, 영적이고 창의적인 경험을 중시합니다.",
+          mid: "현실적 관심과 초월적 경험 사이의 균형을 유지합니다.",
+          low: "현실·실용적 사고 중심이며, 영적·신비적 경험에 비중을 덜 둡니다." }
+  };
+
+  var likertLabels = ["전혀\n아니다","아닌\n편이다","보통\n이다","그런\n편이다","매우\n그렇다"];
+  
+  var currentPage = 0;
+  var itemsPerPage = 3;
+  var totalPages = Math.ceil(questions.length / itemsPerPage);
+  var answers  = new Array(questions.length).fill(0);
+
+  var screenIntro  = document.getElementById('screen-intro');
+  var screenQuiz   = document.getElementById('screen-quiz');
+  var screenResult = document.getElementById('screen-result');
+  var btnStart     = document.getElementById('btnStart');
+  var btnPrev      = document.getElementById('btnPrev');
+  var btnNext      = document.getElementById('btnNext');
+  var progressBar  = document.getElementById('progressBar');
+  var progressText = document.getElementById('progressText');
+  var quizBlock    = document.getElementById('quizBlock');
+  var resultWrap   = document.getElementById('resultWrap');
+
+  function showScreen(id) {
+    screenIntro.classList.remove('active');
+    screenQuiz.classList.remove('active');
+    screenResult.classList.remove('active');
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function renderPage(pageIdx) {
+    currentPage = pageIdx;
+    quizBlock.innerHTML = '';
+
+    var startIdx = pageIdx * itemsPerPage;
+    var endIdx = Math.min(startIdx + itemsPerPage, questions.length);
+
+    var answeredCount = answers.filter(function(a) { return a > 0; }).length;
+    var pct = Math.round((answeredCount / questions.length) * 100);
+    progressBar.style.width  = pct + '%';
+    progressText.textContent = answeredCount + ' / ' + questions.length;
+
+    for (var i = startIdx; i < endIdx; i++) {
+      createQuestionCard(i);
+    }
+
+    btnPrev.style.visibility = (pageIdx === 0) ? 'hidden' : 'visible';
+    btnNext.textContent = (pageIdx === totalPages - 1) ? '결과 보기 ✓' : '다음 →';
+    updateNextBtn();
+  }
+
+  function createQuestionCard(idx) {
+    var q = questions[idx];
+    
+    var card = document.createElement('div');
+    card.className = 'q-card';
+
+    var meta = document.createElement('div');
+    meta.className = 'q-meta';
+    
+    var numSpan = document.createElement('span');
+    numSpan.className = 'q-num';
+    numSpan.textContent = 'Q' + (idx + 1);
+    
+    meta.appendChild(numSpan);
+    card.appendChild(meta);
+
+    var textP = document.createElement('p');
+    textP.className = 'q-text';
+    textP.textContent = q.text;
+    card.appendChild(textP);
+
+    var wrap = document.createElement('div');
+    wrap.className = 'likert-wrap';
+
+    for (var v = 1; v <= 5; v++) {
+      (function (val) {
+        var opt = document.createElement('div');
+        opt.className = 'likert-option';
+
+        var inp = document.createElement('input');
+        inp.type  = 'radio';
+        inp.name  = 'q' + idx;
+        inp.id    = 'q' + idx + '_v' + val;
+        inp.value = val;
+        if (answers[idx] === val) inp.checked = true;
+
+        var lbl = document.createElement('label');
+        lbl.htmlFor   = inp.id;
+        lbl.className = 'likert-label';
+
+        var circle = document.createElement('div');
+        circle.className   = 'likert-circle';
+        circle.textContent = val;
+
+        var desc = document.createElement('span');
+        desc.className   = 'likert-desc';
+        desc.textContent = likertLabels[val - 1];
+
+        lbl.appendChild(circle);
+        lbl.appendChild(desc);
+        opt.appendChild(inp);
+        opt.appendChild(lbl);
+        wrap.appendChild(opt);
+
+        inp.addEventListener('change', function () {
+          answers[idx] = val;
+          var currentAnswered = answers.filter(function(a) { return a > 0; }).length;
+          progressBar.style.width = Math.round((currentAnswered / questions.length) * 100) + '%';
+          progressText.textContent = currentAnswered + ' / ' + questions.length;
+          updateNextBtn();
+        });
+      }(v));
+    }
+
+    card.appendChild(wrap);
+    quizBlock.appendChild(card);
+  }
+
+  function updateNextBtn() {
+    var startIdx = currentPage * itemsPerPage;
+    var endIdx = Math.min(startIdx + itemsPerPage, questions.length);
+    var allFilled = true;
+
+    for (var i = startIdx; i < endIdx; i++) {
+      if (answers[i] === 0) {
+        allFilled = false;
+        break;
+      }
+    }
+    btnNext.disabled = !allFilled;
+  }
+
+  function getCombinedAnalysis(nsPct, haPct, rdPct) {
+    var nsHigh = nsPct >= 50, haHigh = haPct >= 50, rdHigh = rdPct >= 50;
+
+    if (nsHigh && haHigh && rdHigh) {
+      return {
+        title: "🎭 열정적이고 감성적인 '줄타기형'",
+        desc: "호기심과 새로운 시도를 좋아하지만(고NS) 동시에 걱정과 불안도 많이 느끼는(고HA) 편입니다. 타인의 시선과 감정에도 대단히 민감합니다(고RD). 마음속에서 '하고 싶다'와 '불안하다'가 끊임없이 싸우는 스릴 넘치는 감정 상태를 자주 겪을 수 있습니다. 인간관계에서 따뜻하고 열정적이지만 그만큼 상처도 쉽게 받을 수 있으니 스스로의 에너지를 보호해 주는 태도가 필요합니다."
+      };
+    }
+    if (nsHigh && !haHigh && rdHigh) {
+      return {
+        title: "✨ 매력적이고 사교적인 '인기쟁이형'",
+        desc: "새로운 자극을 사랑하고(고NS) 두려움이 없으며 낙천적입니다(저HA). 게다가 사람들과 교감하고 공감하는 능력도 뛰어납니다(고RD). 주변 사람들에게 유쾌하고 매력적인 인물로 비치며 트렌드를 리드하는 성향이 강합니다. 다만, 분위기에 쉽게 휩쓸리거나 충동적으로 사람을 믿어 손해를 볼 수 있으니 중요한 결정을 내릴 땐 한 템포 쉬어가는 지혜가 필요합니다."
+      };
+    }
+    if (nsHigh && haHigh && !rdHigh) {
+      return {
+        title: "🎯 독립적이고 짜릿함을 쫓는 '마이웨이 탐험가'",
+        desc: "새로운 아이디어나 자극에 꽂히면 일단 지르고 보지만(고NS), 막상 시작하면 안전에 대한 걱정도 머리를 치밀고 올라옵니다(고HA). 타인의 평가나 관계 유지에 크게 연연하지 않는 독립적인 성향(저RD)을 가졌습니다. 주관이 뚜렷하고 기발한 면모가 있어 혼자만의 프로젝트나 전문적인 연구, 독창적인 취미에서 엄청난 두각을 드러내지만 주변 사람들에게 가끔 '속을 알 수 없다'는 평을 듣기도 합니다."
+      };
+    }
+    if (nsHigh && !haHigh && !rdHigh) {
+      return {
+        title: "🚀 거침없이 직진하는 '자유로운 모험가'",
+        desc: "새로운 자극을 적극적으로 추구하고(고NS) 실패에 대한 두려움이 거의 없으며(저HA), 타인의 눈치도 전혀 보지 않는(저RD) 전형적인 자유 영혼입니다. 결단력과 추진력이 우주 최강급이라 스타트업이나 과감한 도전에 최적화되어 있습니다. 다만 브레이크가 약해 충동적인 실수를 반복하거나 타인의 감정을 무심코 지나쳐 갈등을 유발할 수 있으니 의식적인 제어가 필요합니다."
+      };
+    }
+    if (!nsHigh && haHigh && rdHigh) {
+      return {
+        title: "🍀 다정하고 사려 깊은 '수호천사형'",
+        desc: "예측 불가능한 변화나 자극을 피하고 익숙함 속에서 안정감을 찾으려 합니다(저NS). 돌발 상황에 대한 걱정이 많고 신중하지만(고HA), 사람을 향한 따뜻한 공감 능력과 정(情)이 가득합니다(고RD). 공동체 내에서 가장 신뢰받는 조력자이자 평화주의자입니다. 다만 남을 배려하느라 정작 본인의 욕구를 억누르고 '착한 사람 증후군'에 빠지기 쉬우니 거절하는 연습을 해보세요."
+      };
+    }
+    if (!nsHigh && haHigh && !rdHigh) {
+      return {
+        title: "🛡 철두철미하고 신중한 '수호자형'",
+        desc: "변화나 자극보다는 질서와 계획을 선호하고(저NS), 위험 요소를 미리 파악하고 차단하는 데 탁월한 감각이 있습니다(고HA). 타인과 불필요한 감정 소모를 겪기보다 혼자만의 영역을 지키는 편입니다(저RD). 대단히 냉철하고 실수 없는 완벽주의적 면모를 보이며 리스크 관리에 엄청난 강점이 있습니다. 하지만 새로운 시도를 과도하게 두려워하여 좋은 기회를 놓칠 수 있으니 가끔은 안전지대 밖으로 발을 내딛어 보세요."
+      };
+    }
+    if (!nsHigh && !haHigh && rdHigh) {
+      return {
+        title: "🤝 신뢰와 의리를 중시하는 '선비형'",
+        desc: "충동적인 구석이 없고 매사 침착하며(저NS), 웬만한 위기 상황에도 멘탈을 유지하는 묵직함이 있습니다(저HA). 그러면서도 주변 사람들을 따뜻하게 챙기고 관계를 안정감 있게 유지하려 애씁니다(고RD). 모나지 않은 둥글둥글한 성격으로 직장이나 모임에서 기둥 같은 역할을 해내며 대인관계가 깊고 넓습니다. 변화무쌍한 혁신보다는 장기적이고 꾸준한 관계 속에서 큰 가치를 만들어냅니다."
+      };
+    }
+    return {
+      title: "🗿 흔들림 없이 냉철한 '마이웨이 실속파'",
+      desc: "새로운 유행에 관심이 적고 담백하며(저NS), 불안이나 걱정도 거의 없는 강철 멘탈의 소유자입니다(저HA). 타인의 감정적 호소나 평가에도 크게 흔들리지 않는 독립적이고 실용적인 관점(저RD)을 가졌습니다. 어떤 상황에서도 이성적이고 감정 기복 없는 태도로 문제를 해결하는 능력이 뛰어납니다. 다만 주변 사람들에게 다소 차갑거나 무뚝뚝하다는 인상을 줄 수 있으니 가끔은 따뜻한 말 한마디를 건네보세요."
+    };
+  }
+
+  function showResult() {
+    var raw = { NS:[], HA:[], RD:[], PS:[], SD:[], CO:[], ST:[] };
+    questions.forEach(function (q, i) {
+      raw[q.dim].push(answers[i]);
+    });
+
+    var dims = ["NS","HA","RD","PS","SD","CO","ST"];
+    var scores = {}, maxPossible = {};
+    dims.forEach(function (d) {
+      scores[d]      = raw[d].reduce(function (a, b) { return a + b; }, 0);
+      maxPossible[d] = raw[d].length * 5;
+    });
+
+    showScreen('screen-result');
+    resultWrap.innerHTML = '';
+
+    var hdr = document.createElement('div');
+    hdr.className = 'result-header';
+    hdr.innerHTML = '<h2>검사 완료! 나의 성격 프로파일</h2>'
+      + '<p>총 ' + questions.length + '문항 응답 완료<br>당신의 종합 성격과 지표를 확인하세요.</p>';
+    resultWrap.appendChild(hdr);
+
+    var nsPct = Math.round((scores["NS"] / maxPossible["NS"]) * 100);
+    var haPct = Math.round((scores["HA"] / maxPossible["HA"]) * 100);
+    var rdPct = Math.round((scores["RD"] / maxPossible["RD"]) * 100);
+
+    var analysis = getCombinedAnalysis(nsPct, haPct, rdPct);
+    var analysisBox = document.createElement('div');
+    analysisBox.className = 'summary-box highlight';
+    analysisBox.innerHTML = 
+        '<h3>🔮 기질 종합 분석 의견</h3>'
+      + '<div class="type-title">' + analysis.title + '</div>'
+      + '<p>' + analysis.desc + '</p>';
+    resultWrap.appendChild(analysisBox);
+
+    var summaryBox = document.createElement('div');
+    summaryBox.className = 'summary-box';
+    var highDims = dims.filter(function (d) { return scores[d] / maxPossible[d] >= 0.65; })
+                       .map(function (d) { return dimInfo[d].name; });
+    var lowDims  = dims.filter(function (d) { return scores[d] / maxPossible[d] <= 0.40; })
+                       .map(function (d) { return dimInfo[d].name; });
+    var sHtml = '<h3>📋 지표 요약</h3><p>';
+    if (highDims.length) sHtml += '<strong>높은 경향:</strong> ' + highDims.join(', ') + '<br>';
+    if (lowDims.length)  sHtml += '<strong>낮은 경향:</strong> ' + lowDims.join(', ') + '<br>';
+    if (!highDims.length && !lowDims.length) sHtml += '전반적으로 균형 잡힌 프로파일입니다.';
+    sHtml += '</p>';
+    summaryBox.innerHTML = sHtml;
+    resultWrap.appendChild(summaryBox);
+
+    var tTitle = document.createElement('p');
+    tTitle.className   = 'section-title';
+    tTitle.textContent = '🧬 기질 (Temperament)';
+    resultWrap.appendChild(tTitle);
+    ["NS","HA","RD","PS"].forEach(function (d) {
+      resultWrap.appendChild(buildDimCard(d, scores[d], maxPossible[d]));
+    });
+
+    var cTitle = document.createElement('p');
+    cTitle.className   = 'section-title';
+    cTitle.textContent = '🌱 성격 (Character)';
+    resultWrap.appendChild(cTitle);
+    ["SD","CO","ST"].forEach(function (d) {
+      resultWrap.appendChild(buildDimCard(d, scores[d], maxPossible[d]));
+    });
+
+    // 🌟 신규 추가: SNS 공유하기 버튼 컨테이너 생성 및 추가
+    var shareContainer = document.createElement('div');
+    shareContainer.className = 'share-container';
+    shareContainer.innerHTML = 
+        '<h4>📢 검사 결과 친구에게 공유하기</h4>'
+      + '<div class="share-buttons">'
+      +   '<button class="share-btn" id="shareKakao">'
+      +     '<div class="share-icon icon-kakao">💬</div>'
+      +     '<span>카카오톡</span>'
+      +   '</button>'
+      +   '<button class="share-btn" id="shareLine">'
+      +     '<div class="share-icon icon-line">L</div>'
+      +     '<span>라인</span>'
+      +   '</button>'
+      +   '<button class="share-btn" id="shareInsta">'
+      +     '<div class="share-icon icon-insta">📸</div>'
+      +     '<span>인스타</span>'
+      +   '</button>'
+      +   '<button class="share-btn" id="shareCopyLink">'
+      +     '<div class="share-icon icon-link">🔗</div>'
+      +     '<span>링크복사</span>'
+      +   '</button>'
+      + '</div>';
+    resultWrap.appendChild(shareContainer);
+
+    var restartBtn = document.createElement('button');
+    restartBtn.className   = 'restart-btn';
+    restartBtn.textContent = '🔄 다시 검사하기';
+    restartBtn.addEventListener('click', resetQuiz);
+    resultWrap.appendChild(restartBtn);
+
+    var disc = document.createElement('p');
+    disc.className   = 'disclaimer';
+    disc.textContent = '이 결과는 공개된 Cloninger 성격 이론에 기반한 비공식 간이 검사 결과입니다. 임상적 진단에 사용할 수 없으며, 정확한 검사를 원하시면 전문 심리상담 기관을 방문하세요.';
+    resultWrap.appendChild(disc);
+
+    // 🛠️ 공유 기능 이벤트 바인딩
+    document.getElementById('shareKakao').addEventListener('click', function() {
+      var text = "[기질 및 성격 검사 결과]\n나의 유형은 '" + analysis.title + "' 입니다! 내 타고난 기질이 궁금하다면 지금 확인해보셈!";
+      var url = window.location.href;
+      window.open('https://sharer.kakao.com/talk/friends/picker/link?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(text), '_blank');
+    });
+
+    document.getElementById('shareLine').addEventListener('click', function() {
+      var text = "[기질 및 성격 검사 결과] " + analysis.title + " - " + window.location.href;
+      window.open('https://social-plugins.line.me/lineit/share?url=' + encodeURIComponent(window.location.href) + '&text=' + encodeURIComponent(text), '_blank');
+    });
+
+    document.getElementById('shareInsta').addEventListener('click', function() {
+      alert("📸 인스타그램 정책상 다이렉트 웹 공유는 지원되지 않음!\n\n결과 화면을 멋지게 캡처(스냅샷)한 뒤, 인스타 스토리나 피드에 업로드해서 자랑해보셈! 😎");
+    });
+
+    document.getElementById('shareCopyLink').addEventListener('click', function() {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(window.location.href).then(function() {
+          alert("🔗 링크가 복사되었습니다! 원하곳에 붙여넣기(Ctrl+V) 하셈 ㅇㅋ?");
+        }).catch(function() {
+          alert("링크 복사에 실패했습니다. 주소창의 URL을 직접 복사해 주세요.");
+        });
+      } else {
+        alert("현재 환경에서는 클립보드 API를 지원하지 않습니다. 주소창의 URL을 직접 복사해 주세요.");
+      }
+    });
+
+    setTimeout(function () {
+      document.querySelectorAll('.bar-fill').forEach(function (el) {
+        el.style.width = el.getAttribute('data-pct') + '%';
+      });
+    }, 120);
+  }
+
+  function buildDimCard(d, score, maxScore) {
+    var pct = Math.round((score / maxScore) * 100);
+    var level, levelClass, desc;
+    if (pct >= 65)      { level = '높음'; levelClass = 'level-high'; desc = dimInfo[d].high; }
+    else if (pct <= 40) { level = '낮음'; levelClass = 'level-low';  desc = dimInfo[d].low;  }
+    else                { level = '보통'; levelClass = 'level-mid';  desc = dimInfo[d].mid;  }
+
+    var barColors = {
+      NS:"#3b82f6", HA:"#ef4444", RD:"#10b981",
+      PS:"#f59e0b", SD:"#8b5cf6", CO:"#ec4899", ST:"#0ea5e9"
+    };
+
+    var card = document.createElement('div');
+    card.className = 'dim-result-card';
+    card.innerHTML =
+        '<div class="dim-result-top">'
+      +   '<span class="dim-result-name">' + dimInfo[d].name
+      +      ' <span style="font-size:0.78rem;color:#888;">(' + d + ')</span></span>'
+      +   '<span class="dim-result-score">' + score + ' / ' + maxScore + '</span>'
+      + '</div>'
+      + '<div class="bar-track">'
+      +   '<div class="bar-fill" data-pct="' + pct + '" style="background:' + barColors[d] + ';width:0%;"></div>'
+      + '</div>'
+      + '<span class="level-label ' + levelClass + '">' + level + ' (' + pct + '%)</span>'
+      + '<p class="dim-result-desc">' + desc + '</p>';
+    return card;
+  }
+
+  function resetQuiz() {
+    answers  = new Array(questions.length).fill(0);
+    currentPage = 0;
+    showScreen('screen-intro');
+  }
+
+  btnStart.addEventListener('click', function () {
+    showScreen('screen-quiz');
+    renderPage(0);
+  });
+
+  btnPrev.addEventListener('click', function () {
+    if (currentPage > 0) renderPage(currentPage - 1);
+  });
+
+  btnNext.addEventListener('click', function () {
+    var startIdx = currentPage * itemsPerPage;
+    var endIdx = Math.min(startIdx + itemsPerPage, questions.length);
+    
+    for (var i = startIdx; i < endIdx; i++) {
+      if (answers[i] === 0) return;
+    }
+
+    if (currentPage === totalPages - 1) {
+      showResult();
+    } else {
+      renderPage(currentPage + 1);
+    }
+  });
+
+}());
+</script>
+</body>
+</html>
