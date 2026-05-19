@@ -1459,27 +1459,31 @@ function shuffleQuestions() {
   }
 
   // 🔗 유저 고유 ID와 검사 시간이 결합된 진짜 공유 링크 복사 함수!
+  // 🔗 [완벽 교체] 새로 검사한 결과든, 과거 목록에서 불러온 결과든 완벽하게 링크를 따주는 함수!
   window.copyResultLink = function() {
-    var toast = document.getElementById('toastMsg');
-    
-    // 💡 현재 로그인된 유저 ID 확보
-    var currentUid = window.currentUser ? window.currentUser.uid : null;
-    // 💡 방금 검사한 시간이거나, 히스토리에서 클릭해서 불러온 시간 확보
-    var currentTime = window.lastSavedTimestamp;
-
-    if (!currentUid || !currentTime) {
-      alert("⚠️ 내 검사 기록을 디비에 동기화(로그인)하거나, 좌측 목록에서 기록을 먼저 선택해야 공유 링크를 볼 수 있습니다!");
+    if (!window.currentUser) {
+      alert("🔒 로그인 후 저장된 결과만 공유 링크를 생성할 수 있습니다!");
       return;
     }
 
-    // 🎯 메인 주소 뒤에 유저 고유 UID와 정확한 문서 시간(Timestamp)을 매달아버림! ㄹㅇ 미쳤지
-    var shareUrl = window.location.href.split('?')[0] + "?uid=" + currentUid + "&time=" + currentTime;
+    // 🔥 [핵심 분기] 방금 검사를 끝내고 바로 누른 거면 최신 시간, 과거 목록에서 누른 거면 전역Timestamp 사용!
+    // 만약 둘 다 없다면 안전장치로 현재 시간이라도 가져다 박음 ㄹㅇ
+    const currentTimestamp = window.lastSavedTimestamp || window.currentResultTimestamp || new Date().toISOString();
+    const uid = window.currentUser.uid;
 
-    toast.textContent = "🔗 나만의 결과 공유 링크 복사 완료! 원하는 곳에 붙여 넣으세요.";
+    // 현재 도메인 주소 뒤에 꼬리 파라미터(?uid=...&time=...) 이쁘게 조립
+    const shareUrl = `${window.location.origin}${window.location.pathname}?uid=${uid}&time=${currentTimestamp}`;
+
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(shareUrl).then(showToastPopup).catch(function() { fallbackCopy(shareUrl); });
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        alert("🔗 고유 공유 링크가 클립보드에 복사되었습니다! 원하는 곳에 붙여넣어 친구에게 공유해 보세요! 🎉");
+      }).catch(err => {
+        console.error("링크 복사 실패:", err);
+        // 클립보드 API 실패 시 차선책(iOS 등 방어용)
+        prompt("아래 고유 링크를 꾹 눌러 복사하세요:", shareUrl);
+      });
     } else {
-      fallbackCopy(shareUrl);
+      prompt("아래 고유 링크를 꾹 눌러 복사하세요:", shareUrl);
     }
   };
 
