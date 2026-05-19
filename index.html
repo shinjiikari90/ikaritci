@@ -1651,12 +1651,13 @@ function showCopySuccessMessage() {
     }
 
     var btnGroup = document.createElement('div');
-    btnGroup.className = 'action-btn-group';
-    btnGroup.innerHTML = '<button class="share-btn" onclick="copyResultLink()">🔗 결과 링크 복사하기</button>'
-                       + '<button class="restart-btn" onclick="location.reload()">🔄 테스트 다시 하기</button>';
-    header.appendChild(btnGroup);
+btnGroup.className = 'action-btn-group';
+// 💡 copyResultLink() 대신 window.copyResultLinkUnified() 로 매칭해줍니다.
+btnGroup.innerHTML = '<button class="share-btn" onclick="window.copyResultLinkUnified()">🔗 결과 링크 복사하기</button>'
+                   + '<button class="restart-btn" onclick="location.reload()">🔄 테스트 다시 하기</button>';
+header.appendChild(btnGroup);
 
-    resultWrap.appendChild(header);
+resultWrap.appendChild(header);
 
 // 💾 유저가 로그인 상태라면 영구 보존용 파이어베이스 저장 트리거 실행
     if (window.currentUser) {
@@ -1777,6 +1778,78 @@ function showCopySuccessMessage() {
   resetQuiz();
 
 })();
+  window.copyResultLinkUnified = function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const sharedUid = urlParams.get('uid');
+  const sharedTime = urlParams.get('time');
+
+  let uid = "";
+  let currentTimestamp = "";
+
+  if (sharedUid && sharedTime) {
+    uid = sharedUid;
+    currentTimestamp = sharedTime;
+  } else if (window.currentUser && window.currentUser.uid) {
+    uid = window.currentUser.uid;
+    currentTimestamp = window.lastSavedTimestamp || window.currentResultTimestamp || new Date().toISOString();
+  } else {
+    alert("🔒 로그인 후 저장된 결과이거나 올바른 공유 링크 페이지여야 주소 생성이 가능합니다!");
+    return;
+  }
+
+  const shareUrl = `${window.location.origin}${window.location.pathname}?uid=${uid}&time=${currentTimestamp}`;
+
+  if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
+    navigator.clipboard.writeText(shareUrl)
+      .then(function() {
+        handleCopyToastAlert();
+      })
+      .catch(function() {
+        fallbackTextCopyEngine(shareUrl);
+      });
+  } else {
+    fallbackTextCopyEngine(shareUrl);
+  }
+};
+
+function fallbackTextCopyEngine(text) {
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.style.position = "fixed";
+  textArea.style.top = "0";
+  textArea.style.left = "0";
+  textArea.style.opacity = "0";
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+
+  try {
+    const successful = document.execCommand('copy');
+    if (successful) {
+      handleCopyToastAlert();
+    } else {
+      prompt("📋 아래 공유 주소를 길게 눌러 직접 복사해 주세요:", text);
+    }
+  } catch (err) {
+    prompt("📋 아래 공유 주소를 길게 눌러 직접 복사해 주세요:", text);
+  }
+  document.body.removeChild(textArea);
+}
+
+function handleCopyToastAlert() {
+  const toast = document.getElementById('toastMsg');
+  if (toast) {
+    toast.textContent = "🔗 결과 공유 링크 복사 완료!";
+    if (typeof showToastPopup === 'function') {
+      showToastPopup();
+      return;
+    } else if (typeof showCopySuccessMessage === 'function') {
+      showCopySuccessMessage();
+      return;
+    }
+  }
+  alert("📋 결과 공유 링크가 클립보드에 복사되었습니다!\n카카오톡 대화창 등 원하는 곳에 붙여넣기 하세요.");
+}
 </script>
 </body>
 </html>
