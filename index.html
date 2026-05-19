@@ -1492,30 +1492,35 @@ function shuffleQuestions() {
 
   // 🔗 유저 고유 ID와 검사 시간이 결합된 진짜 공유 링크 복사 함수!
   // 🔗 [완벽 교체] 새로 검사한 결과든, 과거 목록에서 불러온 결과든 완벽하게 링크를 따주는 함수!
-  window.copyResultLink = function() {
+ // 🔗 [최종 완료] 버튼이 이 함수를 찾아낼 수 있게 window 전역 객체에 박아버림!
+  window.shareResult = window.copyResultLink = function() {
     if (!window.currentUser) {
       alert("🔒 로그인 후 저장된 결과만 공유 링크를 생성할 수 있습니다!");
       return;
     }
 
-    // 🔥 [핵심 분기] 방금 검사를 끝내고 바로 누른 거면 최신 시간, 과거 목록에서 누른 거면 전역Timestamp 사용!
-    // 만약 둘 다 없다면 안전장치로 현재 시간이라도 가져다 박음 ㄹㅇ
+    // 🔥 방금 검사한 시간 or 과거 목록에서 클릭한 시간 확보
     const currentTimestamp = window.lastSavedTimestamp || window.currentResultTimestamp || new Date().toISOString();
     const uid = window.currentUser.uid;
 
-    // 현재 도메인 주소 뒤에 꼬리 파라미터(?uid=...&time=...) 이쁘게 조립
+    // 절대 고유 주소 조립
     const shareUrl = `${window.location.origin}${window.location.pathname}?uid=${uid}&time=${currentTimestamp}`;
 
+    // 토스트 팝업이나 얼럿으로 복사 완료 알림
+    var toast = document.getElementById('toastMsg');
+    if (toast) {
+      toast.textContent = "🔗 링크 복사 완료! 친구에게 공유해 보세요! 🎉";
+      if (typeof showToastPopup === 'function') showToastPopup();
+    } else {
+      alert("🔗 공유 링크가 복사되었습니다! 원하는 곳에 붙여넣으셈!");
+    }
+
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(shareUrl).then(() => {
-        alert("🔗 공유 링크가 클립보드에 복사되었습니다! 원하는 곳에 붙여넣어 친구에게 공유해 보세요! 🎉");
-      }).catch(err => {
-        console.error("링크 복사 실패:", err);
-        // 클립보드 API 실패 시 차선책(iOS 등 방어용)
-        prompt("아래 고유 링크를 꾹 눌러 복사하세요:", shareUrl);
+      navigator.clipboard.writeText(shareUrl).catch(function() {
+        prompt("아래 고유 링크를 복사하세요:", shareUrl);
       });
     } else {
-      prompt("아래 고유 링크를 꾹 눌러 복사하세요:", shareUrl);
+      prompt("아래 고유 링크를 복사하세요:", shareUrl);
     }
   };
 
