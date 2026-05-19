@@ -375,7 +375,7 @@
         if (window.Kakao && window.Kakao.Auth && window.Kakao.Auth.getAccessToken()) {
           window.Kakao.Auth.logout(function() {
             localStorage.removeItem('kakao_user');
-            alert("카카오 로그아웃 완료! 👋");
+            alert("정상적으로 로그아웃되었습니다.");
             location.reload();
           });
         } else {
@@ -385,7 +385,7 @@
       } else {
         try {
           await signOut(auth);
-          alert("구글 로그아웃 완료! 👋");
+          alert("정상적으로 로그아웃되었습니다.");
           location.reload();
         } catch (error) {
           console.error("로그아웃 실패:", error);
