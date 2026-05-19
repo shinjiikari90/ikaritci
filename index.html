@@ -652,29 +652,14 @@
         if (typeof showToastPopup === 'function') showToastPopup();
       }
 
-      // 구글, 카카오 로그인 시 고유 정보가 뻗지 않도록 ID 가져오는 방식을 안전하게 통합
-    const finalUid = window.currentUser.uid || window.currentUser.id || window.currentUser.email || "user";
-    const finalShareUrl = `${window.location.origin}${window.location.pathname}?uid=${finalUid}&time=${currentTimestamp}`;
-
-    // 모바일 브라우저나 카카오톡 안에서 클립보드 API가 먹통이 되면 안전하게 주소 복사창을 띄워줌
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(finalShareUrl).then(function() {
-        // 복사 성공 시 기존 토스트 알림 작동
-        if (toast) {
-          toast.textContent = "🔗 링크 복사 완료! 친구에게 공유해 보세요! 🎉";
-          if (typeof showToastPopup === 'function') showToastPopup();
-        } else {
-          alert("🔗 공유 링크가 복사되었습니다!");
-        }
-      }).catch(function() {
-        // 클립보드 기능 작동 거부 시 우회 팝업창 띄우기
-        prompt("🔗 자동 복사가 제한된 브라우저입니다. 아래 링크를 꾹 눌러 복사하세요:", finalShareUrl);
-      });
-    } else {
-      // 일반 모바일 네트워크나 인앱 브라우저 환경에서는 곧바로 주소 복사창 띄우기
-      prompt("🔗 아래 링크를 꾹 눌러 복사하세요:", finalShareUrl);
-    }
-  };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareUrl).catch(function() {
+          prompt("아래 고유 링크를 복사하세요:", shareUrl);
+        });
+      } else {
+        prompt("아래 고유 링크를 복사하세요:", shareUrl);
+      }
+    };
 
     // 🚀 사이트 켜지자마자 주소창 뒤지기 실행!
     setTimeout(checkSharedLink, 600);
@@ -1512,39 +1497,16 @@ window.shareResult = window.copyResultLink = function() {
         return;
     }
 
-    // 💡 구글/카카오 로그인에 모두 대응하도록 유저 고유 ID 식별자 통합 보강!
-    const uid = window.currentUser.uid || window.currentUser.id || window.currentUser.email || "user";
-        
-    // 💡 방금 검사한 시간 or 과거 목록에서 클릭한 시간을 고유값으로 정확히 지정합니다.
+    // 🔥 방금 검사한 시간 or 과거 목록에서 클릭한 시간 확보
     const currentTimestamp = window.lastSavedTimestamp || window.currentResultTimestamp || new Date().toISOString();
+    const uid = window.currentUser.uid;
 
     // 절대 고유 주소 조립
     const shareUrl = `${window.location.origin}${window.location.pathname}?uid=${uid}&time=${currentTimestamp}`;
-    // 토스트 팝업이나 얼럿으로 복사 완료 알림
-    var toast = document.getElementById('toastMsg');
-    if (toast) {
-        toast.textContent = "🔗 링크 복사 완료! 친구에게 공유해 보세요! 🎉";
-        if (typeof showToastPopup === 'function') showToastPopup();
-    } else {
-        alert("🔗 공유 링크가 복사되었습니다! 원하는 곳에 붙여넣으세요.");
-    }
 
-    // 🚀 모바일 및 카카오톡 인앱 브라우저 호환성 우회 안전장치
-    if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(shareUrl).catch(function() {
-            prompt("🔗 아래 고유 링크를 꾹 눌러 복사하세요:", shareUrl);
-        });
-    } else {
-        prompt("🔗 아래 고유 링크를 꾹 눌러 복사하세요:", shareUrl);
-    }
+    // 만능 복사 함수 실행
+    copyToClipboard(shareUrl);
 };
-
-// 🎯 [클래스명 보강] 버튼 이름이 share-btn이어도 무조건 클릭을 잡아내는 안전 패치
-document.addEventListener('click', function(e) {
-    if (e.target && e.target.closest('.share-btn')) {
-        window.shareResult();
-    }
-});
 
 // 🚀 어떤 환경에서도 동작하는 만능 클립보드 복사 함수 (이것도 통째로 같이 붙여넣으세요)
 function copyToClipboard(text) {
@@ -1594,7 +1556,7 @@ function showCopySuccessMessage() {
         toast.textContent = "🔗 링크 복사 완료! 친구에게 공유해 보세요! 🎉";
         if (typeof showToastPopup === 'function') showToastPopup();
     } else {
-        alert("🔗 공유 링크가 복사되었습니다! 원하는 곳에 붙여넣으세요.");
+        alert("🔗 공유 링크가 복사되었습니다! 원하는 곳에 붙여넣으셈!");
     }
 }
 
