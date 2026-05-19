@@ -413,6 +413,7 @@
     };
 
     // 7️⃣ ⏳ 과거 모든 진단 이력을 불러와 최신순으로 정렬 후 선택하게 만드는 새 함수!
+    // 7️⃣ ⏳ 과거 모든 진단 이력을 불러와 최신순으로 정렬 후 사이드바에 버튼 목록으로 박아넣는 새 함수!
     async function loadPastResult(uid) {
       try {
         console.log(`[디비 탐색] UID(${uid})의 모든 히스토리 수집 중... 🔎`);
@@ -461,9 +462,12 @@
             li.onmouseover = () => li.style.background = "#3e3e56";
             li.onmouseout = () => li.style.background = "#2a2a3d";
 
-            // 🖱️ 과거 기록 날짜 클릭 시 해당 리포트로 즉각 리렌더링! ㄹㅇ
+            // 🖱️ 과거 기록 날짜 클릭 시 이벤트 구문 내부 완벽 수정!
             li.onclick = () => {
               window.currentMode = data.mode;
+              
+              // 🔥 [성공] 목록에서 클릭한 과거 기록의 정확한 생성 시간을 전역 변수에 동기화!
+              window.lastSavedTimestamp = data.savedAt; 
               
               if (typeof window.renderFinalResult === 'function') {
                 window.renderFinalResult(data.scores);
@@ -488,7 +492,6 @@
 
             pastListEl.appendChild(li);
           });
-
           // 🔥 최초 로그인 시 딱 한 번만 가장 최근 데이터를 팝업으로 안내하고 자동 오픈해줌!
           if (!window.alreadyLoadedNotice) {
             window.alreadyLoadedNotice = true;
@@ -582,7 +585,7 @@
                 📜 과거 검사 이력 목록
               </h4>
               <ul id="pastHistoryList" style="list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto;">
-                <li style="color: #666; font-size: 0.78rem; font-style: italic; font-family: sans-serif;">로그인 후 조회 가능합니다.</li>
+                <li style="color: #666; font-size: 0.78rem; font-style: italic; font-family: sans-serif;">로그인 후 조회가 가능합니다.</li>
               </ul>
             </div>
           `;
@@ -590,6 +593,44 @@
         if (introNotice) introNotice.style.display = "flex";
       }
     });
+// 🕵️‍♂️ 주소창에 공유 파라미터(?uid=...&time=...)가 붙어있는지 감시하는 내비게이터 함수
+    async function checkSharedLink() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const sharedUid = urlParams.get('uid');
+      const sharedTime = urlParams.get('time');
+
+      // 주소창에 공유 식별자가 명확히 존재한다면?
+      if (sharedUid && sharedTime) {
+        console.log(`[원격 소환] UID:${sharedUid}의 ${sharedTime} 결과 데이터 땡겨오는 중... ⚡`);
+        
+        try {
+          // 해당 유저의 history 컬렉션 내부에서 정확한 시간대의 문서 딱 하나만 조준 타격!
+          const docRef = doc(db, "tci_results", sharedUid, "history", sharedTime);
+          const docSnap = await getDoc(docRef);
+
+          if (docSnap.exists()) {
+            const sharedData = docSnap.data();
+            window.currentMode = sharedData.mode;
+
+            // 공유 문서 결과를 화면에 렌더링하고 강제 강하! 🪂
+            if (typeof window.renderFinalResult === 'function') {
+              window.renderFinalResult(sharedData.scores);
+            }
+            if (typeof window.showScreen === 'function') {
+              window.showScreen('screen-result');
+            }
+            alert("✨ 친구가 공유해 준 TCI 결과 보고서 화면에 접속했습니다!");
+          } else {
+            alert("❌ 링크가 만료되었거나 삭제된 검사 결과 데이터입니다.");
+          }
+        } catch (error) {
+          console.error("공유 링크 복구 중 에러 발생:", error);
+        }
+      }
+    }
+
+    // 🚀 사이트 켜지자마자 주소창 뒤지기 실행!
+    setTimeout(checkSharedLink, 600);
 </script>
 <body>
 
@@ -1417,14 +1458,28 @@ function shuffleQuestions() {
     if(progressText) progressText.textContent = answeredCount + ' / ' + questions.length;
   }
 
+  // 🔗 유저 고유 ID와 검사 시간이 결합된 진짜 공유 링크 복사 함수!
   window.copyResultLink = function() {
-    var dummyUrl = window.location.href.split('?')[0] + "?share=tci_report_success";
     var toast = document.getElementById('toastMsg');
-    toast.textContent = "🔗 결과 링크 복사 완료! 원하는 곳에 붙여넣으셈!";
+    
+    // 💡 현재 로그인된 유저 ID 확보
+    var currentUid = window.currentUser ? window.currentUser.uid : null;
+    // 💡 방금 검사한 시간이거나, 히스토리에서 클릭해서 불러온 시간 확보
+    var currentTime = window.lastSavedTimestamp;
+
+    if (!currentUid || !currentTime) {
+      alert("⚠️ 내 검사 기록을 디비에 동기화(로그인)하거나, 좌측 목록에서 기록을 먼저 선택해야 공유 링크를 딸 수 있습니다!");
+      return;
+    }
+
+    // 🎯 메인 주소 뒤에 유저 고유 UID와 정확한 문서 시간(Timestamp)을 매달아버림! ㄹㅇ 미쳤지
+    var shareUrl = window.location.href.split('?')[0] + "?uid=" + currentUid + "&time=" + currentTime;
+
+    toast.textContent = "🔗 나만의 결과 공유 링크 복사 완료! 카톡에 붙여넣으셈!";
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(dummyUrl).then(showToastPopup).catch(function() { fallbackCopy(dummyUrl); });
+      navigator.clipboard.writeText(shareUrl).then(showToastPopup).catch(function() { fallbackCopy(shareUrl); });
     } else {
-      fallbackCopy(dummyUrl);
+      fallbackCopy(shareUrl);
     }
   };
 
@@ -1526,9 +1581,12 @@ function shuffleQuestions() {
 
     resultWrap.appendChild(header);
 
-    // 💾 유저가 로그인 상태라면 영구 보존용 파이어베이스 저장 트리거 실행
-    if(window.currentUser) {
+// 💾 유저가 로그인 상태라면 영구 보존용 파이어베이스 저장 트리거 실행
+    if (window.currentUser) {
       window.saveResultToFirestore(window.currentUser.uid, window.currentMode, scores);
+      
+      // 🔥 [성공] 방금 검사 완료하고 저장된 따끈따끈한 현재 시간을 기억해둠!
+      window.lastSavedTimestamp = new Date().toISOString();
     }
     
     setTimeout(function () {
