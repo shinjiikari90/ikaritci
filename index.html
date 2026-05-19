@@ -644,6 +644,7 @@
     }
 
     // 🔗 결과 링크 복사 버튼을 누르면 이 마스터 함수가 가로채서 진짜 고유 주소를 만들어냄!
+    // 🔗 결과 링크 복사 버튼을 누르면 이 마스터 함수가 가로채서 진짜 고유 주소를 만들어냄!
     window.copyResultLink = function() {
       const urlParams = new URLSearchParams(window.location.search);
       const sharedUid = urlParams.get('uid');
@@ -652,7 +653,7 @@
       let uid = "";
       let currentTimestamp = "";
 
-      // 💡 [버그 완벽 수정] 로그인 유무 관계 없이 출처를 정확하게 판단해 주소 조립
+      // 💡 로그인 유무 관계 없이 주소창 파라미터 또는 전역 변수를 추적해 주소 조립
       if (sharedUid && sharedTime) {
         // 1. 타인의 링크로 들어온 상태에서 다시 이 링크를 복사해 퍼트릴 때
         uid = sharedUid;
@@ -669,21 +670,69 @@
       // 만료되지 않는 절대 고유 주소 조립 
       const shareUrl = `${window.location.origin}${window.location.pathname}?uid=${uid}&time=${currentTimestamp}`;
 
-      var toast = document.getElementById('toastMsg');
-      if (toast) {
-        toast.textContent = "🔗 나만의 결과 공유 링크 복사 완료!";
-        if (typeof showToastPopup === 'function') showToastPopup();
-      }
+      // 팝업/토스트 에러 방어 및 범용 복사 로직 실행
+      executeCopy(shareUrl);
+    };
 
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(shareUrl).then(function() {
-          console.log("클립보드 복사 성공");
-        }).catch(function() {
-          prompt("아래 고유 링크를 복사하세요:", shareUrl);
-        });
+    // 🚀 모바일 인앱(카카오톡, 인스타 등) 및 모든 브라우저 환경 우회 복사 함수
+    function executeCopy(text) {
+      // 1. 최신 브라우저 클립보드 API 시도
+      if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
+        navigator.clipboard.writeText(text)
+          .then(() => {
+            alertSuccess(text);
+          })
+          .catch(() => {
+            fallbackCopy(text);
+          });
       } else {
-        prompt("아래 고유 링크를 복사하세요:", shareUrl);
+        // 2. 구형 및 모바일 인앱 브라우저용 우회 방식(textarea) 시도
+        fallbackCopy(text);
       }
+    }
+
+    // 🛠️ 임시 텍스트 필드를 생성하여 강제로 복사하는 우회 기법
+    function fallbackCopy(text) {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.top = "0";
+      textArea.style.left = "0";
+      textArea.style.opacity = "0";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+          alertSuccess(text);
+        } else {
+          // 보안으로 브라우저가 자동 복사를 막은 경우 수동 복사 유도
+          prompt("📋 아래 링크를 길게 눌러 복사해 주세요:", text);
+        }
+      } catch (err) {
+        prompt("📋 아래 링크를 길게 눌러 복사해 주세요:", text);
+      }
+      document.body.removeChild(textArea);
+    }
+
+    // 🎉 복사 성공 알림창 안전 처리
+    function alertSuccess(copiedText) {
+      // 혹시 기존 토스트 요소나 함수가 없어서 멈추는 현상을 방지하기 위해 
+      // 토스트 엘리먼트가 존재할 때만 작동시키고, 없으면 깔끔하게 alert창으로 대체합니다.
+      const toast = document.getElementById('toastMsg');
+      if (toast) {
+        toast.textContent = "🔗 결과 공유 링크 복사 완료!";
+        // 기존 코드에 존재하는 토스트 팝업 함수 호출 시도
+        if (typeof showToastPopup === 'function') {
+          showToastPopup();
+          return;
+        }
+      }
+      // 토스트 레이아웃이 유실되었을 경우 안전장치
+      alert("📋 링크 복사가 완료되었습니다! 카카오톡 등 원하는 곳에 붙여넣으세요.");
+    }
     };
 
     // 💡 새 검사 시작 버튼 등에서 호출하도록 바인딩을 위한 리셋 장치
