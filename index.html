@@ -415,6 +415,8 @@
     // 7️⃣ ⏳ 과거 모든 진단 이력을 불러와 최신순으로 정렬 후 선택하게 만드는 새 함수!
     // 7️⃣ ⏳ 과거 모든 진단 이력을 불러와 최신순으로 정렬 후 사이드바에 버튼 목록으로 박아넣는 새 함수!
     async function loadPastResult(uid) {
+      // 1단계: 삭제를 위해 deleteDoc을 파이어베이스에서 안전하게 땡겨옵니다.
+      const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js");
       try {
         console.log(`[디비 탐색] UID(${uid})의 모든 히스토리 수집 중... 🔎`);
         
@@ -455,8 +457,42 @@
 
             // 리스트용 li 태그 생성 및 스타일링 욘 😉
             const li = document.createElement("li");
-            li.style.cssText = "padding: 8px 10px; margin-bottom: 6px; background: #2a2a3d; border-radius: 6px; font-size: 0.78rem; color: #fff; cursor: pointer; transition: background 0.2s; display: flex; justify-content: space-between; align-items: center;";
-            li.innerHTML = `<span>${KSTDate}</span> <span style="font-size:0.7rem; padding:1px 5px; border-radius:4px; background:#4776e6; font-weight:700;">${modeBadge}</span>`;
+li.style.cssText = "padding: 8px 10px; margin-bottom: 6px; background: #2a2a3d; border-radius: 6px; font-size: 0.78rem; color: #fff; cursor: pointer; transition: background 0.2s; display: flex; justify-content: space-between; align-items: center; position: relative;";
+
+// 텍스트 내용 좌측 배치 + 우측 끝에 예쁜 빨간색 휴지통(🗑️) 배치
+li.innerHTML = `
+  <div style="display:flex; align-items:center; gap:8px;">
+    <span>${KSTDate}</span> 
+    <span style="font-size:0.7rem; padding:1px 5px; border-radius:4px; background:#4776e6; font-weight:700;">${modeBadge}</span>
+  </div>
+  <span class="delete-history-btn" style="font-size:0.85rem; cursor:pointer; padding: 2px 6px; color:#ff6b6b; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">🗑️</span>
+`;
+
+// 마우스 오버 효과
+li.onmouseover = () => li.style.background = "#3e3e56";
+li.onmouseout = () => li.style.background = "#2a2a3d";
+
+// 🗑️ 휴지통 버튼을 누르면 작동하는 삭제 로직 연동
+const deleteBtn = li.querySelector('.delete-history-btn');
+deleteBtn.onclick = async (e) => {
+  e.stopPropagation(); // ⭐ 중요: 휴지통을 누를 때 리스트 클릭(결과 열람) 이벤트가 동시에 발동하는 것을 막아줍니다!
+
+  if (confirm(`🚨 [경고] ${KSTDate}에 검사한 기록을 정말로 영구 삭제하시겠습니까?`)) {
+    try {
+      // Firestore 데이터베이스에서 해당 유저의 정확한 시점 문서를 타격해 삭제
+      const docRef = doc(db, "tci_results", uid, "history", data.savedAt);
+      await deleteDoc(docRef);
+
+      alert("🗑️ 기록이 안전하게 삭제되었습니다.");
+
+      // 데이터가 지워졌으니 사이드바 목록을 즉시 새로고침하여 리프레시해줍니다.
+      loadPastResult(uid); 
+    } catch (error) {
+      console.error("기록 삭제 중 오류 발생:", error);
+      alert("기록을 삭제하지 못했습니다. 보안 규칙을 확인해 주세요.");
+    }
+  }
+};
             
             // 리스트 마우스 오버 효과
             li.onmouseover = () => li.style.background = "#3e3e56";
