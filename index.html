@@ -1506,22 +1506,20 @@ function shuffleQuestions() {
   }
 
   // 🔗 유저 고유 ID와 검사 시간이 결합된 진짜 공유 링크 복사 함수!
-// 🔗 유저 고유 ID와 검사 시간이 결합된 진짜 공유 링크 복사 함수!
 window.shareResult = window.copyResultLink = function() {
     if (!window.currentUser) {
         alert("🔒 로그인 후 저장된 결과만 공유 링크를 생성할 수 있습니다!");
         return;
     }
 
-    // 🔥 구글/카카오 로그인에 모두 대응하도록 유저 고유 ID 식별자 통합 보강
+    // 💡 구글/카카오 로그인에 모두 대응하도록 유저 고유 ID 식별자 통합 보강!
     const uid = window.currentUser.uid || window.currentUser.id || window.currentUser.email || "user";
-    
-    // 🔥 방금 검사한 시간 or 과거 목록에서 클릭한 시간 확보
+        
+    // 💡 방금 검사한 시간 or 과거 목록에서 클릭한 시간을 고유값으로 정확히 지정합니다.
     const currentTimestamp = window.lastSavedTimestamp || window.currentResultTimestamp || new Date().toISOString();
 
     // 절대 고유 주소 조립
     const shareUrl = `${window.location.origin}${window.location.pathname}?uid=${uid}&time=${currentTimestamp}`;
-
     // 토스트 팝업이나 얼럿으로 복사 완료 알림
     var toast = document.getElementById('toastMsg');
     if (toast) {
