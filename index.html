@@ -284,7 +284,9 @@
     }
   </style>
 
-  <script type="module">
+  <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
@@ -305,15 +307,19 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    // 1️⃣ 카카오 SDK 초기화
-    if (window.Kakao && !window.Kakao.isInitialized()) {
-      window.Kakao.init('a33dc86efa2e6b93f5ff5a18aa8bb7c1'); 
+    // 2️⃣ 카카오 SDK 초기화 (라이브러리가 먼저 로드되어서 이제 무조건 성공함!)
+    try {
+      if (window.Kakao && !window.Kakao.isInitialized()) {
+        window.Kakao.init('a33dc86efa2e6b93f5ff5a18aa8bb7c1'); 
+        console.log("카카오 초기화 성공 여부:", window.Kakao.isInitialized());
+      }
+    } catch (e) {
+      console.error("카카오 초기화 에러:", e);
     }
 
-    // 2️⃣ 구글 로그인 함수
+    // 3️⃣ 구글 로그인 함수
     window.loginWithGoogle = async function() {
       try {
-        // 구글 로그인 성공 시 카카오 로그인 세션은 깔끔하게 삭제
         localStorage.removeItem('kakao_user');
         const result = await signInWithPopup(auth, provider);
         alert(`${result.user.displayName}님 반갑습니다!`);
@@ -323,10 +329,10 @@
       }
     };
 
-    // 3️⃣ 카카오 로그인 함수
+    // 4️⃣ 카카오 로그인 함수
     window.loginWithKakao = function() {
-      if (!window.Kakao) {
-        alert("카카오 로그인 라이브러리가 로드되지 않았습니다.");
+      if (!window.Kakao || !window.Kakao.isInitialized()) {
+        alert("카카오 라이브러리가 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.");
         return;
       }
       
@@ -335,7 +341,6 @@
           window.Kakao.API.request({
             url: '/v2/user/me',
             success: function(res) {
-              // 전역 유저 객체 세팅
               window.currentUser = {
                 uid: 'kakao_' + res.id,
                 displayName: res.properties.nickname,
@@ -344,12 +349,9 @@
                 loginType: 'kakao'
               };
               
-              // 💡 핵심: 카카오 로그인 세션을 브라우저에 임시 소장!
               localStorage.setItem('kakao_user', JSON.stringify(window.currentUser));
-              
               alert(`${window.currentUser.displayName}님 반갑습니다! 😉`);
               
-              // UI 새로고침 없이 즉시 반영 욘
               renderLoggedInUI(window.currentUser);
               loadPastResult(window.currentUser.uid); 
             },
@@ -365,13 +367,12 @@
       });
     };
 
-    // 4️⃣ 로그아웃 통합 처리 함수 (인라인 온클릭 대응용)
+    // 5️⃣ 로그아웃 통합 처리 함수
     window.logoutAllServices = async function() {
       const savedKakaoUser = localStorage.getItem('kakao_user');
       
       if (savedKakaoUser || (window.currentUser && window.currentUser.loginType === 'kakao')) {
-        // 카카오 로그아웃 처리
-        if (window.Kakao.Auth.getAccessToken()) {
+        if (window.Kakao && window.Kakao.Auth && window.Kakao.Auth.getAccessToken()) {
           window.Kakao.Auth.logout(function() {
             localStorage.removeItem('kakao_user');
             alert("카카오 로그아웃 완료! 👋");
@@ -382,7 +383,6 @@
           location.reload();
         }
       } else {
-        // 구글 로그아웃 처리
         try {
           await signOut(auth);
           alert("구글 로그아웃 완료! 👋");
@@ -424,7 +424,7 @@
       }
     }
 
-    // 🎨 로그인 성공 시 UI 렌더링 함수 통합 (중복 제거)
+    // 🎨 로그인 성공 시 UI 렌더링 함수 통합
     function renderLoggedInUI(user) {
       const profileWrap = document.getElementById("userProfileWrap");
       const introNotice = document.getElementById("introLoginNotice");
@@ -445,14 +445,13 @@
       if (introNotice) introNotice.style.display = "none";
     }
 
-    // 👤 실시간 인증 상태 리스너 (구글 및 카카오 상태 완벽 분기!)
+    // 👤 실시간 인증 상태 리스너 (구글 및 카카오 상태 분기)
     onAuthStateChanged(auth, (googleUser) => {
       const profileWrap = document.getElementById("userProfileWrap");
       const introNotice = document.getElementById("introLoginNotice");
       const savedKakaoUser = localStorage.getItem('kakao_user');
       
       if (googleUser) {
-        // 1. 구글 로그인 상태일 때
         window.currentUser = {
           uid: googleUser.uid,
           displayName: googleUser.displayName,
@@ -463,12 +462,10 @@
         renderLoggedInUI(window.currentUser);
         loadPastResult(googleUser.uid);
       } else if (savedKakaoUser) {
-        // 2. 카카오 로그인 상태일 때 (구글 세션이 없어도 유지! 🔥)
         window.currentUser = JSON.parse(savedKakaoUser);
         renderLoggedInUI(window.currentUser);
         loadPastResult(window.currentUser.uid);
       } else {
-        // 3. 둘 다 로그아웃 상태일 때 원래 버튼들 출력
         window.currentUser = null;
         if (profileWrap) {
           profileWrap.innerHTML = `
@@ -484,7 +481,6 @@
       }
     });
 </script>
-<script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
 </head>
 <body>
 
