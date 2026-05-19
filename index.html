@@ -1468,14 +1468,14 @@ function shuffleQuestions() {
     var currentTime = window.lastSavedTimestamp;
 
     if (!currentUid || !currentTime) {
-      alert("⚠️ 내 검사 기록을 디비에 동기화(로그인)하거나, 좌측 목록에서 기록을 먼저 선택해야 공유 링크를 딸 수 있습니다!");
+      alert("⚠️ 내 검사 기록을 디비에 동기화(로그인)하거나, 좌측 목록에서 기록을 먼저 선택해야 공유 링크를 볼 수 있습니다!");
       return;
     }
 
     // 🎯 메인 주소 뒤에 유저 고유 UID와 정확한 문서 시간(Timestamp)을 매달아버림! ㄹㅇ 미쳤지
     var shareUrl = window.location.href.split('?')[0] + "?uid=" + currentUid + "&time=" + currentTime;
 
-    toast.textContent = "🔗 나만의 결과 공유 링크 복사 완료! 카톡에 붙여넣으셈!";
+    toast.textContent = "🔗 나만의 결과 공유 링크 복사 완료! 원하는 곳에 붙여 넣으세요.";
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(shareUrl).then(showToastPopup).catch(function() { fallbackCopy(shareUrl); });
     } else {
