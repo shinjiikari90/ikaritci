@@ -1491,12 +1491,10 @@ function shuffleQuestions() {
   }
 
   // 🔗 유저 고유 ID와 검사 시간이 결합된 진짜 공유 링크 복사 함수!
-  // 🔗 [완벽 교체] 새로 검사한 결과든, 과거 목록에서 불러온 결과든 완벽하게 링크를 따주는 함수!
- // 🔗 [최종 완료] 버튼이 이 함수를 찾아낼 수 있게 window 전역 객체에 박아버림!
-  window.shareResult = window.copyResultLink = function() {
+window.shareResult = window.copyResultLink = function() {
     if (!window.currentUser) {
-      alert("🔒 로그인 후 저장된 결과만 공유 링크를 생성할 수 있습니다!");
-      return;
+        alert("🔒 로그인 후 저장된 결과만 공유 링크를 생성할 수 있습니다!");
+        return;
     }
 
     // 🔥 방금 검사한 시간 or 과거 목록에서 클릭한 시간 확보
@@ -1506,23 +1504,61 @@ function shuffleQuestions() {
     // 절대 고유 주소 조립
     const shareUrl = `${window.location.origin}${window.location.pathname}?uid=${uid}&time=${currentTimestamp}`;
 
-    // 토스트 팝업이나 얼럿으로 복사 완료 알림
+    // 만능 복사 함수 실행
+    copyToClipboard(shareUrl);
+};
+
+// 🚀 어떤 환경에서도 동작하는 만능 클립보드 복사 함수 (이것도 통째로 같이 붙여넣으세요)
+function copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(function() {
+            showCopySuccessMessage();
+        }).catch(function() {
+            fallbackCopyTextToClipboard(text);
+        });
+    } else {
+        fallbackCopyTextToClipboard(text);
+    }
+}
+
+// 🛠️ 구형 브라우저 및 인앱(카카오톡 등) 우회 복사 함수
+function fallbackCopyTextToClipboard(text) {
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+    textArea.style.opacity = "0";
+
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+        var successful = document.execCommand('copy');
+        if (successful) {
+            showCopySuccessMessage();
+        } else {
+            // 자동 복사 실패 시 직접 복사할 수 있는 창 띄우기 (기존 로직 유지)
+            prompt("⚠️ 자동 복사를 지원하지 않습니다. 아래 고유 링크를 복사하세요:", text);
+        }
+    } catch (err) {
+        prompt("⚠️ 자동 복사를 지원하지 않습니다. 아래 고유 링크를 복사하세요:", text);
+    } finally {
+        document.body.removeChild(textArea);
+    }
+}
+
+// 🎈 복사 성공 시 화면에 알림 띄우기 함수 (기존 토스트 기능 완벽 호환)
+function showCopySuccessMessage() {
     var toast = document.getElementById('toastMsg');
     if (toast) {
-      toast.textContent = "🔗 링크 복사 완료! 친구에게 공유해 보세요! 🎉";
-      if (typeof showToastPopup === 'function') showToastPopup();
+        toast.textContent = "🔗 링크 복사 완료! 친구에게 공유해 보세요! 🎉";
+        if (typeof showToastPopup === 'function') showToastPopup();
     } else {
-      alert("🔗 공유 링크가 복사되었습니다! 원하는 곳에 붙여넣으셈!");
+        alert("🔗 공유 링크가 복사되었습니다! 원하는 곳에 붙여넣으셈!");
     }
-
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(shareUrl).catch(function() {
-        prompt("아래 고유 링크를 복사하세요:", shareUrl);
-      });
-    } else {
-      prompt("아래 고유 링크를 복사하세요:", shareUrl);
-    }
-  };
+}
 
   function fallbackCopy(text) {
     var textArea = document.createElement("textarea");
