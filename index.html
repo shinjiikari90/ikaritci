@@ -652,31 +652,14 @@
         if (typeof showToastPopup === 'function') showToastPopup();
       }
 
-      // 구글/카카오 로그인 ID 호환성 예외 처리 한줄 추가!
-    const uid = window.currentUser.uid || window.currentUser.id || window.currentUser.email || "user";
-
-    // 절대 고유 주소 조립
-    const shareUrl = `${window.location.origin}${window.location.pathname}?uid=${uid}&time=${currentTimestamp}`;
-
-    // 토스트 팝업 알림 (기존 유지)
-    var toast = document.getElementById('toastMsg');
-    if (toast) {
-      toast.textContent = "🔗 링크 복사 완료! 친구에게 공유해 보세요! 🎉";
-      if (typeof showToastPopup === 'function') showToastPopup();
-    } else {
-      alert("🔗 공유 링크가 복사되었습니다! 원하는 곳에 붙여넣으셈!");
-    }
-
-    // [핵심 수정] 보안 차단 환경이나 카카오톡 인앱에서도 무조건 주소창을 띄워주는 안전 장치
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(shareUrl).catch(function() {
-        prompt("🔗 링크를 꾹 눌러 복사하세요:", shareUrl);
-      });
-    } else {
-      // 일반 모바일이나 카톡방에서는 뻗지 않고 곧바로 복사용 팝업창을 띄워줌
-      prompt("🔗 링크를 꾹 눌러 복사하세요:", shareUrl);
-    }
-  };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareUrl).catch(function() {
+          prompt("아래 고유 링크를 복사하세요:", shareUrl);
+        });
+      } else {
+        prompt("아래 고유 링크를 복사하세요:", shareUrl);
+      }
+    };
 
     // 🚀 사이트 켜지자마자 주소창 뒤지기 실행!
     setTimeout(checkSharedLink, 600);
