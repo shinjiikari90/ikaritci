@@ -469,21 +469,32 @@
     }
 
     // 8️⃣ 로그인 성공 시 UI 렌더링 함수 통합
+    // 🎨 7️⃣ 로그인 성공 시 UI 렌더링 함수 (과거 기록 상자 유지 버전!)
     function renderLoggedInUI(user) {
       const profileWrap = document.getElementById("userProfileWrap");
       const introNotice = document.getElementById("introLoginNotice");
       const badgeColor = user.loginType === 'kakao' ? '#fee500' : '#4285F4';
 
       if (profileWrap) {
+        // 💡 핵심: 프로필로 화면을 새로 그릴 때도 하단에 'pastHistoryList'를 무조건 살려놓음!
         profileWrap.innerHTML = `
-          <div class="user-info-flex">
-            <img class="user-avatar" src="${user.photoURL}" alt="profile" style="border: 2px solid ${badgeColor};">
-            <div class="user-name-mail">
-              <span class="user-name">${user.displayName}</span>
-              <span class="user-email">${user.email}</span>
+          <div class="user-info-flex" style="margin-bottom: 12px;">
+            <img class="user-avatar" src="${user.photoURL}" alt="profile" style="border: 2px solid ${badgeColor}; width: 40px; height: 40px; border-radius: 50%;">
+            <div class="user-name-mail" style="display: flex; flex-direction: column; margin-left: 10px;">
+              <span class="user-name" style="font-weight: 700; font-size: 0.9rem; color: #fff;">${user.displayName}</span>
+              <span class="user-email" style="font-size: 0.75rem; color: #888;">${user.email}</span>
             </div>
           </div>
-          <button class="btn-logout" onclick="logoutAllServices()">로그아웃</button>
+          <button class="btn-logout" onclick="logoutAllServices()" style="margin-bottom: 15px;">로그아웃</button>
+
+          <div id="pastHistorySession" style="margin-top: 10px; border-top: 1px dashed #444; padding-top: 15px; width: 100%;">
+            <h4 style="margin: 0 0 10px 0; font-size: 0.85rem; color: #b0b0c5; display: flex; align-items: center; gap: 5px; font-family: sans-serif;">
+              📜 과거 검사 이력 목록
+            </h4>
+            <ul id="pastHistoryList" style="list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto;">
+              <li style="color: #666; font-size: 0.78rem; font-style: italic; font-family: sans-serif;">기록을 동기화 중입니다...</li>
+            </ul>
+          </div>
         `;
       }
       if (introNotice) introNotice.style.display = "none";
@@ -509,9 +520,10 @@
         window.currentUser = JSON.parse(savedKakaoUser);
         renderLoggedInUI(window.currentUser);
         loadPastResult(window.currentUser.uid);
-      } else {
+} else {
         window.currentUser = null;
         if (profileWrap) {
+          // 💡 로그인 버튼들 바로 밑에 과거 기록 리스트 레이아웃까지 세트로 묶어서 한방에 화면에 그려버림!
           profileWrap.innerHTML = `
             <button class="btn-login-google" onclick="loginWithGoogle()" style="margin-bottom: 8px;">
               <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/web-24dp/logo_googleg_color_24dp.png" width="18" alt="Google"> Google 계정 로그인
@@ -519,13 +531,21 @@
             <button class="btn-login-kakao" onclick="loginWithKakao()">
               <img src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png" width="18" alt="Kakao"> 카카오톡 로그인
             </button>
+
+            <div id="pastHistorySession" style="margin-top: 20px; border-top: 1px dashed #444; padding-top: 15px; width: 100%;">
+              <h4 style="margin: 0 0 10px 0; font-size: 0.85rem; color: #b0b0c5; display: flex; align-items: center; gap: 5px; font-family: sans-serif;">
+                📜 과거 검사 이력 목록
+              </h4>
+              <ul id="pastHistoryList" style="list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto;">
+                <li style="color: #666; font-size: 0.78rem; font-style: italic; font-family: sans-serif;">로그인 후 조회 가능합니다.</li>
+              </ul>
+            </div>
           `;
         }
         if (introNotice) introNotice.style.display = "flex";
       }
     });
 </script>
-</head>
 <body>
 
 <div id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
