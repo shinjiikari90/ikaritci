@@ -1342,45 +1342,60 @@ var deepQuestions = [
   function calculatePrescription(scores) {
   var ns = scores.NS, ha = scores.HA, ps = scores.PS, sd = scores.SD;
   
-  // 1️⃣ 기본값 설정
-  var title = "균형 잡힌 성장형 프로파일";
-  var caution = "특별히 극단적인 치우침이 없는 안정적인 상태입니다.";
-  var advice = "현재의 기질적 균형을 유지하면서 내면의 자율성을 지속적으로 고도화하세요.";
-
-  // 2️⃣ [개조 핵심] 간이진단일 때는 기준치를 낮춰서 유저의 성향이 무조건 묻어나오게 마법을 부림!
-  // 심화진단일 때는 기존처럼 엄격하게 65/35 기준을 적용함!
-  var highCut = (window.currentMode === 'brief') ? 50 : 65;
-  var lowCut = (window.currentMode === 'brief') ? 50 : 35;
-
-  if (ns >= highCut && ha <= lowCut) {
-    title = "활동적인 개척자 타입 (High NS / Low HA)";
-    caution = "새로운 자극과 추진력은 뛰어나지만, 리스크 분석이 누락되어 투자나 비즈니스에서 예상치 못한 손실이나 시행착오를 겪을 위험이 큽니다.";
-    advice = "중요한 재정적 결정을 내리기 전, 반드시 최소 3일간의 냉각기를 갖는 '강제 브레이크'를 도입하십시오.";
-  } else if (ns >= highCut && ps >= highCut) {
-    title = "지치지 않는 경주마 열정가 타입 (High NS / High PS)";
-    caution = "강력한 호기심으로 매번 거대한 판을 벌이고, 그것을 끝까지 완수해 내려다 보니 에너지 바닥으로 번아웃 증후군에 직격타를 맞기 쉽습니다.";
-    advice = "자신의 정신력을 과신하지 마시고, 일주일에 최소 반나절은 완벽한 비움의 상태를 유지해야 합니다.";
-  } else if (ns <= lowCut && ha >= highCut) {
-    title = "신중한 철벽 안전 기획자 타입 (Low NS / High HA)";
-    caution = "자산 방어율 및 업무의 정확성은 훌륭하지만, 실패에 대한 과도한 공포 때문에 다가오는 기회나 투자 타이밍을 놓칠 위험이 높습니다.";
-    advice = "리스크가 아주 적은 아주 작은 도전(Small Win)부터 의도적으로 시도하십시오. 가끔은 가벼운 여행을 통해 불안 센서를 낮추는 훈련이 필요합니다.";
-  } else if (ha >= highCut && sd <= lowCut) {
-    title = "환경 취약형 보호 모드 타입 (High HA / Low SD)";
-    caution = "외부의 사소한 비판이나 주변 반응 하나에 내면의 자존감이 쉽게 흔들릴 수 있습니다. 스트레스가 심하면 동굴 속으로 도피하려는 경향이 있습니다.";
-    advice = "오늘 당장 100% 내 힘으로 완수할 수 있는 사소한 루틴(방 청소, 식물 물 주기 등)부터 수행하며 성취 세포를 자극해 보세요.";
-  } else if (sd >= highCut && ps >= highCut) {
-    title = "강인한 내면의 마스터 철인 타입 (High SD / High PS)";
-    caution = "스스로에 대한 통제력과 인내심이 완벽해 높은 성취를 이루지만, 의지가 약해 흔들리는 타인을 보면 냉정하게 평가절하하여 갈등을 빚을 수 있습니다.";
-    advice = "자신에게 완벽을 요구하는 만큼 타인에게도 엄격한 잣대를 대지 않는 포용력이 필요합니다. 가끔은 계획 없는 멍때리기 시간을 스케줄에 넣어보세요.";
+  // 1️⃣ [간이진단 모드] - 맛보기용 가벼운 컷트라인 처리
+  if (window.currentMode === 'brief') {
+    var bTitle = "균형 잡힌 성장형 프로파일";
+    var bCaution = "특별히 극단적인 치우침이 없는 안정적인 상태입니다.";
+    
+    if (ns >= 50 && ha <= 50) {
+      bTitle = "활동적인 개척자 성향";
+      bCaution = "새로운 추진력은 좋으나, 리스크 분석이 누락되어 예상치 못한 손실이나 시행착오를 겪을 위험이 있습니다.";
+    } else if (ns >= 50 && ps >= 50) {
+      bTitle = "경주마 열정가 성향";
+      bCaution = "거대한 판을 벌이고 끝까지 완수하려다 보니 번아웃 증후군에 직격타를 맞기 쉽습니다.";
+    } else if (ns <= 50 && ha >= 50) {
+      bTitle = "신중한 안전 기획자 성향";
+      bCaution = "방어율은 훌륭하지만 실패에 대한 공포 때문에 찾아온 황금 같은 투자나 성장 타이밍을 놓칠 위험이 높습니다.";
+    } else if (ha >= 50 && sd <= 50) {
+      bTitle = "환경 취약형 보호 모드 성향";
+      bCaution = "외부의 사소한 비판이나 주변 반응 하나에도 내면의 자존감이 쉽게 흔들릴 수 있습니다.";
+    } else if (sd >= 50 && ps >= 50) {
+      bTitle = "내면의 마스터 철인 성향";
+      bCaution = "스스로에 대한 통제력은 완벽하지만, 의지가 약해 흔들리는 타인을 보면 냉정하게 평가절하할 수 있습니다.";
+    }
+    
+    return {
+      title: "⚠️ 맛보기 진단: " + bTitle,
+      caution: bCaution,
+      advice: "💡 현재 간이진단 모드입니다. 귀하만을 위한 개별 맞춤 [💰재테크·금전운 / 💼직장 직무 매칭 / ❤️맞춤 연애 스타일] 등 정밀 밸런싱 솔루션 처방전은 아래 프리미엄 정밀진단을 해금하면 즉시 열람할 수 있습니다. 😉"
+    };
   }
 
-  // 3️⃣ [결제 유도 치트키] 간이진단일 때만 유저 맞춤 caution(주의사항)은 보여주고, advice(해결책)는 결제 유도 문구로 락을 걸어버림!
-  if (window.currentMode === 'brief') {
-    return {
-      title: "⚠️ 맛보기 진단: " + title,
-      caution: caution, // 이제 실제 점수에 맞는 주의사항이 칼같이 나옴! ㄹㅇ 소름 돋게 맞춤 ㄷㄷ
-      advice: "💡 현재 간이진단 모드입니다. 개별 맞춤 [💰재테크·금전운 / 💼직장 직무 매칭 / ❤️맞춤 연애 스타일] 등 정밀 밸런싱 솔루션 처방전은 아래 프리미엄 정밀진단을 해금하면 즉시 열람할 수 있습니다! 😉"
-    };
+  // 2️⃣ [심화진단 전용 프리미엄 로직] - 범용 1:1 최고/최저 점수 매칭 구조
+  var dimensions = [
+    { key: 'NS', name: '자극추구', score: ns },
+    { key: 'HA', name: '위험회피', score: ha },
+    { key: 'PS', name: '인내력', score: ps },
+    { key: 'SD', name: '자율성', score: sd }
+  ];
+  
+  dimensions.sort(function(a, b) { return b.score - a.score; });
+  var maxDim = dimensions[0];
+  var minDim = dimensions[3];
+
+  var title = "고도화된 밸런싱 크리티컬 프로파일";
+  var caution = "심화 분석 결과, 현재 내면에서 [" + maxDim.name + "] 지표가 가장 지배적이며, 상대적으로 [" + minDim.name + "] 에너지가 억제되어 있는 상태입니다. 이로 인해 스트레스 상황 시 무의식적인 방어기제가 작동해 과몰입이나 심리적 소모로 이어질 리스크가 존재합니다.";
+  var advice = "이를 극복하기 위한 심화 처방 시나리오를 제안합니다.<br><br>"
+             + "<strong>1. 💰 재테크·금전운 솔루션:</strong> [" + maxDim.name + "] 성향의 폭주를 막기 위해 자산의 일정 비율은 무조건 안전자산 및 고배당주로 강제 분산하시고, 포트폴리오를 주기적으로 기계적 리밸런싱 하십시오.<br>"
+             + "<strong>2. 💼 직장 및 비즈니스 매칭:</strong> 업무 시 [" + minDim.name + "] 보완을 위해 체크리스트를 최소 3단계로 고도화하고, 본인과 정반대 기질을 가진 동료나 객관적인 피드백을 수용하는 방화벽 세션을 가동하십시오.<br>"
+             + "<strong>3. ❤️ 맞춤형 감정·연애 메커니즘:</strong> 상대방에게 본인의 기준이나 불안을 투사하지 않도록 '감정적 독립 공간'을 확보하시고, 뇌의 과부하를 끄기 위해 일정한 페이스의 유산소 운동(러닝 등)이나 음악 청취 같은 이완 루틴을 매일 20분 이상 실행하는 것이 라이프 밸런싱의 핵심 열쇠입니다.";
+
+  if (ns >= 60 && ha <= 40) {
+    title = "💎 [PREMIUM] 초고도 하이엔드 개척자 시나리오";
+  } else if (ns <= 40 && ha >= 60) {
+    title = "💎 [PREMIUM] 초고도 멜랑콜리아 디펜더 시나리오";
+  } else if (sd >= 60 && ps >= 60) {
+    title = "💎 [PREMIUM] 절대적 자아 통제 마스터 시나리오";
   }
 
   return { title: title, caution: caution, advice: advice };
