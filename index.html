@@ -1620,22 +1620,35 @@ function showCopySuccessMessage() {
   }
 
   function processScores() {
-    var sums = { NS:0, HA:0, RD:0, PS:0, SD:0, CO:0, ST:0 };
-    var counts = { NS:0, HA:0, RD:0, PS:0, SD:0, CO:0, ST:0 };
-    for (var i = 0; i < questions.length; i++) {
-      var d = questions[i].dim;
-      sums[d] += answers[i];
-      counts[d]++;
-    }
-    var scores = {};
-    Object.keys(sums).forEach(function (d) {
-      var maxPossible = counts[d] * 5;
-      var minPossible = counts[d] * 1;
-      var pct = ((sums[d] - minPossible) / (maxPossible - minPossible)) * 100;
-      scores[d] = Math.round(pct);
-    });
-    return scores;
+  var sums = { NS:0, HA:0, RD:0, PS:0, SD:0, CO:0, ST:0 };
+  var counts = { NS:0, HA:0, RD:0, PS:0, SD:0, CO:0, ST:0 };
+  
+  for (var i = 0; i < questions.length; i++) {
+    var d = questions[i].dim;
+    sums[d] += answers[i];
+    counts[d]++;
   }
+  
+  var scores = {};
+  Object.keys(sums).forEach(function (d) {
+    var maxPossible = counts[d] * 5;
+    var minPossible = counts[d] * 1;
+    
+    // 1. 기존 방식대로 원본 백분율(0~100)을 먼저 계산함
+    var rawPct = ((sums[d] - minPossible) / (maxPossible - minPossible)) * 100;
+    
+    // 2. ⚡ 변별력 대폭 증폭 로직! ⚡
+    // 일반적인 응답 평균인 중앙값(50%)을 기준으로 상하 편차를 2.2배 확 튕겨줌!
+    var amplified = 50 + (rawPct - 50) * 2.2;
+    
+    // 3. 0% 미만이나 100% 초과로 값이 오버플로우 나지 않게 안전 한계선 설정
+    var finalPct = Math.max(0, Math.min(100, amplified));
+    
+    scores[d] = Math.round(finalPct);
+  });
+  
+  return scores;
+}
 
   window.renderFinalResult = function(scores) { // 전역화
     var resultWrap = document.getElementById('resultWrap');
