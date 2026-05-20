@@ -968,6 +968,16 @@ deleteBtn.onclick = async (e) => {
 </div>
 
 <script>
+  // 1️⃣ 브라우저의 기본 스크롤 복원 기능 강제로 끄기
+if ('scrollRestoration' in history) {
+  history.scrollRestoration = 'manual';
+}
+
+// 2️⃣ 화면이 새로 켜질 때 스크롤 맨 위로 올리기
+window.addEventListener('DOMContentLoaded', function() {
+  window.scrollTo(0, 0);
+});
+  
 (function () {
   'use strict';
   
