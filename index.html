@@ -1662,7 +1662,13 @@ function shuffleQuestions() {
 
     // 깔끔하게 복사해서 퀴즈용 배열에 세팅! ([심화 척도] 꼬리표 루프는 완벽 제거됨)
     questions = JSON.parse(JSON.stringify(sourceQuestions));
-    answers = new Array(questions.length).fill(0);
+  for (var i = questions.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var temp = questions[i];
+    questions[i] = questions[j];
+    questions[j] = temp;
+  }  
+  answers = new Array(questions.length).fill(0);
     totalPages = Math.ceil(questions.length / itemsPerPage);
   }
 
@@ -1979,6 +1985,7 @@ resultWrap.appendChild(header);
   function resetQuiz() {
     var sourceQuestions = briefQuestions;
     questions = JSON.parse(JSON.stringify(sourceQuestions)); 
+    shuffleQuestions();
     answers  = new Array(questions.length).fill(0);
     currentPage = 0;
     totalPages = Math.ceil(questions.length / itemsPerPage);
@@ -2095,20 +2102,23 @@ function fallbackTextCopyEngine(text) {
   document.body.removeChild(textArea);
 }
 
-function handleCopyToastAlert() {
-  const toast = document.getElementById('toastMsg');
-  if (toast) {
-    toast.textContent = "🔗 결과 공유 링크 복사 완료!";
-    if (typeof showToastPopup === 'function') {
-      showToastPopup();
-      return;
-    } else if (typeof showCopySuccessMessage === 'function') {
-      showCopySuccessMessage();
-      return;
+
+  <div class="policy-modal" id="policyModal" style="display:none;">
+    <div class="policy-header" id="policyModalTitle">약관 정보</div>
+    <div class="policy-body" id="policyModalBody">내용이 로드되지 않았습니다.</div>
+    <button class="policy-close-btn" onclick="closeAllModals()">확인 및 닫기</button>
+  </div>
+</div>
+// 💡 딱 요기! script 닫히기 바로 직전 윗줄에 스윽 끼워넣으셈!
+  function shuffleArray(array) {
+    for (var i = array.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var temp = array[i];
+      array[i] = array[j];
+      array[j] = temp;
     }
+    return array;
   }
-  alert("📋 결과 공유 링크가 클립보드에 복사되었습니다!\n카카오톡 대화창 등 원하는 곳에 붙여넣기 하세요.");
-}
-</script>
+<script>
 </body>
 </html>
