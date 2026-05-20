@@ -861,7 +861,30 @@ deleteBtn.onclick = async (e) => {
   
   var ADMIN_PASSWORD = "1992";
   var isPremiumUnlocked = false;
+// =======================================================
+  // 🛡️ [보안 1.5단계] 개발자 도구 및 마우스 우클릭 원천 차단
+  // =======================================================
+  // 🖱️ 마우스 우클릭 차단
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+  }, false);
 
+  // ⌨️ 개발자 도구 단축키(F12, Ctrl+Shift+I, Ctrl+U 등) 차단
+  document.addEventListener('keydown', function(e) {
+    // F12 차단
+    if (e.keyCode === 123) {
+      e.preventDefault();
+    }
+    // Ctrl + Shift + I (크롬 개발자도구) 차단
+    if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
+      e.preventDefault();
+    }
+    // Ctrl + U (페이지 소스 보기) 차단
+    if (e.ctrlKey && e.keyCode === 85) {
+      e.preventDefault();
+    }
+  }, false);
+  // =======================================================
   var policyTexts = {
     terms: {
       title: "이용약관 (Terms of Service)",
