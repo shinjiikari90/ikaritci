@@ -543,32 +543,13 @@
           return;
         }
 
-        // 1. 파일 맨 상단(스크립트 시작 부분)에 이거 딱 하나만 추가해!
-var isSidebarLoading = false; 
-
-// 2. 이 함수를 기존에 기록 불러오는 함수 자리에 싹 덮어씌워.
-function loadSidebarData(querySnapshot) { 
-    // 로딩 중이면 여기서 바로 멈춤
-    if (isSidebarLoading) {
-        console.log("이미 로딩 중이라서 중복 호출은 무시함!");
-        return;
-    }
-    isSidebarLoading = true;
-    
-    console.log("기록 불러오기 함수 시작됨!");
-    
-    try {
-        // 기존 데이터를 비워줌
-        if (typeof pastListEl !== 'undefined') {
-            pastListEl.innerHTML = "";
-        }
-
+        // 만약 과거에 검사한 이력이 하나라도 존재한다면 실행
         if (!querySnapshot.empty) {
-            let historyList = [];
-            
-            querySnapshot.forEach((doc) => {
-                historyList.push(doc.data());
-            });
+          let historyList = [];
+          
+          querySnapshot.forEach((doc) => {
+            historyList.push(doc.data());
+          });
 
           // 💡 최신순(가장 최근에 검사한 날짜)으로 칼정렬
           historyList.sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt));
@@ -624,24 +605,8 @@ deleteBtn.onclick = async (e) => {
       console.error("기록 삭제 중 오류 발생:", error);
       alert("기록을 삭제하지 못했습니다. 보안 규칙을 확인해 주세요.");
     }
-    // 💡 여기서 finally를 지웠음! 삭제 로직은 그냥 놔두면 됨.
   }
 };
-      // 💡 방금 준 코드 바로 아래에 이어서 붙여넣기!
-pastListEl.appendChild(li);
-
-}); // historyList.forEach 끝나는 지점!
-} // if (!querySnapshot.empty) 끝나는 지점!
-
-} catch (e) {
-    console.error("데이터 로드 중 에러:", e);
-} finally {
-    // 💡 이게 핵심! 로딩이 성공하든 에러가 나든 무조건 여기서 잠금 해제!
-    isSidebarLoading = false;
-    console.log("로딩 끝, 잠금 해제 완료!");
-}
-} // loadSidebarData 함수 전체 끝!      
-// 💡 휴지통 버튼 클릭 이벤트 종료
             
             // 리스트 마우스 오버 효과
             li.onmouseover = () => li.style.background = "#3e3e56";
