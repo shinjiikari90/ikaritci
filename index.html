@@ -957,6 +957,18 @@ deleteBtn.onclick = async (e) => {
     <div class="pay-btn-group">
       <button class="pay-btn btn-pay-cancel" onclick="closeAllModals()">취소</button>
       <button class="pay-btn btn-pay-submit" id="btnPaySubmit">결제 및 잠금해제하기</button>
+      <script>
+  // 결제 체크 함수 추가
+  function checkPaymentStatus() {
+    if (!CONFIG.isPaymentEnabled) {
+      alert("현재 유료 결제 기능은 준비 중입니다. 🚧");
+      return; // 여기서 실행을 딱 끊어버림
+    }
+    
+    // 만약 결제 기능이 켜져 있다면, 여기서 원래 결제 로직 호출
+    // startPayment(); 
+  }
+</script>
     </div>
   </div>
 
@@ -968,7 +980,11 @@ deleteBtn.onclick = async (e) => {
 </div>
 
 <script>
-// 1️⃣ 브라우저의 기본 스크롤 복원 기능 강제로 끄기
+const CONFIG = {
+      isServiceEnabled: false,
+      isPaymentEnabled: false
+    };
+  // 1️⃣ 브라우저의 기본 스크롤 복원 기능 강제로 끄기
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
 }
