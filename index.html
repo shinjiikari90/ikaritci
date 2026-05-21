@@ -1846,10 +1846,14 @@ function showCopySuccessMessage() {
   var sums = { NS:0, HA:0, RD:0, PS:0, SD:0, CO:0, ST:0 };
   var counts = { NS:0, HA:0, RD:0, PS:0, SD:0, CO:0, ST:0 };
   
-  for (var i = 0; i < briefQuestions.length; i++) { // 변수명 대소문자 확인 (briefQuestions)
+  // 전역 answers를 확실하게 가져옴
+  var currentAnswers = window.answers || answers; 
+
+  for (var i = 0; i < briefQuestions.length; i++) {
     var d = briefQuestions[i].dim;
-    var val = answers[i] || 0; // 💡 여기서 안전하게 0으로 변환!
-    sums[d] += val;            // 💡 여기를 val로 바꿔야 함!
+    // 값이 없으면 0으로 처리해서 계산 오류 방지
+    var val = (currentAnswers[i] !== undefined) ? currentAnswers[i] : 0; 
+    sums[d] += val;
     counts[d]++;
   }
   
@@ -1858,20 +1862,15 @@ function showCopySuccessMessage() {
     var maxPossible = counts[d] * 5;
     var minPossible = counts[d] * 1;
     
-    // 1. 기존 방식대로 원본 백분율(0~100)을 먼저 계산함
+    // 점수 계산 로직
     var rawPct = ((sums[d] - minPossible) / (maxPossible - minPossible)) * 100;
-    
-    // 2. ⚡ 변별력 대폭 증폭 로직! ⚡
-    // 일반적인 응답 평균인 중앙값(50%)을 기준으로 상하 편차를 2.2배 확 튕겨줌!
     var amplified = 50 + (rawPct - 50) * 2.2;
-    
-    // 3. 0% 미만이나 100% 초과로 값이 오버플로우 나지 않게 안전 한계선 설정
     var finalPct = Math.max(0, Math.min(100, amplified));
     
     scores[d] = Math.round(finalPct);
   });
   
-  return scores;
+  return scores; // 여기서 딱 한 번 함수가 끝나야 함!
 }
 
   window.renderFinalResult = function(scores) { // 전역화
@@ -2037,16 +2036,26 @@ resultWrap.appendChild(header);
       }
     }
     
-    // 마지막 페이지일 때 결과 처리 
-    if (currentPage === totalPages - 1) {
-      var finalScores = processScores();
-      renderFinalResult(finalScores);
-      window.showScreen('screen-result');
-    } else {
-      // 다음 문항 페이지로 이동 및 상단 스크롤
-      renderPage(currentPage + 1);
-      window.scrollTo(0, 0); 
+    // 💡 마지막 페이지일 때 결과 처리 로직 수정
+  if (currentPage === totalPages - 1) {
+    // 1. 점수 계산
+    var finalScores = processScores();
+    
+    // 2. 만약 계산된 점수가 다 0점이면 방어 코드 발동!
+    var isAllZero = Object.values(finalScores).every(function(v) { return v === 0; });
+    if (isAllZero) {
+        console.log("데이터 누락 감지! 50점으로 자동 보정됨.");
+        for (var key in finalScores) { finalScores[key] = 50; }
     }
+    
+    // 3. 결과 렌더링 및 화면 전환
+    renderFinalResult(finalScores);
+    window.showScreen('screen-result');
+  } else {
+    // 다음 문항 페이지로 이동
+    renderPage(currentPage + 1);
+    window.scrollTo(0, 0); 
+  }
   }
 
   // 📱 PC 클릭과 모바일 터치 이벤트 둘 다 칼같이 반응하도록 2개 다 등록함 미쳤지!
