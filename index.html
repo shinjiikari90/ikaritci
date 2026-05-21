@@ -1365,7 +1365,8 @@ var deepQuestions = [
   };
 
   function calculatePrescription(scores) {
-  // 1. 점수 분산 처리 (지터링) 및 정규화 통합 로직
+  console.log("🔥 들어온 점수값:", scores); // 이 줄을 추가!
+    // 1. 점수 분산 처리 (지터링) 및 정규화 통합 로직
   // jitter: 0.9~1.1배 변동을 주어 점수 촘촘하게 만들기
   // normalize: 10~90 범위로 고정 (0% 절대 방지)
   var jitter = (s) => (s || 0) * (0.9 + Math.random() * 0.2);
