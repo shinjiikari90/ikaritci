@@ -1846,9 +1846,10 @@ function showCopySuccessMessage() {
   var sums = { NS:0, HA:0, RD:0, PS:0, SD:0, CO:0, ST:0 };
   var counts = { NS:0, HA:0, RD:0, PS:0, SD:0, CO:0, ST:0 };
   
-  for (var i = 0; i < questions.length; i++) {
-    var d = questions[i].dim;
-    sums[d] += answers[i];
+  for (var i = 0; i < briefQuestions.length; i++) { // 변수명 대소문자 확인 (briefQuestions)
+    var d = briefQuestions[i].dim;
+    var val = answers[i] || 0; // 💡 여기서 안전하게 0으로 변환!
+    sums[d] += val;            // 💡 여기를 val로 바꿔야 함!
     counts[d]++;
   }
   
