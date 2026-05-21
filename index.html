@@ -1365,13 +1365,21 @@ var deepQuestions = [
   };
 
   function calculatePrescription(scores) {
-  // 1. 점수 정규화 (10~90 범위로 보정하여 0% 방지)
-  var normalize = (s) => Math.round((s / 100) * 80 + 10);
-  var ns = normalize(scores.NS), ha = normalize(scores.HA), ps = normalize(scores.PS), sd = normalize(scores.SD);
+  // 1. 점수 분산 처리 (지터링) 및 정규화 통합 로직
+  // jitter: 0.9~1.1배 변동을 주어 점수 촘촘하게 만들기
+  // normalize: 10~90 범위로 고정 (0% 절대 방지)
+  var jitter = (s) => (s || 0) * (0.9 + Math.random() * 0.2);
+  var normalize = (s) => Math.round((Math.max(0, Math.min(100, s)) / 100) * 80 + 10);
   
-  // 2. [수정] 6단계 레벨 변환 (구간을 더 촘촘하게!)
+  var ns = normalize(jitter(scores.NS)), 
+      ha = normalize(jitter(scores.HA)), 
+      ps = normalize(jitter(scores.PS)), 
+      sd = normalize(jitter(scores.SD));
+  
+  // 2. 6단계 레벨 변환 (구간 수정)
   var getLevel = (s) => s <= 20 ? 0 : s <= 35 ? 1 : s <= 50 ? 2 : s <= 65 ? 3 : s <= 80 ? 4 : 5;
-  
+  var lvlNS = getLevel(ns), lvlHA = getLevel(ha), lvlPS = getLevel(ps), lvlSD = getLevel(sd);
+
   // 💡 [도움 함수] 구간 분석
   function getAnalysis(score, type) {
     // 각 배열에 마지막 단계(레벨 5) 문구 하나씩 추가함!
