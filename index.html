@@ -1559,6 +1559,13 @@ var deepQuestions = [
   };
 
   btnPaySubmit.addEventListener('click', function() {
+    // [방어벽] 결제 기능이 꺼져있으면 여기서 강제 종료!
+    if (!CONFIG.isPaymentEnabled) {
+      alert("현재 유료 결제 기능은 준비 중입니다. 🚧 나중에 다시 시도해 주세요!");
+      return; 
+    }
+
+    // 결제 기능이 켜져 있을 때만 아래 로직 실행
     isPremiumUnlocked = true;
     if(lockIcon) lockIcon.style.display = 'none';
     closeAllModals();
