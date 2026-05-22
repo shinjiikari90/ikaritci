@@ -920,7 +920,7 @@ const parseParamScore = (key) => {
         <h2>지표 레벨 세팅</h2>
         <p style="font-size:0.8rem; color:#666;">원하는 스케일을 지정하고 아래 버튼을 누르면 즉시 맞춤 결과서로 이동</p>
         <div class="admin-grid" id="adminGrid"></div>
-        <button class="admin-submit-btn" onclick="generateSimulatedResult()">🎯 지정 스케일로 결과서 즉시 생성</button>
+        <button class="admin-submit-btn" onclick="triggerSimulatedResult()">🎯 지정 스케일로 결과서 즉시 생성</button>
       </div>
     </div>
 
@@ -1712,6 +1712,20 @@ var deepQuestions = [
     simulatedScores[key] = (val !== undefined) ? val : 50;
   });
   return simulatedScores; // 숫자 상자 반환!
+};
+    
+    window.triggerSimulatedResult = function() {
+    var scores = window.generateSimulatedResult(); 
+    window.renderFinalResult(scores);              
+    window.showScreen('screen-result');           
+    
+    var targetMenu = document.getElementById('menu-' + window.currentMode);
+    if(targetMenu) {
+      document.querySelectorAll('.menu-list .menu-item').forEach(function(el) {
+        el.classList.remove('active');
+      });
+      targetMenu.classList.add('active');
+    }
 };
 
 // 🎯 함수 실행 및 UI 활성화 세트 (여기는 건드리지 말고 이대로 유지!)
