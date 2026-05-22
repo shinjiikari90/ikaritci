@@ -1729,7 +1729,8 @@ var deepQuestions = [
     
     window.triggerSimulatedResult = function() {
     var scores = window.generateSimulatedResult(); 
-    window.renderFinalResult(scores);              
+    window.scores = scores;
+      window.renderFinalResult(scores);              
     window.showScreen('screen-result');           
     
     var targetMenu = document.getElementById('menu-' + window.currentMode);
