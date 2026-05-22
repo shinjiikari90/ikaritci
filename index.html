@@ -757,11 +757,13 @@ async function checkSharedLink() {
     console.log("[게스트 소환] 주소창 파라미터에서 기질 수치 추출 중... ⚡");
     
     // 주소창에 묻어있는 진짜 숫자를 1% 단위까지 그대로 털어오는 헬퍼 함수
-    const parseParamScore = (key) => {
-      let val = urlParams.get(key.toLowerCase()) || urlParams.get(key.toUpperCase());
-      let num = Number(val);
-      return isNaN(num) ? 50 : num; // 고장 방지 가드만 치고 숫자 그대로 반환!
-    };
+    // ⚡ 주소창 파라미터 추출부 수정
+const parseParamScore = (key) => {
+  let val = urlParams.get(key.toLowerCase()) || urlParams.get(key.toUpperCase());
+  // 💥 M이 들어오면 무조건 50으로 강제 변환!
+  if (val === 'M' || val === 'm' || isNaN(Number(val))) return 50; 
+  return Number(val);
+};
     
     // 주소창 숫자가 화면 렌더링 엔진으로 연쇄 오차 없이 다이렉트 꽂힘!
     const guestScores = {
@@ -1702,12 +1704,17 @@ var deepQuestions = [
   }
 
   window.generateSimulatedResult = function() {
-    var simulatedScores = {};
-    var mockPct = { low: 20, mid: 50, high: 85 }; 
-    
-    Object.keys(simulatedLevels).forEach(function (key) {
-      simulatedScores[key] = mockPct[simulatedLevels[key]];
-    });
+  var simulatedScores = {};
+  // 💡 M 대신 확실한 숫자 20, 50, 85를 사용!
+  var mockPct = { low: 20, mid: 50, high: 85 }; 
+  
+  Object.keys(simulatedLevels).forEach(function (key) {
+    // 💥 여기서 M이 나올 틈을 싹 없앰!
+    var val = mockPct[simulatedLevels[key]];
+    simulatedScores[key] = (val !== undefined) ? val : 50;
+  });
+  return simulatedScores; // 추가!
+};
     
     document.querySelectorAll('.menu-list .menu-item').forEach(function (el) {
       el.classList.remove('active');
