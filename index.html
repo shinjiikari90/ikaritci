@@ -745,6 +745,7 @@ deleteBtn.onclick = async (e) => {
     });
 // 🕵️‍♂️ 주소창에 공유 파라미터가 붙어있는지 감시하는 내비게이터 함수 (중복 싹 제거 완료!)
 // 🕵️‍♂️ 주소창에 공유 파라미터가 붙어있는지 감시하는 내비게이터 함수 (숫자 규격 매칭 완료!)
+// 🕵️‍♂️ 주소창 파라미터 감시 및 숫자 규격 완벽 통역 함수
 async function checkSharedLink() {
   const urlParams = new URLSearchParams(window.location.search);
   const sharedUid = urlParams.get('uid');
@@ -756,29 +757,33 @@ async function checkSharedLink() {
   if (!sharedUid && hasGuestParams) {
     console.log("[게스트 소환] 주소창 파라미터에서 기질 수치 추출 중... ⚡");
     
-    // 💡 [ㄹㅇ 핵심 치트키] H/M/L 영어 약자를 렌더링 엔진이 원하는 숫자 점수로 직접 변환!
+    // 💡 [ㄹㅇ 마스터 사전] 영어 대소문자, 한글 찌꺼기까지 몽땅 숫자로 강제 맵핑!
     const scoreToPct = { 
-      'H': 85, 'M': 50, 'L': 20, 
-      '높음': 85, '중간': 50, '낮음': 20 
+      'H': 85, 'M': 50, 'L': 20,
+      '높음': 85, '중간': 50, '낮음': 20
     };
 
-    const getRawScore = (key) => urlParams.get(key.toLowerCase()) || urlParams.get(key.toUpperCase()) || 'M';
+    // 주소창에서 값을 가져와서 무조건 영어 대문자(H/M/L)로 표준화하는 헬퍼 함수!
+    const getNormalizedScore = (key) => {
+      let val = urlParams.get(key.toLowerCase()) || urlParams.get(key.toUpperCase()) || 'M';
+      return typeof val === 'string' ? val.trim().toUpperCase() : 'M';
+    };
     
-    // 최종 렌더링 함수가 받아먹을 숫자 데이터 객체 빌드!
+    // 렌더링 엔진이 원하는 순수 백분위 숫자 객체 빌드!
     const guestScores = {
-      NS: scoreToPct[getRawScore('NS')] || 50,
-      HA: scoreToPct[getRawScore('HA')] || 50,
-      RD: scoreToPct[getRawScore('RD')] || 50,
-      PS: scoreToPct[getRawScore('PS')] || 50,
-      SD: scoreToPct[getRawScore('SD')] || 50,
-      CO: scoreToPct[getRawScore('CO')] || 50,
-      ST: scoreToPct[getRawScore('ST')] || 50
+      NS: scoreToPct[getNormalizedScore('NS')] || 50,
+      HA: scoreToPct[getNormalizedScore('HA')] || 50,
+      RD: scoreToPct[getNormalizedScore('RD')] || 50,
+      PS: scoreToPct[getNormalizedScore('PS')] || 50,
+      SD: scoreToPct[getNormalizedScore('SD')] || 50,
+      CO: scoreToPct[getNormalizedScore('CO')] || 50,
+      ST: scoreToPct[getNormalizedScore('ST')] || 50
     };
 
     window.currentMode = urlParams.get('mode') || 'deep';
     window.currentScores = guestScores;
 
-    // 🪂 팝업 없이 즉시 숫자 데이터를 들고 화면 렌더링 엔진 가동!
+    // 🪂 팝업 없이 완벽한 숫자 데이터를 들고 화면 렌더링 가동!
     if (typeof window.renderFinalResult === 'function') {
       window.renderFinalResult(guestScores);
     }
@@ -789,7 +794,7 @@ async function checkSharedLink() {
     return; 
   }
 
-  // 🔒 회원 전용 기존 로직 (손대지 말고 유지)
+  // 🔒 회원 전용 기존 로직
   if (sharedUid && sharedTime) {
     console.log(`[원격 소환] UID:${sharedUid}의 ${sharedTime} 결과 데이터 땡겨오는 중... ⚡`);
     try {
