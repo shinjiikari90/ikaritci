@@ -776,16 +776,33 @@ const parseParamScore = (key) => {
       ST: parseParamScore('ST')
     };
 
-    window.currentMode = urlParams.get('mode') || 'deep';
-    window.currentScores = guestScores;
+    // 1. URL 파라미터 먼저 확인
+const urlParams = new URLSearchParams(window.location.search);
+window.currentMode = urlParams.get('mode') || 'deep';
 
-    // 🪂 완벽한 1:1 리얼 동기화 데이터 들고 엔진 가동!
-    if (typeof window.renderFinalResult === 'function') {
-      window.renderFinalResult(guestScores);
-    }
-    if (typeof window.showScreen === 'function') {
-      window.showScreen('screen-result');
-    }
+// 2. [핵심] 덮어쓰기 방어 로직!
+// 주소창에 파라미터가 없으면(게스트 소환이 아니면), 
+// 로컬스토리지에 있는 '마지막 결과'를 우선적으로 낚아챔.
+// ... (위의 URL 파라미터 로직은 그대로 두고) ...
+
+// 2. [핵심] 덮어쓰기 방어 로직!
+var savedScores = localStorage.getItem('lastResult');
+
+if (urlParams.get('ns')) { 
+  window.currentScores = guestScores;
+} else if (savedScores) {
+  window.currentScores = JSON.parse(savedScores);
+} else {
+  window.currentScores = guestScores; 
+}
+
+// 🪂 여기서 guestScores 대신 window.currentScores를 써야 진짜 데이터가 들어감!
+if (typeof window.renderFinalResult === 'function') {
+  window.renderFinalResult(window.currentScores); // 👈 중요!
+}
+if (typeof window.showScreen === 'function') {
+  window.showScreen('screen-result');
+}
     
     return; 
   }
