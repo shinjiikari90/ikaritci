@@ -834,7 +834,7 @@ window.copyResultLink = function() {
 
       // 방금 검사한 결과 시간 or 과거 목록에서 클릭해 가져온 시간 확보
       const currentTimestamp = window.lastSavedTimestamp || window.currentResultTimestamp || new Date().toISOString();
-      const uid = window.currentUser.uid;
+      const uid = window.currentUser ? window.currentUser.uid : null;
 
       // 만료되지 않는 절대 고유 주소 조립 
       const shareUrl = `${window.location.origin}${window.location.pathname}?uid=${uid}&time=${currentTimestamp}`;
