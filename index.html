@@ -743,32 +743,60 @@ deleteBtn.onclick = async (e) => {
         if (introNotice) introNotice.style.display = "flex";
       }
     });
-// 🕵️‍♂️ 주소창에 공유 파라미터(?uid=...&time=...)가 붙어있는지 감시하는 내비게이터 함수
+// 🕵️‍♂️ 주소창에 공유 파라미터(?uid=...&time=... 또는 게스트 파라미터)가 붙어있는지 감시하는 내비게이터 함수
     async function checkSharedLink() {
       const urlParams = new URLSearchParams(window.location.search);
       const sharedUid = urlParams.get('uid');
       const sharedTime = urlParams.get('time');
 
-      // 주소창에 공유 식별자가 명확히 존재한다면?
+      // ⭕ [ㄹㅇ 게스트 하이패스 가드 추가] uid는 없는데 기질 수치들이 주소창에 붙어있다면?
+      const hasGuestParams = urlParams.get('ns') || urlParams.get('ha') || urlParams.get('rd');
+
+      if (!sharedUid && hasGuestParams) {
+        console.log("[게스트 소환] 주소창 파라미터에서 기질 수치 추출 중... ⚡");
+        
+        // 주소창에서 기질 레벨(높음/낮음/중간)을 싹 긁어 모음!
+        const guestScores = {
+          NS: decodeURIComponent(urlParams.get('ns') || '중간'),
+          HA: decodeURIComponent(urlParams.get('ha') || '중간'),
+          RD: decodeURIComponent(urlParams.get('rd') || '중간'),
+          PS: decodeURIComponent(urlParams.get('ps') || '중간'),
+          SD: decodeURIComponent(urlParams.get('sd') || '중간'),
+          CO: decodeURIComponent(urlParams.get('co') || '중간'),
+          ST: decodeURIComponent(urlParams.get('st') || '중간')
+        };
+
+        // 전역 모드를 강제로 심화('deep') 모드로 세팅!
+        window.currentMode = urlParams.get('mode') || 'deep';
+        
+        // 💾 공유 링크 버튼을 다시 누를 때 주소창 수치가 유지되도록 전역 스코어에 바인딩!
+        window.currentScores = guestScores;
+
+        // DB 거치지 않고 다이렉트로 화면 렌더링 후 결과창으로 강제 강하! 🪂
+        if (typeof window.renderFinalResult === 'function') {
+          window.renderFinalResult(guestScores);
+        }
+        if (typeof window.showScreen === 'function') {
+          window.showScreen('screen-result');
+        }
+        
+        alert("✨ 게스트 공유 링크를 통해 TCI 결과 보고서 화면에 접속했습니다! 😉");
+        return; // 게스트 처리 끝났으니 함수 탈출!
+      }
+
+      // 🔒 여기서부터는 로그인 유저 전용 기존 로직 (손대지 말고 유지!)
       if (sharedUid && sharedTime) {
         console.log(`[원격 소환] UID:${sharedUid}의 ${sharedTime} 결과 데이터 땡겨오는 중... ⚡`);
         
         try {
-          // 해당 유저의 history 컬렉션 내부에서 정확한 시간대의 문서 딱 하나만 조준 타격!
           const docRef = doc(db, "tci_results", sharedUid, "history", sharedTime);
           const docSnap = await getDoc(docRef);
 
           if (docSnap.exists()) {
             const sharedData = docSnap.data();
             window.currentMode = sharedData.mode;
-
-            // 💡 [추가] 링크 복사 버튼을 눌렀을 때 이 타임스탬프를 그대로 재활용하도록 바인딩!
             window.lastSavedTimestamp = sharedTime;
 
-            // 💡 [추가] 링크 복사 버튼을 눌렀을 때 이 타임스탬프를 그대로 재활용하도록 바인딩!
-            window.lastSavedTimestamp = sharedTime;
-
-            // 공유 문서 결과를 화면에 렌더링하고 강제 강하! 🪂
             if (typeof window.renderFinalResult === 'function') {
               window.renderFinalResult(sharedData.scores);
             }
@@ -783,7 +811,7 @@ deleteBtn.onclick = async (e) => {
           console.error("공유 링크 복구 중 에러 발생:", error);
         }
       }
-    }   // 💡 꼬여있던 과도한 중괄호 3개를 싹 정리함!
+    }
 
 // 🔗 [ㄹㅇ 핵심 추가] 결과 링크 복사 버튼을 누르면 이 마스터 함수가 가로채서 진짜 고유 주소를 만들어냄!
 window.copyResultLink = function() {
