@@ -2160,9 +2160,22 @@ resultWrap.appendChild(header);
     uid = window.currentUser.uid;
     currentTimestamp = window.lastSavedTimestamp || window.currentResultTimestamp || new Date().toISOString();
   } else {
-    alert("🔒 로그인 후 저장된 결과이거나 올바른 공유 링크 페이지여야 주소 생성이 가능합니다!");
-    return;
+    // ⭕ [ㄹㅇ 해결책] 로그인 안 한 게스트도 튕겨내지 않고 현재 URL 복사 처리!
+    var currentUrl = window.location.href;
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(currentUrl).then(function() {
+            alert("🔗 게스트 결과 링크가 클립보드에 복사되었습니다! 자유롭게 공유해보셈 욘! 😉");
+        }).catch(function(err) {
+            fallbackCopyText(currentUrl);
+        });
+    } else {
+        fallbackCopyText(currentUrl);
+    }
+    return; // 게스트 처리가 끝났으므로 여기서 함수 탈출!
   }
+
+  // 💡 아래쪽은 기존에 구현되어 있던 링크 생성 및 클립보드 복사 로직 (그대로 두기!)
 
   const shareUrl = `${window.location.origin}${window.location.pathname}?uid=${uid}&time=${currentTimestamp}`;
 
