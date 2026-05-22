@@ -765,6 +765,9 @@ deleteBtn.onclick = async (e) => {
             // 💡 [추가] 링크 복사 버튼을 눌렀을 때 이 타임스탬프를 그대로 재활용하도록 바인딩!
             window.lastSavedTimestamp = sharedTime;
 
+            // 💡 [추가] 링크 복사 버튼을 눌렀을 때 이 타임스탬프를 그대로 재활용하도록 바인딩!
+            window.lastSavedTimestamp = sharedTime;
+
             // 공유 문서 결과를 화면에 렌더링하고 강제 강하! 🪂
             if (typeof window.renderFinalResult === 'function') {
               window.renderFinalResult(sharedData.scores);
@@ -779,9 +782,9 @@ deleteBtn.onclick = async (e) => {
         } catch (error) {
           console.error("공유 링크 복구 중 에러 발생:", error);
         }
-      } // 💡 기존 상단 if문이나 블록 마감 1
-    } // 💡 기존 함수 본문 마감 2
-  } // 💡 꼬여있던 미아 중괄호들을 정돈하여 상단 함수를 여기서 완벽히 마감 처리함!
+      }
+    }
+  } // 💡 꼬여있던 과도한 중괄호 3개를 싹 정리함!
 
 // 🔗 [ㄹㅇ 핵심 추가] 결과 링크 복사 버튼을 누르면 이 마스터 함수가 가로채서 진짜 고유 주소를 만들어냄!
 window.copyResultLink = function() {
@@ -800,12 +803,12 @@ window.copyResultLink = function() {
     if (window.currentUser && window.currentSavedAt) {
       shareUrl = `${baseUrl}?uid=${window.currentUser.uid}&savedAt=${window.currentSavedAt}`;
     } else {
-      // 3. 🔥 [핵심] 로그인 안 한 유저라면 점수 데이터를 URL에 직접 구워서 링크 생성!
+      // 3. 🔥 로그인 안 한 유저라면 점수 데이터를 URL에 직접 구워서 링크 생성!
       const ns = window.currentScores.NS || 0;
       const ha = window.currentScores.HA || 0;
       const ps = window.currentScores.PS || 0;
       const sd = window.currentScores.SD || 0;
-      const mode = window.currentMode || 'guest'; // 심화/간이 모드 구분용
+      const mode = window.currentMode || 'guest'; 
       
       shareUrl = `${baseUrl}?ns=${ns}&ha=${ha}&ps=${ps}&sd=${sd}&mode=${mode}&guest=true`;
     }
@@ -815,7 +818,6 @@ window.copyResultLink = function() {
       alert("🔗 공유 링크가 클립보드에 복사되었습니다! 친구에게 공유해보세요.");
     }).catch(err => {
       console.error("링크 복사 실패:", err);
-      // 구형 브라우저 대응용 임시 fallback
       const textArea = document.createElement("textarea");
       textArea.value = shareUrl;
       document.body.appendChild(textArea);
@@ -829,7 +831,7 @@ window.copyResultLink = function() {
     console.error("공유 링크 생성 중 에러 발생:", error);
     alert("공유 링크를 생성하지 못했습니다. 다시 시도해 주세요.");
   }
-}; // 💡 깔끔하게 마감 완료!
+};
 
       // 방금 검사한 결과 시간 or 과거 목록에서 클릭해 가져온 시간 확보
       const currentTimestamp = window.lastSavedTimestamp || window.currentResultTimestamp || new Date().toISOString();
