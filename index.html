@@ -2205,23 +2205,28 @@ resultWrap.appendChild(header);
         navigator.clipboard.writeText(guestShareUrl).then(function() {
             alert("🔗 내 결과 데이터가 담긴 진짜 공유 링크가 복사되었습니다! 친구한테 보내보셈 욘! 😉");
         }).catch(function(err) {
-            fallbackCopyText(guestShareUrl);
+            // 기존에 있던 구형 복사 함수 매칭 (혹시 이름 다르면 바꿀 것!)
+            if (typeof fallbackCopyText === 'function') fallbackCopyText(guestShareUrl);
+            else if (typeof fallbackTextCopyEngine === 'function') fallbackTextCopyEngine(guestShareUrl);
         });
     } else {
-        fallbackCopyText(guestShareUrl);
+        if (typeof fallbackCopyText === 'function') fallbackCopyText(guestShareUrl);
+        else if (typeof fallbackTextCopyEngine === 'function') fallbackTextCopyEngine(guestShareUrl);
     }
-    return;
+    return; // 게스트는 여기서 깔끔하게 주소 복사 끝내고 함수 탈출!
   }
-}; // 💥 깔끔하게 함수 마감 가드 완료!
 
-  // 💡 아래쪽은 기존에 구현되어 있던 링크 생성 및 클립보드 복사 로직 (그대로 두기!)
-
+  // 🔒 여기서부터는 로그인 유저 전용 기존 로직 (그대로 부드럽게 이어짐!)
   const shareUrl = `${window.location.origin}${window.location.pathname}?uid=${uid}&time=${currentTimestamp}`;
 
   if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
     navigator.clipboard.writeText(shareUrl)
       .then(function() {
-        handleCopyToastAlert();
+        if (typeof handleCopyToastAlert === 'function') {
+          handleCopyToastAlert();
+        } else {
+          alert("🔗 회원 전용 공유 링크가 클립보드에 복사되었습니다!");
+        }
       })
       .catch(function() {
         fallbackTextCopyEngine(shareUrl);
@@ -2229,7 +2234,7 @@ resultWrap.appendChild(header);
   } else {
     fallbackTextCopyEngine(shareUrl);
   }
-};
+}; // 💥 전체 함수의 마감 가드 완벽 마감!
 
 function fallbackTextCopyEngine(text) {
   const textArea = document.createElement("textarea");
