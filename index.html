@@ -749,30 +749,27 @@ deleteBtn.onclick = async (e) => {
       const sharedUid = urlParams.get('uid');
       const sharedTime = urlParams.get('time');
 
-      // ⭕ [ㄹㅇ 게스트 하이패스 가드 추가] uid는 없는데 기질 수치들이 주소창에 붙어있다면?
-      const hasGuestParams = urlParams.get('ns') || urlParams.get('ha') || urlParams.get('rd');
+      // [대소문자 철벽 방어 가드] 주소창에 소문자나 대문자로 기질이 붙어있는지 감시!
+      const hasGuestParams = urlParams.get('ns') || urlParams.get('NS') || urlParams.get('ha') || urlParams.get('HA');
 
       if (!sharedUid && hasGuestParams) {
         console.log("[게스트 소환] 주소창 파라미터에서 기질 수치 추출 중... ⚡");
         
-        // 주소창에서 기질 레벨(높음/낮음/중간)을 싹 긁어 모음!
+        // 렌더링 함수가 대문자 'NS', 'HA'를 확실히 인식하도록 Key를 대문자로 매칭!
         const guestScores = {
-          NS: decodeURIComponent(urlParams.get('ns') || '중간'),
-          HA: decodeURIComponent(urlParams.get('ha') || '중간'),
-          RD: decodeURIComponent(urlParams.get('rd') || '중간'),
-          PS: decodeURIComponent(urlParams.get('ps') || '중간'),
-          SD: decodeURIComponent(urlParams.get('sd') || '중간'),
-          CO: decodeURIComponent(urlParams.get('co') || '중간'),
-          ST: decodeURIComponent(urlParams.get('st') || '중간')
+          NS: decodeURIComponent(urlParams.get('ns') || urlParams.get('NS') || '중간'),
+          HA: decodeURIComponent(urlParams.get('ha') || urlParams.get('HA') || '중간'),
+          RD: decodeURIComponent(urlParams.get('rd') || urlParams.get('RD') || '중간'),
+          PS: decodeURIComponent(urlParams.get('ps') || urlParams.get('PS') || '중간'),
+          SD: decodeURIComponent(urlParams.get('sd') || urlParams.get('SD') || '중간'),
+          CO: decodeURIComponent(urlParams.get('co') || urlParams.get('CO') || '중간'),
+          ST: decodeURIComponent(urlParams.get('st') || urlParams.get('ST') || '중간')
         };
 
-        // 전역 모드를 강제로 심화('deep') 모드로 세팅!
         window.currentMode = urlParams.get('mode') || 'deep';
-        
-        // 💾 공유 링크 버튼을 다시 누를 때 주소창 수치가 유지되도록 전역 스코어에 바인딩!
         window.currentScores = guestScores;
 
-        // DB 거치지 않고 다이렉트로 화면 렌더링 후 결과창으로 강제 강하! 🪂
+        // 🪂 팝업 없이 즉시 화면 렌더링 엔진 가동!
         if (typeof window.renderFinalResult === 'function') {
           window.renderFinalResult(guestScores);
         }
@@ -780,30 +777,88 @@ deleteBtn.onclick = async (e) => {
           window.showScreen('screen-result');
         }
         
-        alert("✨ 게스트 공유 링크를 통해 TCI 결과 보고서 화면에 접속했습니다! 😉");
-        return; // 게스트 처리 끝났으니 함수 탈출!
+        return; // 팝업창(alert) 싹 걷어내고 쿨하게 탈출!
       }
 
-      // 🔒 여기서부터는 로그인 유저 전용 기존 로직 (손대지 말고 유지!)
+      // 🔒 회원 전용 기존 로직 (여기도 팝업창 제거 완료!)
       if (sharedUid && sharedTime) {
         console.log(`[원격 소환] UID:${sharedUid}의 ${sharedTime} 결과 데이터 땡겨오는 중... ⚡`);
-        
         try {
           const docRef = doc(db, "tci_results", sharedUid, "history", sharedTime);
           const docSnap = await getDoc(docRef);
-
           if (docSnap.exists()) {
             const sharedData = docSnap.data();
             window.currentMode = sharedData.mode;
             window.lastSavedTimestamp = sharedTime;
-
+            
+            // 🪂 팝업 없이 다이렉트로 화면 전환!
             if (typeof window.renderFinalResult === 'function') {
               window.renderFinalResult(sharedData.scores);
             }
             if (typeof window.showScreen === 'function') {
               window.showScreen('screen-result');
             }
-            alert("✨ 친구가 공유해 준 TCI 결과 보고서 화면에 접속했습니다!");
+          } else {
+            alert("❌ 링크가 만료되었거나 삭제된 검사 결과 데이터입니다.");
+          }
+        } catch (error) {
+          console.error("공유 링크 복구 중 에러 발생:", error);
+        }
+      }
+    }async function checkSharedLink() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const sharedUid = urlParams.get('uid');
+      const sharedTime = urlParams.get('time');
+
+      // [대소문자 철벽 방어 가드] 주소창에 소문자나 대문자로 기질이 붙어있는지 감시!
+      const hasGuestParams = urlParams.get('ns') || urlParams.get('NS') || urlParams.get('ha') || urlParams.get('HA');
+
+      if (!sharedUid && hasGuestParams) {
+        console.log("[게스트 소환] 주소창 파라미터에서 기질 수치 추출 중... ⚡");
+        
+        // 렌더링 함수가 대문자 'NS', 'HA'를 확실히 인식하도록 Key를 대문자로 매칭!
+        const guestScores = {
+          NS: decodeURIComponent(urlParams.get('ns') || urlParams.get('NS') || '중간'),
+          HA: decodeURIComponent(urlParams.get('ha') || urlParams.get('HA') || '중간'),
+          RD: decodeURIComponent(urlParams.get('rd') || urlParams.get('RD') || '중간'),
+          PS: decodeURIComponent(urlParams.get('ps') || urlParams.get('PS') || '중간'),
+          SD: decodeURIComponent(urlParams.get('sd') || urlParams.get('SD') || '중간'),
+          CO: decodeURIComponent(urlParams.get('co') || urlParams.get('CO') || '중간'),
+          ST: decodeURIComponent(urlParams.get('st') || urlParams.get('ST') || '중간')
+        };
+
+        window.currentMode = urlParams.get('mode') || 'deep';
+        window.currentScores = guestScores;
+
+        // 🪂 팝업 없이 즉시 화면 렌더링 엔진 가동!
+        if (typeof window.renderFinalResult === 'function') {
+          window.renderFinalResult(guestScores);
+        }
+        if (typeof window.showScreen === 'function') {
+          window.showScreen('screen-result');
+        }
+        
+        return; // 팝업창(alert) 싹 걷어내고 쿨하게 탈출!
+      }
+
+      // 🔒 회원 전용 기존 로직 (여기도 팝업창 제거 완료!)
+      if (sharedUid && sharedTime) {
+        console.log(`[원격 소환] UID:${sharedUid}의 ${sharedTime} 결과 데이터 땡겨오는 중... ⚡`);
+        try {
+          const docRef = doc(db, "tci_results", sharedUid, "history", sharedTime);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const sharedData = docSnap.data();
+            window.currentMode = sharedData.mode;
+            window.lastSavedTimestamp = sharedTime;
+            
+            // 🪂 팝업 없이 다이렉트로 화면 전환!
+            if (typeof window.renderFinalResult === 'function') {
+              window.renderFinalResult(sharedData.scores);
+            }
+            if (typeof window.showScreen === 'function') {
+              window.showScreen('screen-result');
+            }
           } else {
             alert("❌ 링크가 만료되었거나 삭제된 검사 결과 데이터입니다.");
           }
