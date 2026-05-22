@@ -744,6 +744,7 @@ deleteBtn.onclick = async (e) => {
       }
     });
 // 🕵️‍♂️ 주소창에 공유 파라미터가 붙어있는지 감시하는 내비게이터 함수 (중복 싹 제거 완료!)
+// 🕵️‍♂️ 주소창에 공유 파라미터가 붙어있는지 감시하는 내비게이터 함수 (숫자 규격 매칭 완료!)
 async function checkSharedLink() {
   const urlParams = new URLSearchParams(window.location.search);
   const sharedUid = urlParams.get('uid');
@@ -755,25 +756,29 @@ async function checkSharedLink() {
   if (!sharedUid && hasGuestParams) {
     console.log("[게스트 소환] 주소창 파라미터에서 기질 수치 추출 중... ⚡");
     
-    // 힙하게 압축된 영어 약자(H/M/L)를 다시 기존 렌더링용 한국어로 매칭해주는 치트키 사전!
-    const scoreMap = { 'H': '높음', 'M': '중간', 'L': '낮음', '높음': '높음', '중간': '중간', '낮음': '낮음' };
+    // 💡 [ㄹㅇ 핵심 치트키] H/M/L 영어 약자를 렌더링 엔진이 원하는 숫자 점수로 직접 변환!
+    const scoreToPct = { 
+      'H': 85, 'M': 50, 'L': 20, 
+      '높음': 85, '중간': 50, '낮음': 20 
+    };
 
     const getRawScore = (key) => urlParams.get(key.toLowerCase()) || urlParams.get(key.toUpperCase()) || 'M';
     
+    // 최종 렌더링 함수가 받아먹을 숫자 데이터 객체 빌드!
     const guestScores = {
-      NS: scoreMap[getRawScore('NS')] || '중간',
-      HA: scoreMap[getRawScore('HA')] || '중간',
-      RD: scoreMap[getRawScore('RD')] || '중간',
-      PS: scoreMap[getRawScore('PS')] || '중간',
-      SD: scoreMap[getRawScore('SD')] || '중간',
-      CO: scoreMap[getRawScore('CO')] || '중간',
-      ST: scoreMap[getRawScore('ST')] || '중간'
+      NS: scoreToPct[getRawScore('NS')] || 50,
+      HA: scoreToPct[getRawScore('HA')] || 50,
+      RD: scoreToPct[getRawScore('RD')] || 50,
+      PS: scoreToPct[getRawScore('PS')] || 50,
+      SD: scoreToPct[getRawScore('SD')] || 50,
+      CO: scoreToPct[getRawScore('CO')] || 50,
+      ST: scoreToPct[getRawScore('ST')] || 50
     };
 
     window.currentMode = urlParams.get('mode') || 'deep';
     window.currentScores = guestScores;
 
-    // 🪂 팝업 없이 즉시 화면 렌더링 엔진 가동!
+    // 🪂 팝업 없이 즉시 숫자 데이터를 들고 화면 렌더링 엔진 가동!
     if (typeof window.renderFinalResult === 'function') {
       window.renderFinalResult(guestScores);
     }
@@ -784,7 +789,7 @@ async function checkSharedLink() {
     return; 
   }
 
-  // 🔒 회원 전용 기존 로직
+  // 🔒 회원 전용 기존 로직 (손대지 말고 유지)
   if (sharedUid && sharedTime) {
     console.log(`[원격 소환] UID:${sharedUid}의 ${sharedTime} 결과 데이터 땡겨오는 중... ⚡`);
     try {
