@@ -751,39 +751,33 @@ async function checkSharedLink() {
   const sharedUid = urlParams.get('uid');
   const sharedTime = urlParams.get('time');
 
-  // [대소문자 철벽 방어 가드]
   const hasGuestParams = urlParams.get('ns') || urlParams.get('NS') || urlParams.get('ha') || urlParams.get('HA');
 
   if (!sharedUid && hasGuestParams) {
     console.log("[게스트 소환] 주소창 파라미터에서 기질 수치 추출 중... ⚡");
     
-    // 💡 [ㄹㅇ 마스터 사전] 영어 대소문자, 한글 찌꺼기까지 몽땅 숫자로 강제 맵핑!
-    const scoreToPct = { 
-      'H': 85, 'M': 50, 'L': 20,
-      '높음': 85, '중간': 50, '낮음': 20
-    };
-
-    // 주소창에서 값을 가져와서 무조건 영어 대문자(H/M/L)로 표준화하는 헬퍼 함수!
-    const getNormalizedScore = (key) => {
-      let val = urlParams.get(key.toLowerCase()) || urlParams.get(key.toUpperCase()) || 'M';
-      return typeof val === 'string' ? val.trim().toUpperCase() : 'M';
+    // 주소창에 묻어있는 진짜 숫자를 1% 단위까지 그대로 털어오는 헬퍼 함수
+    const parseParamScore = (key) => {
+      let val = urlParams.get(key.toLowerCase()) || urlParams.get(key.toUpperCase());
+      let num = Number(val);
+      return isNaN(num) ? 50 : num; // 고장 방지 가드만 치고 숫자 그대로 반환!
     };
     
-    // 렌더링 엔진이 원하는 순수 백분위 숫자 객체 빌드!
+    // 주소창 숫자가 화면 렌더링 엔진으로 연쇄 오차 없이 다이렉트 꽂힘!
     const guestScores = {
-      NS: scoreToPct[getNormalizedScore('NS')] || 50,
-      HA: scoreToPct[getNormalizedScore('HA')] || 50,
-      RD: scoreToPct[getNormalizedScore('RD')] || 50,
-      PS: scoreToPct[getNormalizedScore('PS')] || 50,
-      SD: scoreToPct[getNormalizedScore('SD')] || 50,
-      CO: scoreToPct[getNormalizedScore('CO')] || 50,
-      ST: scoreToPct[getNormalizedScore('ST')] || 50
+      NS: parseParamScore('NS'),
+      HA: parseParamScore('HA'),
+      RD: parseParamScore('RD'),
+      PS: parseParamScore('PS'),
+      SD: parseParamScore('SD'),
+      CO: parseParamScore('CO'),
+      ST: parseParamScore('ST')
     };
 
     window.currentMode = urlParams.get('mode') || 'deep';
     window.currentScores = guestScores;
 
-    // 🪂 팝업 없이 완벽한 숫자 데이터를 들고 화면 렌더링 가동!
+    // 🪂 완벽한 1:1 리얼 동기화 데이터 들고 엔진 가동!
     if (typeof window.renderFinalResult === 'function') {
       window.renderFinalResult(guestScores);
     }
@@ -794,9 +788,8 @@ async function checkSharedLink() {
     return; 
   }
 
-  // 🔒 회원 전용 기존 로직
+  // 🔒 회원 전용 기존 로직 (생략 없이 유지)
   if (sharedUid && sharedTime) {
-    console.log(`[원격 소환] UID:${sharedUid}의 ${sharedTime} 결과 데이터 땡겨오는 중... ⚡`);
     try {
       const docRef = doc(db, "tci_results", sharedUid, "history", sharedTime);
       const docSnap = await getDoc(docRef);
@@ -819,53 +812,6 @@ async function checkSharedLink() {
     }
   }
 }
-
-// 🔗 [ㄹㅇ 핵심 추가] 결과 링크 복사 버튼을 누르면 이 마스터 함수가 가로채서 진짜 고유 주소를 만들어냄!
-window.copyResultLink = function() {
-  // 💡 로그인 여부와 상관없이 현재 점수나 모드 데이터를 가져옴
-  if (!window.currentScores) {
-    alert("❌ 현재 생성된 검사 결과가 없습니다!");
-    return;
-  }
-
-  try {
-    // 1. 현재 주소(도메인) 가져오기
-    const baseUrl = window.location.origin + window.location.pathname;
-    
-    // 2. 로그인된 유저라면 기존처럼 uid와 savedAt으로 공유 링크 생성
-    let shareUrl = "";
-    if (window.currentUser && window.currentSavedAt) {
-      shareUrl = `${baseUrl}?uid=${window.currentUser.uid}&savedAt=${window.currentSavedAt}`;
-    } else {
-      // 3. 🔥 로그인 안 한 유저라면 점수 데이터를 URL에 직접 구워서 링크 생성!
-      const ns = window.currentScores.NS || 0;
-      const ha = window.currentScores.HA || 0;
-      const ps = window.currentScores.PS || 0;
-      const sd = window.currentScores.SD || 0;
-      const mode = window.currentMode || 'guest'; 
-      
-      shareUrl = `${baseUrl}?ns=${ns}&ha=${ha}&ps=${ps}&sd=${sd}&mode=${mode}&guest=true`;
-    }
-
-    // 4. 클립보드에 복사 진행
-    navigator.clipboard.writeText(shareUrl).then(() => {
-      alert("🔗 공유 링크가 클립보드에 복사되었습니다! 친구에게 공유해보세요.");
-    }).catch(err => {
-      console.error("링크 복사 실패:", err);
-      const textArea = document.createElement("textarea");
-      textArea.value = shareUrl;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      alert("🔗 공유 링크가 복사되었습니다!");
-    });
-
-  } catch (error) {
-    console.error("공유 링크 생성 중 에러 발생:", error);
-    alert("공유 링크를 생성하지 못했습니다. 다시 시도해 주세요.");
-  }
-};
 
     // 🚀 사이트 켜지자마자 주소창 뒤지기 실행!
     setTimeout(checkSharedLink, 600);
@@ -2195,22 +2141,21 @@ resultWrap.appendChild(header);
     uid = window.currentUser.uid;
     currentTimestamp = window.lastSavedTimestamp || window.currentResultTimestamp || new Date().toISOString();
   } else {
-    // ⭕ 한국어를 간지나는 영어 약자(H/M/L)로 구워버리는 압축 엔진 가동!
-    const encodeScore = (score) => {
-      if (score === '높음') return 'H';
-      if (score === '낮음') return 'L';
-      return 'M'; // 중간이거나 기본값일 때
+    // ⭕ [ㄹㅇ 마스터 피스] 1단계 단위의 실제 백분위 숫자 점수를 날것 그대로 추출!
+    const getRawNumber = (score) => {
+      const num = Number(score);
+      return isNaN(num) ? 50 : num; // 데이터 없으면 디폴트 50%, 있으면 내 진짜 점수 그대로!
     };
 
-    var nsVal = encodeScore(window.currentScores && window.currentScores.NS);
-    var haVal = encodeScore(window.currentScores && window.currentScores.HA);
-    var rdVal = encodeScore(window.currentScores && window.currentScores.RD);
-    var psVal = encodeScore(window.currentScores && window.currentScores.PS);
-    var sdVal = encodeScore(window.currentScores && window.currentScores.SD);
-    var coVal = encodeScore(window.currentScores && window.currentScores.CO);
-    var stVal = encodeScore(window.currentScores && window.currentScores.ST);
+    var nsVal = getRawNumber(window.currentScores && window.currentScores.NS);
+    var haVal = getRawNumber(window.currentScores && window.currentScores.HA);
+    var rdVal = getRawNumber(window.currentScores && window.currentScores.RD);
+    var psVal = getRawNumber(window.currentScores && window.currentScores.PS);
+    var sdVal = getRawNumber(window.currentScores && window.currentScores.SD);
+    var coVal = getRawNumber(window.currentScores && window.currentScores.CO);
+    var stVal = getRawNumber(window.currentScores && window.currentScores.ST);
 
-    // 🔗 파라미터가 콤팩트해진 진짜 결과 주소 생성!
+    // 🔗 주소창 뒤에 내 진짜 점수가 시크하게 숫자로 똭 박힘! (ex: ?ns=74&ha=23)
     var baseUrl = window.location.protocol + '//' + window.location.host + window.location.pathname;
     var guestShareUrl = baseUrl + `?mode=deep&ns=${nsVal}&ha=${haVal}&rd=${rdVal}&ps=${psVal}&sd=${sdVal}&co=${coVal}&st=${stVal}`;
     
@@ -2225,17 +2170,17 @@ resultWrap.appendChild(header);
         if (typeof fallbackCopyText === 'function') fallbackCopyText(guestShareUrl);
         else if (typeof fallbackTextCopyEngine === 'function') fallbackTextCopyEngine(guestShareUrl);
     }
-    return; // 게스트는 여기서 깔끔하게 주소 복사 끝내고 함수 탈출!
+    return; // 게스트 탈출!
   }
 
-  // 🔒 회원 전용 기존 로직 (깔끔하게 딱 한 번만 존재!)
+  // 🔒 회원 전용 기존 로직
   const shareUrl = `${window.location.origin}${window.location.pathname}?uid=${uid}&time=${currentTimestamp}`;
 
   if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
     navigator.clipboard.writeText(shareUrl)
       .then(function() {
         if (typeof handleCopyToastAlert === 'function') handleCopyToastAlert();
-        else alert("🔗 공유 링크가 클립보드에 복사되었습니다!");
+        else alert("🔗 회원 전용 공유 링크가 클립보드에 복사되었습니다!");
       })
       .catch(function() {
         if (typeof fallbackTextCopyEngine === 'function') fallbackTextCopyEngine(shareUrl);
@@ -2243,7 +2188,7 @@ resultWrap.appendChild(header);
   } else {
     if (typeof fallbackTextCopyEngine === 'function') fallbackTextCopyEngine(shareUrl);
   }
-}; // 💥 유령 코드 싹 다 밀어버리고 완벽하게 딱 한 번만 닫음!
+};
 
 function fallbackTextCopyEngine(text) {
   const textArea = document.createElement("textarea");
