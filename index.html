@@ -832,28 +832,6 @@ window.copyResultLink = function() {
   }
 };
 
-      // 방금 검사한 결과 시간 or 과거 목록에서 클릭해 가져온 시간 확보
-      const currentTimestamp = window.lastSavedTimestamp || window.currentResultTimestamp || new Date().toISOString();
-      const uid = window.currentUser ? window.currentUser.uid : null;
-
-      // 만료되지 않는 절대 고유 주소 조립 
-      const shareUrl = `${window.location.origin}${window.location.pathname}?uid=${uid}&time=${currentTimestamp}`;
-
-      var toast = document.getElementById('toastMsg');
-      if (toast) {
-        toast.textContent = "🔗 나만의 결과 공유 링크 복사 완료!";
-        if (typeof showToastPopup === 'function') showToastPopup();
-      }
-
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(shareUrl).catch(function() {
-          prompt("아래 고유 링크를 복사하세요:", shareUrl);
-        });
-      } else {
-        prompt("아래 고유 링크를 복사하세요:", shareUrl);
-      }
-    
-
     // 🚀 사이트 켜지자마자 주소창 뒤지기 실행!
     setTimeout(checkSharedLink, 600);
 </script>
