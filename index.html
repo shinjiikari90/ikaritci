@@ -1705,13 +1705,26 @@ var deepQuestions = [
 
   window.generateSimulatedResult = function() {
   var simulatedScores = {};
-  var mockPct = { low: 20, mid: 50, high: 85 }; 
   
+  // 1. simulatedLevels를 확인해서, 각 지표별로 진짜 값을 가져옴!
   Object.keys(simulatedLevels).forEach(function (key) {
-    var val = mockPct[simulatedLevels[key]];
-    simulatedScores[key] = (val !== undefined) ? val : 50;
+    var level = simulatedLevels[key]; // 'low', 'mid', 'high'가 들어있음
+    
+    // 2. 이제 더 세밀하게 점수를 뽑아보자!
+    // 0~100 사이의 숫자를 랜덤하게 혹은 설정값대로 가져오게 바꿈
+    if (level === 'low') {
+        simulatedScores[key] = Math.floor(Math.random() * 30) + 10; // 10~40점
+    } else if (level === 'high') {
+        simulatedScores[key] = Math.floor(Math.random() * 30) + 70; // 70~100점
+    } else {
+        simulatedScores[key] = Math.floor(Math.random() * 40) + 30; // 30~70점 (mid)
+    }
   });
-  return simulatedScores; // 숫자 상자 반환!
+
+  // 3. 전역 window.scores에 이 결과를 저장해서 공유 함수가 낚아챌 수 있게 함!
+  window.scores = simulatedScores;
+  
+  return simulatedScores;
 };
     
     window.triggerSimulatedResult = function() {
