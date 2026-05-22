@@ -743,130 +743,72 @@ deleteBtn.onclick = async (e) => {
         if (introNotice) introNotice.style.display = "flex";
       }
     });
-// 🕵️‍♂️ 주소창에 공유 파라미터(?uid=...&time=... 또는 게스트 파라미터)가 붙어있는지 감시하는 내비게이터 함수
-    async function checkSharedLink() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const sharedUid = urlParams.get('uid');
-      const sharedTime = urlParams.get('time');
+// 🕵️‍♂️ 주소창에 공유 파라미터가 붙어있는지 감시하는 내비게이터 함수 (중복 싹 제거 완료!)
+async function checkSharedLink() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const sharedUid = urlParams.get('uid');
+  const sharedTime = urlParams.get('time');
 
-      // [대소문자 철벽 방어 가드] 주소창에 소문자나 대문자로 기질이 붙어있는지 감시!
-      const hasGuestParams = urlParams.get('ns') || urlParams.get('NS') || urlParams.get('ha') || urlParams.get('HA');
+  // [대소문자 철벽 방어 가드]
+  const hasGuestParams = urlParams.get('ns') || urlParams.get('NS') || urlParams.get('ha') || urlParams.get('HA');
 
-      if (!sharedUid && hasGuestParams) {
-        console.log("[게스트 소환] 주소창 파라미터에서 기질 수치 추출 중... ⚡");
-        
-        // 렌더링 함수가 대문자 'NS', 'HA'를 확실히 인식하도록 Key를 대문자로 매칭!
-        const guestScores = {
-          NS: decodeURIComponent(urlParams.get('ns') || urlParams.get('NS') || '중간'),
-          HA: decodeURIComponent(urlParams.get('ha') || urlParams.get('HA') || '중간'),
-          RD: decodeURIComponent(urlParams.get('rd') || urlParams.get('RD') || '중간'),
-          PS: decodeURIComponent(urlParams.get('ps') || urlParams.get('PS') || '중간'),
-          SD: decodeURIComponent(urlParams.get('sd') || urlParams.get('SD') || '중간'),
-          CO: decodeURIComponent(urlParams.get('co') || urlParams.get('CO') || '중간'),
-          ST: decodeURIComponent(urlParams.get('st') || urlParams.get('ST') || '중간')
-        };
+  if (!sharedUid && hasGuestParams) {
+    console.log("[게스트 소환] 주소창 파라미터에서 기질 수치 추출 중... ⚡");
+    
+    // 힙하게 압축된 영어 약자(H/M/L)를 다시 기존 렌더링용 한국어로 매칭해주는 치트키 사전!
+    const scoreMap = { 'H': '높음', 'M': '중간', 'L': '낮음', '높음': '높음', '중간': '중간', '낮음': '낮음' };
 
-        window.currentMode = urlParams.get('mode') || 'deep';
-        window.currentScores = guestScores;
+    const getRawScore = (key) => urlParams.get(key.toLowerCase()) || urlParams.get(key.toUpperCase()) || 'M';
+    
+    const guestScores = {
+      NS: scoreMap[getRawScore('NS')] || '중간',
+      HA: scoreMap[getRawScore('HA')] || '중간',
+      RD: scoreMap[getRawScore('RD')] || '중간',
+      PS: scoreMap[getRawScore('PS')] || '중간',
+      SD: scoreMap[getRawScore('SD')] || '중간',
+      CO: scoreMap[getRawScore('CO')] || '중간',
+      ST: scoreMap[getRawScore('ST')] || '중간'
+    };
 
-        // 🪂 팝업 없이 즉시 화면 렌더링 엔진 가동!
-        if (typeof window.renderFinalResult === 'function') {
-          window.renderFinalResult(guestScores);
-        }
-        if (typeof window.showScreen === 'function') {
-          window.showScreen('screen-result');
-        }
-        
-        return; // 팝업창(alert) 싹 걷어내고 쿨하게 탈출!
-      }
+    window.currentMode = urlParams.get('mode') || 'deep';
+    window.currentScores = guestScores;
 
-      // 🔒 회원 전용 기존 로직 (여기도 팝업창 제거 완료!)
-      if (sharedUid && sharedTime) {
-        console.log(`[원격 소환] UID:${sharedUid}의 ${sharedTime} 결과 데이터 땡겨오는 중... ⚡`);
-        try {
-          const docRef = doc(db, "tci_results", sharedUid, "history", sharedTime);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            const sharedData = docSnap.data();
-            window.currentMode = sharedData.mode;
-            window.lastSavedTimestamp = sharedTime;
-            
-            // 🪂 팝업 없이 다이렉트로 화면 전환!
-            if (typeof window.renderFinalResult === 'function') {
-              window.renderFinalResult(sharedData.scores);
-            }
-            if (typeof window.showScreen === 'function') {
-              window.showScreen('screen-result');
-            }
-          } else {
-            alert("❌ 링크가 만료되었거나 삭제된 검사 결과 데이터입니다.");
-          }
-        } catch (error) {
-          console.error("공유 링크 복구 중 에러 발생:", error);
-        }
-      }
-    }async function checkSharedLink() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const sharedUid = urlParams.get('uid');
-      const sharedTime = urlParams.get('time');
-
-      // [대소문자 철벽 방어 가드] 주소창에 소문자나 대문자로 기질이 붙어있는지 감시!
-      const hasGuestParams = urlParams.get('ns') || urlParams.get('NS') || urlParams.get('ha') || urlParams.get('HA');
-
-      if (!sharedUid && hasGuestParams) {
-        console.log("[게스트 소환] 주소창 파라미터에서 기질 수치 추출 중... ⚡");
-        
-        // 렌더링 함수가 대문자 'NS', 'HA'를 확실히 인식하도록 Key를 대문자로 매칭!
-        const guestScores = {
-          NS: decodeURIComponent(urlParams.get('ns') || urlParams.get('NS') || '중간'),
-          HA: decodeURIComponent(urlParams.get('ha') || urlParams.get('HA') || '중간'),
-          RD: decodeURIComponent(urlParams.get('rd') || urlParams.get('RD') || '중간'),
-          PS: decodeURIComponent(urlParams.get('ps') || urlParams.get('PS') || '중간'),
-          SD: decodeURIComponent(urlParams.get('sd') || urlParams.get('SD') || '중간'),
-          CO: decodeURIComponent(urlParams.get('co') || urlParams.get('CO') || '중간'),
-          ST: decodeURIComponent(urlParams.get('st') || urlParams.get('ST') || '중간')
-        };
-
-        window.currentMode = urlParams.get('mode') || 'deep';
-        window.currentScores = guestScores;
-
-        // 🪂 팝업 없이 즉시 화면 렌더링 엔진 가동!
-        if (typeof window.renderFinalResult === 'function') {
-          window.renderFinalResult(guestScores);
-        }
-        if (typeof window.showScreen === 'function') {
-          window.showScreen('screen-result');
-        }
-        
-        return; // 팝업창(alert) 싹 걷어내고 쿨하게 탈출!
-      }
-
-      // 🔒 회원 전용 기존 로직 (여기도 팝업창 제거 완료!)
-      if (sharedUid && sharedTime) {
-        console.log(`[원격 소환] UID:${sharedUid}의 ${sharedTime} 결과 데이터 땡겨오는 중... ⚡`);
-        try {
-          const docRef = doc(db, "tci_results", sharedUid, "history", sharedTime);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            const sharedData = docSnap.data();
-            window.currentMode = sharedData.mode;
-            window.lastSavedTimestamp = sharedTime;
-            
-            // 🪂 팝업 없이 다이렉트로 화면 전환!
-            if (typeof window.renderFinalResult === 'function') {
-              window.renderFinalResult(sharedData.scores);
-            }
-            if (typeof window.showScreen === 'function') {
-              window.showScreen('screen-result');
-            }
-          } else {
-            alert("❌ 링크가 만료되었거나 삭제된 검사 결과 데이터입니다.");
-          }
-        } catch (error) {
-          console.error("공유 링크 복구 중 에러 발생:", error);
-        }
-      }
+    // 🪂 팝업 없이 즉시 화면 렌더링 엔진 가동!
+    if (typeof window.renderFinalResult === 'function') {
+      window.renderFinalResult(guestScores);
     }
+    if (typeof window.showScreen === 'function') {
+      window.showScreen('screen-result');
+    }
+    
+    return; 
+  }
+
+  // 🔒 회원 전용 기존 로직
+  if (sharedUid && sharedTime) {
+    console.log(`[원격 소환] UID:${sharedUid}의 ${sharedTime} 결과 데이터 땡겨오는 중... ⚡`);
+    try {
+      const docRef = doc(db, "tci_results", sharedUid, "history", sharedTime);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const sharedData = docSnap.data();
+        window.currentMode = sharedData.mode;
+        window.lastSavedTimestamp = sharedTime;
+        
+        if (typeof window.renderFinalResult === 'function') {
+          window.renderFinalResult(sharedData.scores);
+        }
+        if (typeof window.showScreen === 'function') {
+          window.showScreen('screen-result');
+        }
+      } else {
+        alert("❌ 링크가 만료되었거나 삭제된 검사 결과 데이터입니다.");
+      }
+    } catch (error) {
+      console.error("공유 링크 복구 중 에러 발생:", error);
+    }
+  }
+}
 
 // 🔗 [ㄹㅇ 핵심 추가] 결과 링크 복사 버튼을 누르면 이 마스터 함수가 가로채서 진짜 고유 주소를 만들어냄!
 window.copyResultLink = function() {
@@ -2243,24 +2185,29 @@ resultWrap.appendChild(header);
     uid = window.currentUser.uid;
     currentTimestamp = window.lastSavedTimestamp || window.currentResultTimestamp || new Date().toISOString();
   } else {
-    // ⭕ 게스트의 실제 결과 수치를 주소에 포함시켜서 링크 만들기!
-    var nsVal = window.currentScores && window.currentScores.NS || '중간';
-    var haVal = window.currentScores && window.currentScores.HA || '중간';
-    var rdVal = window.currentScores && window.currentScores.RD || '중간';
-    var psVal = window.currentScores && window.currentScores.PS || '중간';
-    var sdVal = window.currentScores && window.currentScores.SD || '중간';
-    var coVal = window.currentScores && window.currentScores.CO || '중간';
-    var stVal = window.currentScores && window.currentScores.ST || '중간';
+    // ⭕ [ㄹㅇ 해결책] 한국어를 간지나는 영어 약자(H/M/L)로 구워버리는 압축 엔진 가동!
+    const encodeScore = (score) => {
+      if (score === '높음') return 'H';
+      if (score === '낮음') return 'L';
+      return 'M'; // 중간이거나 기본값일 때
+    };
 
-    // 🔗 파라미터가 엮인 만능 게스트 주소 생성!
+    var nsVal = encodeScore(window.currentScores && window.currentScores.NS);
+    var haVal = encodeScore(window.currentScores && window.currentScores.HA);
+    var rdVal = encodeScore(window.currentScores && window.currentScores.RD);
+    var psVal = encodeScore(window.currentScores && window.currentScores.PS);
+    var sdVal = encodeScore(window.currentScores && window.currentScores.SD);
+    var coVal = encodeScore(window.currentScores && window.currentScores.CO);
+    var stVal = encodeScore(window.currentScores && window.currentScores.ST);
+
+    // 🔗 파라미터가 콤팩트해진 진짜 결과 주소 생성!
     var baseUrl = window.location.protocol + '//' + window.location.host + window.location.pathname;
-    var guestShareUrl = baseUrl + `?mode=deep&ns=${encodeURIComponent(nsVal)}&ha=${encodeURIComponent(haVal)}&rd=${encodeURIComponent(rdVal)}&ps=${encodeURIComponent(psVal)}&sd=${encodeURIComponent(sdVal)}&co=${encodeURIComponent(coVal)}&st=${encodeURIComponent(stVal)}`;
+    var guestShareUrl = baseUrl + `?mode=deep&ns=${nsVal}&ha=${haVal}&rd=${rdVal}&ps=${psVal}&sd=${sdVal}&co=${coVal}&st=${stVal}`;
     
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(guestShareUrl).then(function() {
             alert("🔗 내 결과 데이터가 담긴 공유 링크가 복사되었습니다! 원하는 곳에 공유해 보세요 😉");
         }).catch(function(err) {
-            // 기존에 있던 구형 복사 함수 매칭 (혹시 이름 다르면 바꿀 것!)
             if (typeof fallbackCopyText === 'function') fallbackCopyText(guestShareUrl);
             else if (typeof fallbackTextCopyEngine === 'function') fallbackTextCopyEngine(guestShareUrl);
         });
@@ -2270,6 +2217,23 @@ resultWrap.appendChild(header);
     }
     return; // 게스트는 여기서 깔끔하게 주소 복사 끝내고 함수 탈출!
   }
+
+  // 🔒 회원 전용 기존 로직 (그대로 부드럽게 이어짐!)
+  const shareUrl = `${window.location.origin}${window.location.pathname}?uid=${uid}&time=${currentTimestamp}`;
+
+  if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
+    navigator.clipboard.writeText(shareUrl)
+      .then(function() {
+        if (typeof handleCopyToastAlert === 'function') handleCopyToastAlert();
+        else alert("🔗 회원 전용 공유 링크가 클립보드에 복사되었습니다!");
+      })
+      .catch(function() {
+        if (typeof fallbackTextCopyEngine === 'function') fallbackTextCopyEngine(shareUrl);
+      });
+  } else {
+    if (typeof fallbackTextCopyEngine === 'function') fallbackTextCopyEngine(shareUrl);
+  }
+};
 
   // 🔒 여기서부터는 로그인 유저 전용 기존 로직 (그대로 부드럽게 이어짐!)
   const shareUrl = `${window.location.origin}${window.location.pathname}?uid=${uid}&time=${currentTimestamp}`;
