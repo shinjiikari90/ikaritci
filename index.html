@@ -2218,14 +2218,14 @@ resultWrap.appendChild(header);
     return; // 게스트는 여기서 깔끔하게 주소 복사 끝내고 함수 탈출!
   }
 
-  // 🔒 회원 전용 기존 로직 (그대로 부드럽게 이어짐!)
+  // 🔒 회원 전용 기존 로직 (깔끔하게 딱 한 번만 존재!)
   const shareUrl = `${window.location.origin}${window.location.pathname}?uid=${uid}&time=${currentTimestamp}`;
 
   if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
     navigator.clipboard.writeText(shareUrl)
       .then(function() {
         if (typeof handleCopyToastAlert === 'function') handleCopyToastAlert();
-        else alert("🔗 회원 전용 공유 링크가 클립보드에 복사되었습니다!");
+        else alert("🔗 공유 링크가 클립보드에 복사되었습니다!");
       })
       .catch(function() {
         if (typeof fallbackTextCopyEngine === 'function') fallbackTextCopyEngine(shareUrl);
@@ -2233,27 +2233,7 @@ resultWrap.appendChild(header);
   } else {
     if (typeof fallbackTextCopyEngine === 'function') fallbackTextCopyEngine(shareUrl);
   }
-};
-
-  // 🔒 여기서부터는 로그인 유저 전용 기존 로직 (그대로 부드럽게 이어짐!)
-  const shareUrl = `${window.location.origin}${window.location.pathname}?uid=${uid}&time=${currentTimestamp}`;
-
-  if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
-    navigator.clipboard.writeText(shareUrl)
-      .then(function() {
-        if (typeof handleCopyToastAlert === 'function') {
-          handleCopyToastAlert();
-        } else {
-          alert("🔗 회원 전용 공유 링크가 클립보드에 복사되었습니다!");
-        }
-      })
-      .catch(function() {
-        fallbackTextCopyEngine(shareUrl);
-      });
-  } else {
-    fallbackTextCopyEngine(shareUrl);
-  }
-}; // 💥 전체 함수의 마감 가드 완벽 마감!
+}; // 💥 유령 코드 싹 다 밀어버리고 완벽하게 딱 한 번만 닫음!
 
 function fallbackTextCopyEngine(text) {
   const textArea = document.createElement("textarea");
