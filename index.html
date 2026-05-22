@@ -2203,7 +2203,7 @@ resultWrap.appendChild(header);
     
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(guestShareUrl).then(function() {
-            alert("🔗 내 결과 데이터가 담긴 진짜 공유 링크가 복사되었습니다! 친구한테 보내보셈 욘! 😉");
+            alert("🔗 내 결과 데이터가 담긴 공유 링크가 복사되었습니다! 원하는 곳에 공유해 보세요 😉");
         }).catch(function(err) {
             // 기존에 있던 구형 복사 함수 매칭 (혹시 이름 다르면 바꿀 것!)
             if (typeof fallbackCopyText === 'function') fallbackCopyText(guestShareUrl);
