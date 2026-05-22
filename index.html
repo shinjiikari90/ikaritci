@@ -2266,17 +2266,15 @@ function fallbackTextCopyEngine(text) {
 function handleCopyToastAlert() {
   const toast = document.getElementById('toastMsg');
   if (toast) {
-    toast.textContent = "🔗 결과 공유 링크 복사 완료!";
-    if (typeof showToastPopup === 'function') {
-      showToastPopup();
-      return;
-    } else if (typeof showCopySuccessMessage === 'function') {
-      showCopySuccessMessage();
-      return;
-    }
+    // 기존 토스트 로직 유지
+    toast.textContent = "결과 링크가 복사되었습니다.";
+    if (typeof showToastPopup === 'function') showToastPopup();
+  } else {
+    // 토스트 요소가 없으면 그냥 alert 사용 (안전장치!)
+    alert("결과 링크가 복사되었습니다.");
   }
-  alert("📋 결과 공유 링크가 클립보드에 복사되었습니다!\n카카오톡 대화창 등 원하는 곳에 붙여넣기 하세요.");
 }
+
 </script>
 </body>
 </html>
