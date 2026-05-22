@@ -1817,9 +1817,22 @@ function shuffleQuestions() {
 
   // 🔗 유저 고유 ID와 검사 시간이 결합된 진짜 공유 링크 복사 함수!
 window.shareResult = window.copyResultLink = function() {
+    // ⭕ [ㄹㅇ 해결책] 로그인 안 한 게스트 유저를 위한 우회 가드 설치!
     if (!window.currentUser) {
-        alert("🔒 로그인 후 저장된 결과만 공유 링크를 생성할 수 있습니다!");
-        return;
+        // 회원 ID 기반이 아니라 현재 떠 있는 결과 페이지 링크를 그대로 복사해 줌!
+        var currentUrl = window.location.href;
+        
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(currentUrl).then(function() {
+                alert("🔗 링크가 클립보드에 복사되었습니다. 자유롭게 공유해보세요 😉");
+            }).catch(function(err) {
+                // 구형 브라우저나 모바일 환경 대비용 가드
+                fallbackCopyText(currentUrl);
+            });
+        } else {
+            fallbackCopyText(currentUrl);
+        }
+        return; // 게스트 처리 끝났으니 여기서 함수 종료!
     }
 
     // 🔥 방금 검사한 시간 or 과거 목록에서 클릭한 시간 확보
