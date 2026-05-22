@@ -2188,20 +2188,31 @@ resultWrap.appendChild(header);
     uid = window.currentUser.uid;
     currentTimestamp = window.lastSavedTimestamp || window.currentResultTimestamp || new Date().toISOString();
   } else {
-    // ⭕ [ㄹㅇ 해결책] 로그인 안 한 게스트도 튕겨내지 않고 현재 URL 복사 처리!
-    var currentUrl = window.location.href;
+    // ⭕ 게스트의 실제 결과 수치를 주소에 포함시켜서 링크 만들기!
+    var nsVal = window.currentScores && window.currentScores.NS || '중간';
+    var haVal = window.currentScores && window.currentScores.HA || '중간';
+    var rdVal = window.currentScores && window.currentScores.RD || '중간';
+    var psVal = window.currentScores && window.currentScores.PS || '중간';
+    var sdVal = window.currentScores && window.currentScores.SD || '중간';
+    var coVal = window.currentScores && window.currentScores.CO || '중간';
+    var stVal = window.currentScores && window.currentScores.ST || '중간';
+
+    // 🔗 파라미터가 엮인 만능 게스트 주소 생성!
+    var baseUrl = window.location.protocol + '//' + window.location.host + window.location.pathname;
+    var guestShareUrl = baseUrl + `?mode=deep&ns=${encodeURIComponent(nsVal)}&ha=${encodeURIComponent(haVal)}&rd=${encodeURIComponent(rdVal)}&ps=${encodeURIComponent(psVal)}&sd=${encodeURIComponent(sdVal)}&co=${encodeURIComponent(coVal)}&st=${encodeURIComponent(stVal)}`;
     
     if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(currentUrl).then(function() {
-            alert("🔗 게스트 결과 링크가 클립보드에 복사되었습니다! 자유롭게 공유해보셈 욘! 😉");
+        navigator.clipboard.writeText(guestShareUrl).then(function() {
+            alert("🔗 내 결과 데이터가 담긴 진짜 공유 링크가 복사되었습니다! 친구한테 보내보셈 욘! 😉");
         }).catch(function(err) {
-            fallbackCopyText(currentUrl);
+            fallbackCopyText(guestShareUrl);
         });
     } else {
-        fallbackCopyText(currentUrl);
+        fallbackCopyText(guestShareUrl);
     }
-    return; // 게스트 처리가 끝났으므로 여기서 함수 탈출!
+    return;
   }
+}; // 💥 깔끔하게 함수 마감 가드 완료!
 
   // 💡 아래쪽은 기존에 구현되어 있던 링크 생성 및 클립보드 복사 로직 (그대로 두기!)
 
