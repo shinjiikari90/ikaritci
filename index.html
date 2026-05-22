@@ -2148,37 +2148,39 @@ resultWrap.appendChild(header);
     uid = window.currentUser.uid;
     currentTimestamp = window.lastSavedTimestamp || window.currentResultTimestamp || new Date().toISOString();
   } else {
-    // ⭕ 실제 진단 완료 시점에 존재하던 진짜 백분위 점수(0~100)를 추출!
-    const getRawNumber = (score) => {
-      const num = Number(score);
-      return isNaN(num) ? 50 : num; // 데이터 없으면 디폴트 50
-    };
-
-    // 현재 버튼이 만들어지는 시점과 가장 가까운 점수 객체를 다이렉트로 낚아챔 리얼루다가!
+    // ⭕ 1. 점수 상자 낚아채기 (데이터 누락 원천 방어)
     var targetScores = window.currentScores || window.scores || (typeof scores !== 'undefined' ? scores : null);
 
-    var nsVal = getRawNumber(targetScores && targetScores.NS);
-    var haVal = getRawNumber(targetScores && targetScores.HA);
-    var rdVal = getRawNumber(targetScores && targetScores.RD);
-    var psVal = getRawNumber(targetScores && targetScores.PS);
-    var sdVal = getRawNumber(targetScores && targetScores.SD);
-    var coVal = getRawNumber(targetScores && targetScores.CO);
-    var stVal = getRawNumber(targetScores && targetScores.ST);
+    // ⭕ 2. 점수 보정 엔진 (M이나 undefined가 나오면 무조건 50으로!)
+    const getRawNumber = (score) => {
+      if (score === 'M' || score === 'm') return 50;
+      const num = Number(score);
+      return isNaN(num) ? 50 : num;
+    };
 
-    // 🔗 1% 단위 숫자 점수 파라미터 링크 빌드! (ex: ?ns=74&ha=23)
+    var nsVal = getRawNumber(targetScores ? targetScores.NS : 50);
+    var haVal = getRawNumber(targetScores ? targetScores.HA : 50);
+    var rdVal = getRawNumber(targetScores ? targetScores.RD : 50);
+    var psVal = getRawNumber(targetScores ? targetScores.PS : 50);
+    var sdVal = getRawNumber(targetScores ? targetScores.SD : 50);
+    var coVal = getRawNumber(targetScores ? targetScores.CO : 50);
+    var stVal = getRawNumber(targetScores ? targetScores.ST : 50);
+
+    // 🔗 3. 주소창 링크 생성 (숫자로만 똭!)
     var baseUrl = window.location.protocol + '//' + window.location.host + window.location.pathname;
     var guestShareUrl = baseUrl + `?mode=deep&ns=${nsVal}&ha=${haVal}&rd=${rdVal}&ps=${psVal}&sd=${sdVal}&co=${coVal}&st=${stVal}`;
     
+    // 📋 클립보드 복사 엔진
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(guestShareUrl).then(function() {
             alert("🔗 내 결과 데이터가 담긴 공유 링크가 복사되었습니다! 원하는 곳에 공유해 보세요 😉");
         }).catch(function(err) {
-            if (typeof fallbackCopyText === 'function') fallbackCopyText(guestShareUrl);
+            if (typeof fallbackTextCopyEngine === 'function') fallbackTextCopyEngine(guestShareUrl);
         });
     } else {
-        if (typeof fallbackCopyText === 'function') fallbackCopyText(guestShareUrl);
+        if (typeof fallbackTextCopyEngine === 'function') fallbackTextCopyEngine(guestShareUrl);
     }
-    return; // 게스트는 안전하게 복사 마치고 여기서 탈출!
+    return;
   }
 
   // 🔒 회원 전용 기존 로직 (그대로 보존)
