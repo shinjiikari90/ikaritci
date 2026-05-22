@@ -2141,49 +2141,24 @@ resultWrap.appendChild(header);
     uid = window.currentUser.uid;
     currentTimestamp = window.lastSavedTimestamp || window.currentResultTimestamp || new Date().toISOString();
   } else {
-    // 🧲 [초강력 화면 스크래핑 엔진 가동] 상자가 비어있다면 화면을 직접 턴다!
-    const scrapeScoreFromScreen = (key) => {
-      // 1. 메모리에 혹시나 점수 상자가 남아있는지 먼저 체크!
-      const targetScores = window.currentScores || window.scores || (typeof scores !== 'undefined' ? scores : null);
-      if (targetScores && targetScores[key]) {
-        return Number(targetScores[key]);
-      }
-
-      // 2. 상자가 비어있다면 화면(HTML)에 그려진 그래프나 텍스트에서 숫자를 강제로 추출!
-      // 신지군 사이트의 일반적인 그래프 바 또는 점수 텍스트 클래스 요소를 전방위 탐색함 ㄷㄷㄷ
-      const element = document.querySelector(`.bar-${key.toLowerCase()}`) || 
-                      document.querySelector(`.bar-${key.toUpperCase()}`) ||
-                      document.getElementById(`score-${key.toLowerCase()}`) ||
-                      document.getElementById(`score-${key.toUpperCase()}`);
-      
-      if (element) {
-        // 스타일(width: 85%)이나 텍스트(85%)에서 숫자만 쏙 발라내기!
-        const text = element.style.width || element.innerText || element.textContent;
-        const num = parseInt(text.replace(/[^0-859]/g, ''), 10);
-        if (!isNaN(num)) return num;
-      }
-
-      // 3. 만약 화면에서도 못 찾으면, 해설 카드 내용(종합 밸런스형)을 분석해서 강제 추정 매칭!
-      // 화면에 '종합 밸런스형' 텍스트가 떠 있다면 그 항목은 무조건 '중간(50)'인 상태임 미쳤지!
-      const pageText = document.body.innerText;
-      if (pageText.includes('종합 밸런스형')) {
-         return 50; 
-      }
-
-      return 50; // 최종 방어가드 디폴트값
+    // ⭕ 실제 진단 완료 시점에 존재하던 진짜 백분위 점수(0~100)를 추출!
+    const getRawNumber = (score) => {
+      const num = Number(score);
+      return isNaN(num) ? 50 : num; // 데이터 없으면 디폴트 50
     };
 
-    var nsVal = scrapeScoreFromScreen('NS');
-    var haVal = scrapeScoreFromScreen('HA');
-    var rdVal = scrapeScoreFromScreen('RD');
-    var psVal = scrapeScoreFromScreen('PS');
-    var sdVal = scrapeScoreFromScreen('SD');
-    var coVal = scrapeScoreFromScreen('CO');
-    var stVal = scrapeScoreFromScreen('ST');
+    // 현재 버튼이 만들어지는 시점과 가장 가까운 점수 객체를 다이렉트로 낚아챔 리얼루다가!
+    var targetScores = window.currentScores || window.scores || (typeof scores !== 'undefined' ? scores : null);
 
-    console.log(`🎯 [스크래핑 완료] 추출된 리얼 점수 -> NS:${nsVal}, HA:${haVal}, RD:${rdVal}`);
+    var nsVal = getRawNumber(targetScores && targetScores.NS);
+    var haVal = getRawNumber(targetScores && targetScores.HA);
+    var rdVal = getRawNumber(targetScores && targetScores.RD);
+    var psVal = getRawNumber(targetScores && targetScores.PS);
+    var sdVal = getRawNumber(targetScores && targetScores.SD);
+    var coVal = getRawNumber(targetScores && targetScores.CO);
+    var stVal = getRawNumber(targetScores && targetScores.ST);
 
-    // 🔗 주소창 뒤에 1% 단위 내 진짜 결과 점수 그대로 똭 구워버리기!
+    // 🔗 1% 단위 숫자 점수 파라미터 링크 빌드! (ex: ?ns=74&ha=23)
     var baseUrl = window.location.protocol + '//' + window.location.host + window.location.pathname;
     var guestShareUrl = baseUrl + `?mode=deep&ns=${nsVal}&ha=${haVal}&rd=${rdVal}&ps=${psVal}&sd=${sdVal}&co=${coVal}&st=${stVal}`;
     
@@ -2192,16 +2167,14 @@ resultWrap.appendChild(header);
             alert("🔗 내 결과 데이터가 담긴 공유 링크가 복사되었습니다! 원하는 곳에 공유해 보세요 😉");
         }).catch(function(err) {
             if (typeof fallbackCopyText === 'function') fallbackCopyText(guestShareUrl);
-            else if (typeof fallbackTextCopyEngine === 'function') fallbackTextCopyEngine(guestShareUrl);
         });
     } else {
         if (typeof fallbackCopyText === 'function') fallbackCopyText(guestShareUrl);
-        else if (typeof fallbackTextCopyEngine === 'function') fallbackTextCopyEngine(guestShareUrl);
     }
-    return; // 게스트 탈출!
+    return; // 게스트는 안전하게 복사 마치고 여기서 탈출!
   }
 
-  // 🔒 회원 전용 기존 로직 (그대로 유지)
+  // 🔒 회원 전용 기존 로직 (그대로 보존)
   const shareUrl = `${window.location.origin}${window.location.pathname}?uid=${uid}&time=${currentTimestamp}`;
 
   if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
