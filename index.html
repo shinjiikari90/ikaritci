@@ -2185,7 +2185,7 @@ resultWrap.appendChild(header);
     uid = window.currentUser.uid;
     currentTimestamp = window.lastSavedTimestamp || window.currentResultTimestamp || new Date().toISOString();
   } else {
-    // ⭕ [ㄹㅇ 해결책] 한국어를 간지나는 영어 약자(H/M/L)로 구워버리는 압축 엔진 가동!
+    // ⭕ 한국어를 간지나는 영어 약자(H/M/L)로 구워버리는 압축 엔진 가동!
     const encodeScore = (score) => {
       if (score === '높음') return 'H';
       if (score === '낮음') return 'L';
