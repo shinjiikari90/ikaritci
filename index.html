@@ -1548,6 +1548,16 @@ var deepQuestions = [
   var simulatedLevels = { NS: 'mid', HA: 'mid', RD: 'mid', PS: 'mid', SD: 'mid', CO: 'mid', ST: 'mid' };
 
   window.showScreen = function(screenId) {
+    // [방어벽 시작] 공유 링크가 아닌데 결과 페이지로 가려고 하면? 🏠
+    const urlParams = new URLSearchParams(window.location.search);
+    const isGuest = urlParams.get('ns') || urlParams.get('uid');
+
+    if (screenId === 'screen-result' && !isGuest) {
+        console.log("결과 페이지 차단! 홈 화면으로 강제 이동 🛡️");
+        screenId = 'screen-home'; // 목적지를 홈으로 바꿔버림!
+    }
+    // [방어벽 끝]
+
     document.querySelectorAll('.screen').forEach(function(s) {
       s.classList.remove('active');
     });
@@ -1556,7 +1566,7 @@ var deepQuestions = [
       target.classList.add('active');
     }
     window.scrollTo(0, 0);
-  };
+};
 
   window.toggleSidebar = function(isOpen) {
     var sidebar = document.getElementById('sidebar');
