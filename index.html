@@ -797,18 +797,23 @@ if (urlParams.get('ns')) {
 }
 
 // 🪂 여기서 guestScores 대신 window.currentScores를 써야 진짜 데이터가 들어감!
-// 🪂 여기서 guestScores 대신 window.currentScores를 써야 진짜 데이터가 들어감!
 if (typeof window.renderFinalResult === 'function') {
   window.renderFinalResult(window.currentScores); // 👈 중요!
 }
 
-// 🚨 [수정본] 공유된 파라미터(hasGuestParams)가 있을 때만 결과창으로 튕기게!
+// 🚨 [최종 패치] 공유 링크(hasGuestParams)가 있을 때만 결과창으로 튕김!
+// 로컬스토리지에 결과가 있어도, 파라미터가 없으면 결과창으로 안 보냄!
 if (hasGuestParams && typeof window.showScreen === 'function') {
   window.showScreen('screen-result');
+} else {
+  // 공유 파라미터가 없으면 메인으로 강제 이동(안전장치)
+  if (typeof window.showScreen === 'function') {
+    window.showScreen('screen-intro');
+  }
 }
     
-    return; 
-  }
+return; 
+}
 
   // 🔒 회원 전용 기존 로직 (생략 없이 유지)
   if (sharedUid && sharedTime) {
