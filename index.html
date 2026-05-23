@@ -797,10 +797,13 @@ if (urlParams.get('ns')) {
 }
 
 // 🪂 여기서 guestScores 대신 window.currentScores를 써야 진짜 데이터가 들어감!
+// 🪂 여기서 guestScores 대신 window.currentScores를 써야 진짜 데이터가 들어감!
 if (typeof window.renderFinalResult === 'function') {
   window.renderFinalResult(window.currentScores); // 👈 중요!
 }
-if (typeof window.showScreen === 'function') {
+
+// 🚨 [수정본] 공유된 파라미터(hasGuestParams)가 있을 때만 결과창으로 튕기게!
+if (hasGuestParams && typeof window.showScreen === 'function') {
   window.showScreen('screen-result');
 }
     
@@ -1749,7 +1752,7 @@ var deepQuestions = [
     window.scores = scores;
       localStorage.setItem('lastResult', JSON.stringify(scores));
       window.renderFinalResult(scores);              
-    window.showScreen('screen-result');           
+    //window.showScreen('screen-result');           
     
     var targetMenu = document.getElementById('menu-' + window.currentMode);
     if(targetMenu) {
