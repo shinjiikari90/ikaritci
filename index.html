@@ -1548,30 +1548,31 @@ var deepQuestions = [
   var simulatedLevels = { NS: 'mid', HA: 'mid', RD: 'mid', PS: 'mid', SD: 'mid', CO: 'mid', ST: 'mid' };
 
   window.showScreen = function(screenId) {
-    // 1. 만약 screenId가 없거나 이상하면 홈으로 지정
-    if (!screenId) screenId = 'screen-home';
-
-    // 2. 방어벽 로직 (공유 링크 아니면 결과 페이지 차단)
+    // 1. 공유 링크 체크
     const urlParams = new URLSearchParams(window.location.search);
     const isGuest = urlParams.get('ns') || urlParams.get('uid');
 
+    // 2. 결과 페이지 차단 로직
     if (screenId === 'screen-result' && !isGuest) {
-        console.log("결과 페이지 차단! 홈으로 강제 이동 🛡️");
-        screenId = 'screen-home'; 
+        screenId = 'screen-home';
     }
 
-    // 3. 화면 전환 로직
-    document.querySelectorAll('.screen').forEach(function(s) {
-      s.classList.remove('active');
+    // 3. 요소 초기화
+    var allScreens = document.querySelectorAll('.screen');
+    allScreens.forEach(function(s) {
+        s.classList.remove('active');
     });
-    
+
+    // 4. [중요] target이 존재할 때만 classList 추가!
     var target = document.getElementById(screenId);
     if (target) {
-      target.classList.add('active');
+        target.classList.add('active');
     } else {
-      // 만약 target이 없으면(결과 페이지가 없거나 로딩 전이면) 홈이라도 띄움!
-      document.getElementById('screen-home').classList.add('active');
+        // 만약 지정한 screenId가 없으면, 최소한 홈이라도 강제로 띄움!
+        var fallback = document.getElementById('screen-home');
+        if (fallback) fallback.classList.add('active');
     }
+    
     window.scrollTo(0, 0);
 };
 
