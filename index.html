@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+  <script>
+        window.MY_APP = window.MY_APP || {};
+        window.MY_APP.goHomeAndReset = function() {
+            localStorage.removeItem('lastResult');
+            localStorage.removeItem('ns'); 
+            window.location.href = 'index.html'; 
+        };
+    </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -2097,7 +2105,7 @@ btnGroup.className = 'action-btn-group';
 // 💡 copyResultLink() 대신 window.copyResultLinkUnified() 로 매칭해줍니다.
 // 기존 코드에서 location.reload() 부분을 이렇게 바꾸셈
 btnGroup.innerHTML = '<button class="share-btn" onclick="window.copyResultLinkUnified()">🔗 결과 링크 복사하기</button>'
-                   + '<button class="restart-btn" onclick="window.location.href=\'index.html\'">🔄 테스트 다시 하기</button>';
+                   + '<button class="restart-btn" onclick="window.MY_APP.goHomeAndReset()">🔄 테스트 다시 하기</button>';
 header.appendChild(btnGroup);
 
 resultWrap.appendChild(header);
