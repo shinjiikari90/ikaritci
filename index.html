@@ -32,12 +32,19 @@
     }
     .modal-overlay.active { opacity: 1; visibility: visible; }
 
-    /* 🧭 좌측 사이드바 (전문적인 다크 네이비) */
+    /* 🧭 좌측 사이드바 */
     #sidebar {
       width: 260px; background: #2C3E50; color: #fff;
-      display: flex; flex-direction: column; flex-shrink: 0;
-      min-height: 100vh; z-index: 1500; justify-content: space-between;
+      display: flex; flex-direction: column;
+      position: fixed; /* 👈 이거 꼭 들어가야 함! */
+      top: 0; left: 0; height: 100vh;
+      z-index: 2500; /* 👈 이게 높아야 햄버거 메뉴가 위에 뜸 */
+      transform: translateX(-100%); /* 👈 평소엔 왼쪽으로 숨겨두기 */
+      transition: transform 0.3s ease;
+      justify-content: space-between;
     }
+    #sidebar.active { transform: translateX(0); } /* 👈 클래스 붙으면 튀어나옴 */
+
     .sidebar-title {
       padding: 24px 20px; font-size: 1.1rem; font-weight: 700;
       border-bottom: 1px solid #34495e; background: #243342;
