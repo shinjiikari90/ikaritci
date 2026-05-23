@@ -1768,27 +1768,31 @@ var deepQuestions = [
 window.addEventListener('load', function() {
   console.log("엔진 가동 준비 완료!");
 
-  // 1. 모든 함수가 정의되었는지 확실히 체크!
-  if (typeof window.generateSimulatedResult === 'function' && typeof window.renderFinalResult === 'function') {
-    
-    var scores = window.generateSimulatedResult();
-    window.renderFinalResult(scores);
-    
-    if (typeof window.showScreen === 'function') {
-      window.showScreen('screen-result');
-    }
+  const urlParams = new URLSearchParams(window.location.search);
+  const hasParams = urlParams.get('ns') || urlParams.get('ha') || urlParams.get('uid');
 
-    // 메뉴 활성화도 안전하게!
-    var targetMenu = document.getElementById('menu-' + window.currentMode);
-    if(targetMenu) {
-      document.querySelectorAll('.menu-list .menu-item').forEach(function(el) {
-        el.classList.remove('active');
-      });
-      targetMenu.classList.add('active');
+  // 1. 공유 링크 접속 시 (결과 페이지로 보내기)
+  if (hasParams) {
+    console.log("공유 링크 감지! 결과 페이지로 이동 준비 🚀");
+    if (typeof checkSharedLink === 'function') {
+      checkSharedLink();
     }
-  } else {
-    // 혹시라도 함수가 없으면 콘솔에 에러 뿜지 말고 조용히 대기!
-    console.warn("함수 준비 중... 잠시만 대기!");
+  } 
+  // 2. 일반 접속 시 (메인 페이지 보여주기)
+  else {
+    console.log("일반 접속 감지! 메인 화면으로 고정 🌿");
+    if (typeof window.showScreen === 'function') {
+      window.showScreen('screen-intro'); // 👈 이제 무조건 메인부터 뜸!
+    }
+  }
+
+  // 메뉴 활성화 UI 로직은 유지
+  var targetMenu = document.getElementById('menu-' + window.currentMode);
+  if(targetMenu) {
+    document.querySelectorAll('.menu-list .menu-item').forEach(function(el) {
+      el.classList.remove('active');
+    });
+    targetMenu.classList.add('active');
   }
 });
 
