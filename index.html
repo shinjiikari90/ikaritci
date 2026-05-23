@@ -98,13 +98,14 @@
 
     /* 📱 모바일 상단 햄버거 바 */
     .mobile-top-bar {
-      display: none; background: #1e293b; color: #ffffff; padding: 14px 16px;
-      align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1200;
-      border-bottom: 1px solid #334155;
+      display: none; padding: 16px; position: fixed; top: 0; left: 0; z-index: 1200;
+      width: auto; background: transparent !important; border: none !important;
     }
     .hamburger-btn {
-      background: none; border: none; color: #ffffff; font-size: 1.5rem; cursor: pointer;
-      display: flex; align-items: center; -webkit-tap-highlight-color: transparent;
+      background: rgba(255, 255, 255, 0.8); /* 버튼이 잘 보이게 살짝 배경 추가 */
+      border: 1px solid #e5e7eb; border-radius: 8px; color: #1a1a1a; 
+      font-size: 1.5rem; cursor: pointer; padding: 4px 10px;
+      display: flex; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     .mobile-bar-title { font-size: 1rem; font-weight: 700; }
 
@@ -275,7 +276,6 @@
 
     /* 📱 미디어 쿼리 */
     @media (max-width: 992px) {
-      body { flex-direction: column; min-height: 100dvh; }
       .mobile-top-bar { display: flex; }
 
       #sidebar {
@@ -844,10 +844,8 @@ if (hasParamsForInit) {
 
 <div id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
 
-<div class="mobile-top-bar">
-  <button class="hamburger-btn" onclick="toggleSidebar(true)">☰</button>
-  <div class="mobile-bar-title">🧬 TCI 성격 진단 시뮬레이터</div>
-  <div style="width:24px;"></div>
+<div class="mobile-top-bar" style="background: transparent; border: none; justify-content: flex-start;">
+  <button class="hamburger-btn" onclick="toggleSidebar(true)" style="color: #1a1a1a;">☰</button>
 </div>
 
 <div id="sidebar">
