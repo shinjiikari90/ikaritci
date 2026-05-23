@@ -750,10 +750,10 @@ async function checkSharedLink() {
   const urlParams = new URLSearchParams(window.location.search);
   const sharedUid = urlParams.get('uid');
   
-  // 파라미터가 있는지 확인하는 핵심 변수
+  // 파라미터가 있는지 확인
   const hasGuestParams = urlParams.get('ns') || urlParams.get('NS') || urlParams.get('ha') || urlParams.get('HA');
 
-  // 🚨 [필승 패치] 공유 파라미터가 없으면 그냥 여기서 함수 종료! (메인 화면 보호)
+  // 1. 파라미터가 없으면 그냥 함수 종료 (메인 화면 유지)
   if (!hasGuestParams) {
     console.log("공유된 파라미터 없음, 메인 화면 유지함! 🌿");
     return;
@@ -778,10 +778,9 @@ async function checkSharedLink() {
   };
 
   window.currentMode = urlParams.get('mode') || 'deep';
-
   var savedScores = localStorage.getItem('lastResult');
 
-  // 데이터 결정 로직
+  // 2. 데이터 결정
   if (urlParams.get('ns')) { 
     window.currentScores = guestScores;
   } else if (savedScores) {
@@ -790,7 +789,7 @@ async function checkSharedLink() {
     window.currentScores = guestScores; 
   }
 
-  // 🪂 결과 렌더링
+  // 3. 렌더링 및 화면 전환
   if (typeof window.renderFinalResult === 'function') {
     window.renderFinalResult(window.currentScores);
   }
@@ -802,57 +801,6 @@ async function checkSharedLink() {
     
   return; 
 }
-    
-    // 주소창 숫자가 화면 렌더링 엔진으로 연쇄 오차 없이 다이렉트 꽂힘!
-    const guestScores = {
-      NS: parseParamScore('NS'),
-      HA: parseParamScore('HA'),
-      RD: parseParamScore('RD'),
-      PS: parseParamScore('PS'),
-      SD: parseParamScore('SD'),
-      CO: parseParamScore('CO'),
-      ST: parseParamScore('ST')
-    };
-
-    // 1. URL 파라미터 먼저 확인
-const urlParams = new URLSearchParams(window.location.search);
-window.currentMode = urlParams.get('mode') || 'deep';
-
-// 2. [핵심] 덮어쓰기 방어 로직!
-// 주소창에 파라미터가 없으면(게스트 소환이 아니면), 
-// 로컬스토리지에 있는 '마지막 결과'를 우선적으로 낚아챔.
-// ... (위의 URL 파라미터 로직은 그대로 두고) ...
-
-// 2. [핵심] 덮어쓰기 방어 로직!
-var savedScores = localStorage.getItem('lastResult');
-
-if (urlParams.get('ns')) { 
-  window.currentScores = guestScores;
-} else if (savedScores) {
-  window.currentScores = JSON.parse(savedScores);
-} else {
-  window.currentScores = guestScores; 
-}
-
-// 🪂 여기서 guestScores 대신 window.currentScores를 써야 진짜 데이터가 들어감!
-if (typeof window.renderFinalResult === 'function') {
-  window.renderFinalResult(window.currentScores); // 👈 중요!
-}
-
-// 🚨 [최종 패치] 공유 링크(hasGuestParams)가 있을 때만 결과창으로 튕김!
-// 로컬스토리지에 결과가 있어도, 파라미터가 없으면 결과창으로 안 보냄!
-if (hasGuestParams && typeof window.showScreen === 'function') {
-  window.showScreen('screen-result');
-} else {
-  // 공유 파라미터가 없으면 메인으로 강제 이동(안전장치)
-  if (typeof window.showScreen === 'function') {
-    window.showScreen('screen-intro');
-  }
-}
-    
-return; 
-}
-
   // 🔒 회원 전용 기존 로직 (생략 없이 유지)
   if (sharedUid && sharedTime) {
     try {
