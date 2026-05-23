@@ -754,12 +754,19 @@ deleteBtn.onclick = async (e) => {
   
   // 1. 점수 파라미터 추출 헬퍼 함수
   const parseParamScore = (key) => {
-    let val = urlParams.get(key.toLowerCase()) || urlParams.get(key.toUpperCase());
-    if (val && !isNaN(Number(val))) return Number(val);
+  let val = urlParams.get(key.toLowerCase()) || urlParams.get(key.toUpperCase());
+  if (val && !isNaN(Number(val))) return Number(val);
+  
+  // 💥 브라우저 보안 때문에 여기서 뻑이 날 수 있음! 
+  try {
     var saved = localStorage.getItem('lastResult');
     if (saved) return JSON.parse(saved)[key.toUpperCase()] || 50;
-    return 50;
-  };
+  } catch (e) {
+    console.warn("로컬스토리지 접근이 차단됨, 기본값 50 사용함.");
+  }
+  
+  return 50; // 기본값 반환
+};
 
   // 2. 게스트 판별 로직
   const ns = urlParams.get('ns') || urlParams.get('NS');
