@@ -40,10 +40,10 @@
     }
     #sidebar-overlay.active { opacity: 1; visibility: visible; }
 
-    /* 🧭 좌측 사이드바 */
+    /* 🧭 좌측 사이드바 - 메인 테마 네이비로 일체화 */
     #sidebar {
       width: 260px;
-      background: #2C3E50;
+      background: #2C3E50; /* 메인과 동일한 네이비 */
       color: #fff;
       display: flex;
       flex-direction: column;
@@ -56,13 +56,13 @@
     .sidebar-top { display: flex; flex-direction: column; }
     .sidebar-title {
       padding: 24px 20px; font-size: 1.1rem; font-weight: 700;
-      border-bottom: 1px solid #34495e;
-      background: #243342;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background: #22313F; /* 약간 더 짙은 네이비로 고급스럽게 */
     }
     
     /* 👤 로그인 유저 정보 영역 */
     .user-profile-box {
-      padding: 16px; border-bottom: 1px solid #34495e; background: #243342;
+      padding: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); background: #22313F;
       display: flex; flex-direction: column; gap: 10px;
     }
     .user-info-flex { display: flex; align-items: center; gap: 10px; }
@@ -80,7 +80,7 @@
       font-size: 0.85rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
     }
     .btn-logout {
-      width: 100%; padding: 8px; border: 1px solid #4a5c6e; border-radius: 6px; background: transparent; color: #bdc3c7;
+      width: 100%; padding: 8px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: transparent; color: #bdc3c7;
       font-size: 0.78rem; font-weight: 600; cursor: pointer;
     }
     .btn-logout:hover { background: rgba(255,255,255,0.05); color: #fff; }
@@ -88,18 +88,19 @@
     .menu-list { list-style: none; padding: 15px 10px; }
     .menu-item {
       padding: 14px 16px; border-radius: 10px; cursor: pointer; margin-bottom: 8px;
-      font-size: 0.95rem; font-weight: 600; color: #bdc3c7; transition: all 0.2s;
+      font-size: 0.95rem; font-weight: 600; color: #ecf0f1; transition: all 0.2s;
       display: flex; align-items: center; justify-content: space-between;
       -webkit-tap-highlight-color: transparent;
     }
-    .menu-item:hover { background: #34495e; color: #fff; }
+    .menu-item:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+    /* 🌟 메뉴 활성화 하이라이트 - 메인 블루 테마 적용 완료 욘 */
     .menu-item.active { background: #3498DB; color: #fff; font-weight: 700; }
     .lock-badge { font-size: 0.8rem; background: rgba(255,255,255,0.15); padding: 2px 6px; border-radius: 6px; color: #ffeb3b; }
-    .sidebar-footer { padding: 15px 10px; border-top: 1px solid #34495e; }
-    .btn-admin-trigger { background: #243342; color: #a0a0b5; }
+    .sidebar-footer { padding: 15px 10px; border-top: 1px solid rgba(255, 255, 255, 0.1); }
+    .btn-admin-trigger { background: #22313F; color: #a0a0b5; }
     .btn-admin-trigger:hover { background: #cf3c3c; color: #fff; }
 
-    /* 📱 모바일 상단 영역: 중복 텍스트와 배경은 없애고 햄버거 버튼 위치만 확보 욘 */
+    /* 📱 모바일 상단 영역: 중복 텍스트와 배경은 없애고 햄버거 버튼 위치만 확보 */
     .mobile-top-bar {
       display: flex; background: transparent; padding: 10px 16px;
       align-items: center; justify-content: flex-start; position: absolute; top: 0; left: 0; z-index: 1200;
@@ -272,6 +273,7 @@
       #sidebar {
         position: fixed; top: 0; left: 0; height: 100vh; width: 280px;
         transform: translateX(-100%); z-index: 2500;
+        background: #2C3E50; /* 모바일 슬라이딩 시에도 색상 똑같이 네이비 유지 */
       }
       #sidebar.active { transform: translateX(0); }
     }
