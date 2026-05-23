@@ -749,8 +749,9 @@ deleteBtn.onclick = async (e) => {
 async function checkSharedLink() {
   const urlParams = new URLSearchParams(window.location.search);
   const sharedUid = urlParams.get('uid');
+  const sharedTime = urlParams.get('time');
   
-  // 1. 점수 파라미터 추출 헬퍼 함수 (정의 먼저!)
+  // 1. 점수 파라미터 추출 헬퍼 함수
   const parseParamScore = (key) => {
     let val = urlParams.get(key.toLowerCase()) || urlParams.get(key.toUpperCase());
     if (val && !isNaN(Number(val))) return Number(val);
@@ -759,32 +760,24 @@ async function checkSharedLink() {
     return 50;
   };
 
-  // 2. 게스트 판별 (주소창에 유효한 점수가 있는지)
+  // 2. 게스트 판별 로직
   const ns = urlParams.get('ns') || urlParams.get('NS');
   const isRealGuest = ns && !isNaN(Number(ns)) && ns !== 'M';
 
-  // 3. 메인 로직: 공유 링크(게스트)인지 아닌지 판단
+  // 3. 상황별 분기 처리
   if (!sharedUid && isRealGuest) {
+    // 게스트 소환
     console.log("[게스트 소환] 데이터 확인, 결과 페이지 렌더링 드가자 ⚡");
-    
-    // 데이터 동기화
     window.currentScores = {
       NS: parseParamScore('NS'), HA: parseParamScore('HA'), RD: parseParamScore('RD'),
       PS: parseParamScore('PS'), SD: parseParamScore('SD'), CO: parseParamScore('CO'), ST: parseParamScore('ST')
     };
-    
     window.renderFinalResult(window.currentScores);
     window.showScreen('screen-result');
-  } else {
-    console.log("그냥 접속임. 홈 화면 유지함! 🏠");
-    window.showScreen('screen-home');
-  }
 
-  return;
-}
-
-  // 🔒 회원 전용 기존 로직 (생략 없이 유지)
-  if (sharedUid && sharedTime) {
+  } else if (sharedUid && sharedTime) {
+    // 회원 전용 로직
+    console.log("[회원 소환] DB 데이터 로드 중... 🔒");
     try {
       const docRef = doc(db, "tci_results", sharedUid, "history", sharedTime);
       const docSnap = await getDoc(docRef);
@@ -792,24 +785,23 @@ async function checkSharedLink() {
         const sharedData = docSnap.data();
         window.currentMode = sharedData.mode;
         window.lastSavedTimestamp = sharedTime;
-        
-        if (typeof window.renderFinalResult === 'function') {
-          window.renderFinalResult(sharedData.scores);
-        }
-        if (typeof window.showScreen === 'function') {
-          window.showScreen('screen-result');
-        }
+        window.renderFinalResult(sharedData.scores);
+        window.showScreen('screen-result');
       } else {
-        alert("❌ 링크가 만료되었거나 삭제된 검사 결과 데이터입니다.");
+        alert("❌ 링크가 만료되었거나 삭제된 데이터임.");
+        window.showScreen('screen-home');
       }
     } catch (error) {
       console.error("공유 링크 복구 중 에러 발생:", error);
+      window.showScreen('screen-home');
     }
+    
   } else {
-    // 아무것도 아님 (그냥 접속)
+    // 그냥 접속
+    console.log("그냥 접속임. 홈 화면 유지함! 🏠");
     window.showScreen('screen-home');
-}
   }
+} // 👈 함수 여기서 확실하게 닫아줌!
 
     // 🚀 사이트 켜지자마자 주소창 뒤지기 실행!
     setTimeout(checkSharedLink, 600);
