@@ -40,33 +40,31 @@
     }
     #sidebar-overlay.active { opacity: 1; visibility: visible; }
 
-    /* 🧭 좌측 사이드바 - 메인 테마 네이비로 일체화 */
-    /* 🧭 좌측 사이드바 - 메인 테마 네이비로 일체화 */
-#sidebar {
-  width: 240px;
-  background: #1A252F; /* 👈 원래 칙칙한 색에서 메인 헤더와 똑같은 네이비로 변경! */
-  color: #fff;
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
-  min-height: 100vh;
-  z-index: 1500;
-  justify-content: space-between;
-  transition: transform 0.3s ease;
-}
-.sidebar-top { display: flex; flex-direction: column; width: 100%; }
-.sidebar-title {
-  padding: 24px 20px; font-size: 1.1rem; font-weight: 700;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: #1A252F; /* 👈 상단 타이틀 영역은 좀 더 딥한 네이비로 톤 매칭! */
-}
-
-/* 👤 로그인 유저 정보 및 로그인 버튼 영역 */
-.user-profile-box {
-  padding: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
-  background: #1A252F; /* 👈 로그인 박스 배경도 딥 네이비로 일체화! */
-  display: flex; flex-direction: column; gap: 10px; width: 100%; box-sizing: border-box;
-}
+    /* 🧭 좌측 사이드바 */
+    #sidebar {
+      width: 260px;
+      background: #2C3E50;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      min-height: 100vh;
+      z-index: 1500;
+      justify-content: space-between;
+      transition: transform 0.3s ease;
+    }
+    .sidebar-top { display: flex; flex-direction: column; }
+    .sidebar-title {
+      padding: 24px 20px; font-size: 1.1rem; font-weight: 700;
+      border-bottom: 1px solid #34495e;
+      background: #243342;
+    }
+    
+    /* 👤 로그인 유저 정보 영역 */
+    .user-profile-box {
+      padding: 16px; border-bottom: 1px solid #34495e; background: #243342;
+      display: flex; flex-direction: column; gap: 10px;
+    }
     .user-info-flex { display: flex; align-items: center; gap: 10px; }
     .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: #444; object-fit: cover; }
     .user-name-mail { display: flex; flex-direction: column; overflow: hidden; }
@@ -82,33 +80,34 @@
       font-size: 0.85rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
     }
     .btn-logout {
-      width: 100%; padding: 8px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; background: transparent; color: #bdc3c7;
+      width: 100%; padding: 8px; border: 1px solid #4a5c6e; border-radius: 6px; background: transparent; color: #bdc3c7;
       font-size: 0.78rem; font-weight: 600; cursor: pointer;
     }
     .btn-logout:hover { background: rgba(255,255,255,0.05); color: #fff; }
 
-    .menu-list { list-style: none !important; padding: 15px 10px !important; background: #1A252F !important; }
-.menu-item {
-  padding: 14px 16px; border-radius: 10px; cursor: pointer; margin-bottom: 8px;
-  font-size: 0.95rem; font-weight: 600; color: #ecf0f1; transition: all 0.2s;
-  display: flex; align-items: center; justify-content: space-between;
-  -webkit-tap-highlight-color: transparent;
-}
-.menu-item:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
-    /* 🌟 메뉴 활성화 하이라이트 - 메인 블루 테마 적용 완료 욘 */
-    .menu-item.active { background: #3498DB !important; color: #fff !important; font-weight: 700; }
+    .menu-list { list-style: none; padding: 15px 10px; }
+    .menu-item {
+      padding: 14px 16px; border-radius: 10px; cursor: pointer; margin-bottom: 8px;
+      font-size: 0.95rem; font-weight: 600; color: #bdc3c7; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: space-between;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .menu-item:hover { background: #34495e; color: #fff; }
+    .menu-item.active { background: #3498DB; color: #fff; font-weight: 700; }
     .lock-badge { font-size: 0.8rem; background: rgba(255,255,255,0.15); padding: 2px 6px; border-radius: 6px; color: #ffeb3b; }
-    .sidebar-footer { padding: 15px 10px; border-top: 1px solid rgba(255, 255, 255, 0.1); width: 100%; }
-.btn-admin-trigger { background: #1A252F; color: #a0a0b5; } /* 👈 하단 관리자 버튼 배경도 일체화! */
+    .sidebar-footer { padding: 15px 10px; border-top: 1px solid #34495e; }
+    .btn-admin-trigger { background: #243342; color: #a0a0b5; }
     .btn-admin-trigger:hover { background: #cf3c3c; color: #fff; }
 
-    /* 📱 모바일 상단 영역: 중복 텍스트와 배경은 없애고 햄버거 버튼 위치만 확보 */
+    /* 📱 모바일 상단 햄버거 바 -> 숨김 처리 완료 욘 */
     .mobile-top-bar {
-      display: flex; background: transparent; padding: 22px 16px 10px 21px;
-      align-items: center; justify-content: flex-start; position: absolute; top: 0; left: 0; z-index: 1200;
+      display: none !important;
     }
-    .hamburger-btn { background: none !important; border: none !important; color: #fff !important; font-size: 1.5rem !important; cursor: pointer; display: flex !important; align-items: center !important; -webkit-tap-highlight-color: transparent; padding: 0 !important; }
-    .mobile-bar-title { display: none; } /* 중복되는 텍스트 타이틀만 완전 차단 */
+    .hamburger-btn {
+      background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;
+      display: flex; align-items: center; -webkit-tap-highlight-color: transparent;
+    }
+    .mobile-bar-title { font-size: 1rem; font-weight: 700; }
 
     /* 메인 콘텐츠 영역 */
     #main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; position: relative; z-index: 100; min-height: 100%; }
@@ -120,7 +119,7 @@
     .app-header p  { font-size: 0.82rem; opacity: 0.88; margin-top: 6px; line-height: 1.5; }
     
     .progress-wrap { background: #ecf0f1; height: 6px; position: sticky; top: 0; z-index: 1100; }
-    .progress-wrap.mobile-offset { top: 0px; }
+    .progress-wrap.mobile-offset { top: 0px; } /* 상단 바가 사라졌으므로 모바일 오프셋을 0으로 당김 */
     .progress-bar { height: 6px; background: #3498DB; transition: width 0.4s ease; width: 0%; }
     .progress-text { text-align: center; font-size: 0.78rem; color: #666; padding: 6px 0 2px; background: #FFFFFF; }
     
@@ -269,10 +268,12 @@
     /* 📱 미디어 쿼리 */
     @media (max-width: 992px) {
       body { flex-direction: column; min-height: 100dvh; }
+      
+      /* 하단 오프셋 제거를 위해 미디어쿼리 내부의 .mobile-top-bar 정의는 삭제함 */
+
       #sidebar {
-        position: fixed; top: 0; left: 0; height: 100vh; width: 240px;
+        position: fixed; top: 0; left: 0; height: 100vh; width: 280px;
         transform: translateX(-100%); z-index: 2500;
-        background: #1A252F; /* 모바일 슬라이딩 시에도 색상 똑같이 네이비 유지 */
       }
       #sidebar.active { transform: translateX(0); }
     }
@@ -565,48 +566,52 @@
 
             // 리스트용 li 태그 생성 및 스타일링 욘 😉
             const li = document.createElement("li");
-            li.style.cssText = "padding: 8px 10px; margin-bottom: 6px; background: #2a2a3d; border-radius: 6px; font-size: 0.78rem; color: #fff; cursor: pointer; transition: background 0.2s; display: flex; justify-content: space-between; align-items: center; position: relative;";
+li.style.cssText = "padding: 8px 10px; margin-bottom: 6px; background: #2a2a3d; border-radius: 6px; font-size: 0.78rem; color: #fff; cursor: pointer; transition: background 0.2s; display: flex; justify-content: space-between; align-items: center; position: relative;";
 
-            // 텍스트 내용 좌측 배치 + 우측 끝에 예쁜 빨간색 휴지통(🗑️) 배치
-            li.innerHTML = `
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span>${KSTDate}</span> 
-                <span style="font-size:0.7rem; padding:1px 5px; border-radius:4px; background:#4776e6; font-weight:700;">${modeBadge}</span>
-              </div>
-              <span class="delete-history-btn" style="font-size:0.7rem; cursor:pointer; padding: 2px 6px; color:#ff6b6b; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">✖</span>
-            `;
+// 텍스트 내용 좌측 배치 + 우측 끝에 예쁜 빨간색 휴지통(🗑️) 배치
+li.innerHTML = `
+  <div style="display:flex; align-items:center; gap:8px;">
+    <span>${KSTDate}</span> 
+    <span style="font-size:0.7rem; padding:1px 5px; border-radius:4px; background:#4776e6; font-weight:700;">${modeBadge}</span>
+  </div>
+  <span class="delete-history-btn" style="font-size:0.7rem; cursor:pointer; padding: 2px 6px; color:#ff6b6b; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">✖</span>
+`;
 
-            // 마우스 오버 효과
+// 마우스 오버 효과
+li.onmouseover = () => li.style.background = "#3e3e56";
+li.onmouseout = () => li.style.background = "#2a2a3d";
+
+// 🗑️ 휴지통 버튼을 누르면 작동하는 삭제 로직 연동
+const deleteBtn = li.querySelector('.delete-history-btn');
+deleteBtn.onclick = async (e) => {
+  e.stopPropagation(); // ⭐ 중요: 휴지통을 누를 때 리스트 클릭(결과 열람) 이벤트가 동시에 발동하는 것을 막아줍니다!
+
+  if (confirm(`🚨 [경고] ${KSTDate}에 검사한 기록을 정말로 영구 삭제하시겠습니까?`)) {
+    try {
+      // Firestore 데이터베이스에서 해당 유저의 정확한 시점 문서를 타격해 삭제
+      const docRef = doc(db, "tci_results", uid, "history", data.savedAt);
+      await deleteDoc(docRef);
+
+      alert("🗑️ 기록이 안전하게 삭제되었습니다.");
+
+      // 데이터가 지워졌으니 사이드바 목록을 즉시 새로고침하여 리프레시해줍니다.
+      loadPastResult(uid); 
+    } catch (error) {
+      console.error("기록 삭제 중 오류 발생:", error);
+      alert("기록을 삭제하지 못했습니다. 보안 규칙을 확인해 주세요.");
+    }
+  }
+};
+            
+            // 리스트 마우스 오버 효과
             li.onmouseover = () => li.style.background = "#3e3e56";
             li.onmouseout = () => li.style.background = "#2a2a3d";
-
-            // 🗑️ 휴지통 버튼을 누르면 작동하는 삭제 로직 연동
-            const deleteBtn = li.querySelector('.delete-history-btn');
-            deleteBtn.onclick = async (e) => {
-              e.stopPropagation(); // ⭐ 중요: 휴지통을 누를 때 리스트 클릭(결과 열람) 이벤트가 동시에 발동하는 것을 막아줍니다!
-
-              if (confirm(`🚨 [경고] ${KSTDate}에 검사한 기록을 정말로 영구 삭제하시겠습니까?`)) {
-                try {
-                  // Firestore 데이터베이스에서 해당 유저의 정확한 시점 문서를 타격해 삭제
-                  const docRef = doc(db, "tci_results", uid, "history", data.savedAt);
-                  await deleteDoc(docRef);
-
-                  alert("🗑️ 기록이 안전하게 삭제되었습니다.");
-
-                  // 데이터가 지워졌으니 사이드바 목록을 즉시 새로고침하여 리프레시해줍니다.
-                  loadPastResult(uid); 
-                } catch (error) {
-                  console.error("기록 삭제 중 오류 발생:", error);
-                  alert("기록을 삭제하지 못했습니다. 보안 규칙을 확인해 주세요.");
-                }
-              }
-            };
 
             // 🖱️ 과거 기록 날짜 클릭 시 이벤트 구문 내부 완벽 수정!
             li.onclick = () => {
               window.currentMode = data.mode;
               
-              // 🔥 목록에서 클릭한 과거 기록의 정확한 생성 시간을 전역 변수에 동기화!
+              // 🔥 [성공] 목록에서 클릭한 과거 기록의 정확한 생성 시간을 전역 변수에 동기화!
               window.lastSavedTimestamp = data.savedAt; 
               
               if (typeof window.renderFinalResult === 'function') {
@@ -615,39 +620,23 @@
                 console.error("renderFinalResult 함수가 없음!");
               }
 
-              // 🚨 [ID 맵핑 보정] result-screen과 screen-result 둘 다 대응하도록 안전장치 구축!
               if (typeof window.showScreen === 'function') {
-                window.showScreen('result-screen'); 
-                window.showScreen('screen-result'); 
+                window.showScreen('screen-result');
               } else {
-                // 직접 제어 시 두 ID 모두 active/block 처리해 버림 ㄷㄷㄷ
-                const targetIds = ['result-screen', 'screen-result'];
-                targetIds.forEach(id => {
-                  const screenEl = document.getElementById(id);
-                  if (screenEl) {
-                    document.querySelectorAll('.screen, [id^="screen-"]').forEach(s => {
-                      s.style.display = 'none';
-                      s.classList.remove('active');
-                    });
-                    screenEl.style.display = 'block';
-                    screenEl.classList.add('active');
-                  }
-                });
+                const resultScreen = document.getElementById('screen-result');
+                if (resultScreen) {
+                  document.querySelectorAll('.screen, [id^="screen-"]').forEach(s => s.style.display = 'none');
+                  resultScreen.style.display = 'block';
+                }
               }
-              
               // 모바일 배려: 클릭 시 사이드바 닫기 기능 안전장치
               if (typeof window.toggleSidebar === 'function') window.toggleSidebar(false);
-              const sidebar = document.getElementById('sidebar');
-              const sidebarOverlay = document.getElementById('sidebar-overlay');
-              if (sidebar) sidebar.classList.remove('active');
-              if (sidebarOverlay) sidebarOverlay.classList.remove('active');
               
               alert(`${KSTDate} (${modeBadge}) 결과를 불러왔습니다! 🔴`);
             };
 
             pastListEl.appendChild(li);
           });
-
           // 🔥 최초 로그인 시 딱 한 번만 가장 최근 데이터를 팝업으로 안내하고 자동 오픈해줌!
           if (!window.alreadyLoadedNotice) {
             window.alreadyLoadedNotice = true;
@@ -657,26 +646,7 @@
             if (confirm(`[기록 발견] 과거에 검사한 이력이 총 ${historyList.length}개 존재합니다.\n\n가장 최근 검사(${savedDate}) 결과를 바로 확인하시겠습니까?`)) {
               window.currentMode = latestData.mode;
               if (typeof window.renderFinalResult === 'function') window.renderFinalResult(latestData.scores);
-              
-              // 🚨 최초 확인 팝업창에서도 ID 더블 체크 및 사이드바 닫기 덮어쓰기!
-              if (typeof window.showScreen === 'function') {
-                window.showScreen('result-screen');
-                window.showScreen('screen-result');
-              } else {
-                ['result-screen', 'screen-result'].forEach(id => {
-                  const screenEl = document.getElementById(id);
-                  if (screenEl) {
-                    document.querySelectorAll('.screen, [id^="screen-"]').forEach(s => { s.style.display = 'none'; s.classList.remove('active'); });
-                    screenEl.style.display = 'block';
-                    screenEl.classList.add('active');
-                  }
-                });
-              }
-              if (typeof window.toggleSidebar === 'function') window.toggleSidebar(false);
-              const sidebar = document.getElementById('sidebar');
-              const sidebarOverlay = document.getElementById('sidebar-overlay');
-              if (sidebar) sidebar.classList.remove('active');
-              if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+              if (typeof window.showScreen === 'function') window.showScreen('screen-result');
             }
           }
 
@@ -689,6 +659,38 @@
         const pastListEl = document.getElementById("pastHistoryList");
         if (pastListEl) pastListEl.innerHTML = `<li style="color: #ff6b6b; font-size: 0.75rem;">⚠️ 기록 로드 에러</li>`;
       }
+    }
+
+    // 8️⃣ 로그인 성공 시 UI 렌더링 함수 통합
+    // 🎨 7️⃣ 로그인 성공 시 UI 렌더링 함수 (과거 기록 상자 유지 버전!)
+    function renderLoggedInUI(user) {
+      const profileWrap = document.getElementById("userProfileWrap");
+      const introNotice = document.getElementById("introLoginNotice");
+      const badgeColor = user.loginType === 'kakao' ? '#fee500' : '#4285F4';
+
+      if (profileWrap) {
+        // 💡 핵심: 프로필로 화면을 새로 그릴 때도 하단에 'pastHistoryList'를 무조건 살려놓음!
+        profileWrap.innerHTML = `
+          <div class="user-info-flex" style="margin-bottom: 12px;">
+            <img class="user-avatar" src="${user.photoURL}" alt="profile" style="border: 2px solid ${badgeColor}; width: 40px; height: 40px; border-radius: 50%;">
+            <div class="user-name-mail" style="display: flex; flex-direction: column; margin-left: 10px;">
+              <span class="user-name" style="font-weight: 700; font-size: 0.9rem; color: #fff;">${user.displayName}</span>
+              <span class="user-email" style="font-size: 0.75rem; color: #888;">${user.email}</span>
+            </div>
+          </div>
+          <button class="btn-logout" onclick="logoutAllServices()" style="margin-bottom: 15px;">로그아웃</button>
+
+          <div id="pastHistorySession" style="margin-top: 10px; border-top: 1px dashed #444; padding-top: 15px; width: 100%;">
+            <h4 style="margin: 0 0 10px 0; font-size: 0.85rem; color: #b0b0c5; display: flex; align-items: center; gap: 5px; font-family: sans-serif;">
+              📜 과거 검사 이력 목록
+            </h4>
+            <ul id="pastHistoryList" style="list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto;">
+              <li style="color: #666; font-size: 0.78rem; font-style: italic; font-family: sans-serif;">기록을 동기화 중입니다...</li>
+            </ul>
+          </div>
+        `;
+      }
+      if (introNotice) introNotice.style.display = "none";
     }
 
     // 9️⃣ 실시간 인증 상태 리스너 (구글 및 카카오 상태 분기)
