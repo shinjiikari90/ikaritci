@@ -825,8 +825,18 @@ async function checkSharedLink() {
     }
   }
 
-    // 🚀 사이트 켜지자마자 주소창 뒤지기 실행!
+    // 🚨 [최종 패치] 
+// 0.6초 뒤에 무조건 실행하지 말고, URL에 파라미터가 있을 때만 실행하게 바꾸자!
+const urlParamsForInit = new URLSearchParams(window.location.search);
+const hasParamsForInit = urlParamsForInit.get('ns') || urlParamsForInit.get('NS') || 
+                         urlParamsForInit.get('ha') || urlParamsForInit.get('HA') || 
+                         urlParamsForInit.get('uid'); // uid도 체크!
+
+if (hasParamsForInit) {
     setTimeout(checkSharedLink, 600);
+} else {
+    console.log("공유 파라미터 없음, 자동 실행 차단됨! 🌿");
+}
 </script>
 <body>
 
