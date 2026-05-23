@@ -32,22 +32,35 @@
     }
     .modal-overlay.active { opacity: 1; visibility: visible; }
 
-    /* 🧭 좌측 사이드바 */
+    /* 🧭 좌측 사이드바 구조 */
     #sidebar {
       width: 260px; background: #2C3E50; color: #fff;
       display: flex; flex-direction: column;
-      position: fixed; /* 👈 이거 꼭 들어가야 함! */
-      top: 0; left: 0; height: 100vh;
-      z-index: 2500; /* 👈 이게 높아야 햄버거 메뉴가 위에 뜸 */
-      transform: translateX(-100%); /* 👈 평소엔 왼쪽으로 숨겨두기 */
+      position: fixed; top: 0; left: 0; height: 100vh;
+      z-index: 3000; /* 오버레이보다 무조건 위! */
+      transform: translateX(-100%);
       transition: transform 0.3s ease;
       justify-content: space-between;
+      visibility: hidden; /* 아예 숨김 */
     }
-    #sidebar.active { transform: translateX(0); } /* 👈 클래스 붙으면 튀어나옴 */
+    #sidebar.active { transform: translateX(0); visibility: visible; }
 
-    .sidebar-title {
-      padding: 24px 20px; font-size: 1.1rem; font-weight: 700;
-      border-bottom: 1px solid #34495e; background: #243342;
+    /* 📱 모바일 상단 바 */
+    .mobile-top-bar {
+      display: none; background: #2C3E50; color: #fff; padding: 14px 16px;
+      align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1200;
+    }
+
+    /* 사이드바 열렸을 때 오버레이 */
+    #sidebar-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.5); z-index: 2500; /* 사이드바 바로 아래 */
+      opacity: 0; visibility: hidden; transition: all 0.3s ease;
+    }
+    #sidebar-overlay.active { opacity: 1; visibility: visible; }
+
+    @media (max-width: 992px) {
+      .mobile-top-bar { display: flex; }
     }
     
     /* 👤 유저 정보 영역 */
