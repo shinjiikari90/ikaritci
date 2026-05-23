@@ -1013,7 +1013,19 @@ if ('scrollRestoration' in history) {
 
 // 2️⃣ 화면이 새로 켜질 때 스크롤 맨 위로 올리기
 window.addEventListener('DOMContentLoaded', function() {
-  window.scrollTo(0, 0);
+  const urlParams = new URLSearchParams(window.location.search);
+  
+  // 공유 링크로 접속한 경우
+  if (urlParams.get('ns') || urlParams.get('uid')) {
+    console.log("공유 접속! 결과 페이지로 스크롤/이동 준비 ⚡");
+    checkSharedLink();
+  } 
+  // 일반 접속인 경우
+  else {
+    console.log("일반 접속! 홈 화면에서 시작 🏠");
+    window.scrollTo(0, 0); // 홈에서만 맨 위로 이동!
+    window.showScreen('screen-home'); // 홈 화면 호출!
+  }
 });
   (function () {
   'use strict';
