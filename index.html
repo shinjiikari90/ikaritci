@@ -35,7 +35,7 @@
     }
     #sidebar-overlay.active { opacity: 1; visibility: visible; }
 
-    /* 🧭 좌측 사이드바 - 딥 네이비 적용 */
+    /* 🧭 좌측 사이드바 */
     #sidebar {
       width: 260px;
       background: #1e293b; 
@@ -112,10 +112,8 @@
     #main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; position: relative; z-index: 100; min-height: 100%; background: #ffffff; }
     .content-body { flex: 1; padding-bottom: 20px; }
 
-    /* 앱 헤더 및 진행 바 */
-    .app-header { background: #ffffff; color: #1a1a1a; padding: 28px 20px 22px; text-align: center; border-bottom: 1px solid #f1f3f5; }
-    .app-header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.3px; color: #1a1a1a; }
-    .app-header p  { font-size: 0.82rem; opacity: 0.88; margin-top: 6px; line-height: 1.5; color: #6b7280; }
+    /* 앱 헤더 및 진행 바 - 중복 제거 */
+    .app-header { background: #ffffff; padding: 10px 20px; }
     
     .progress-wrap { background: #f1f3f5; height: 6px; position: sticky; top: 0; z-index: 1100; }
     .progress-wrap.mobile-offset { top: 52px; } 
