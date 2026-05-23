@@ -805,8 +805,11 @@ async function checkSharedLink() {
     } catch (error) {
       console.error("공유 링크 복구 중 에러 발생:", error);
     }
-  }
+  } else {
+    // 아무것도 아님 (그냥 접속)
+    window.showScreen('screen-home');
 }
+  }
 
     // 🚀 사이트 켜지자마자 주소창 뒤지기 실행!
     setTimeout(checkSharedLink, 600);
