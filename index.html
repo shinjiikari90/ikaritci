@@ -11,8 +11,8 @@
     html { font-size: 16px; -webkit-text-size-adjust: 100%; }
     body {
       font-family: -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-      background: #ffffff; /* ⚪ 배경은 깨끗한 화이트 */
-      color: #1a1a1a;       /* ⚫ 텍스트는 선명한 블랙 */
+      background: #ffffff;
+      color: #1a1a1a;
       min-height: 100dvh;
       display: flex;
       position: relative;
@@ -35,11 +35,11 @@
     }
     #sidebar-overlay.active { opacity: 1; visibility: visible; }
 
-    /* 🧭 좌측 사이드바 */
+    /* 🧭 좌측 사이드바 - 딥 네이비 적용 */
     #sidebar {
       width: 260px;
-      background: #f8f9fa; /* 🔘 사이드바는 아주 밝은 그레이 */
-      color: #1a1a1a;
+      background: #1e293b; 
+      color: #f1f5f9;
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
@@ -47,29 +47,29 @@
       z-index: 1500;
       justify-content: space-between;
       transition: transform 0.3s ease;
-      border-right: 1px solid #e0e0e0;
+      border-right: 1px solid #334155;
     }
     .sidebar-top { display: flex; flex-direction: column; }
     .sidebar-title {
       padding: 24px 20px; font-size: 1.1rem; font-weight: 700;
-      border-bottom: 1px solid #e0e0e0;
-      background: #ffffff;
-      color: #1a1a1a;
+      border-bottom: 1px solid #334155;
+      background: #151d29;
+      color: #38bdf8;
     }
     
     /* 👤 로그인 유저 정보 영역 */
     .user-profile-box {
-      padding: 16px; border-bottom: 1px solid #e0e0e0; background: #ffffff;
+      padding: 16px; border-bottom: 1px solid #334155; background: #1e293b;
       display: flex; flex-direction: column; gap: 10px;
     }
     .user-info-flex { display: flex; align-items: center; gap: 10px; }
-    .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: #e0e0e0; object-fit: cover; }
+    .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: #475569; object-fit: cover; }
     .user-name-mail { display: flex; flex-direction: column; overflow: hidden; }
-    .user-name { font-size: 0.88rem; font-weight: 700; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .user-email { font-size: 0.75rem; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-name { font-size: 0.88rem; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-email { font-size: 0.75rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     
     .btn-login-google {
-      width: 100%; padding: 10px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fff; color: #222;
+      width: 100%; padding: 10px; border: none; border-radius: 8px; background: #fff; color: #222;
       font-size: 0.85rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
     }
     .btn-login-kakao {
@@ -77,33 +77,33 @@
       font-size: 0.85rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
     }
     .btn-logout {
-      width: 100%; padding: 8px; border: 1px solid #e0e0e0; border-radius: 6px; background: transparent; color: #6b7280;
+      width: 100%; padding: 8px; border: 1px solid #475569; border-radius: 6px; background: transparent; color: #94a3b8;
       font-size: 0.78rem; font-weight: 600; cursor: pointer;
     }
-    .btn-logout:hover { background: #f1f3f5; color: #1a1a1a; }
+    .btn-logout:hover { background: #334155; color: #fff; }
 
     .menu-list { list-style: none; padding: 15px 10px; }
     .menu-item {
       padding: 14px 16px; border-radius: 10px; cursor: pointer; margin-bottom: 8px;
-      font-size: 0.95rem; font-weight: 600; color: #4b5563; transition: all 0.2s;
+      font-size: 0.95rem; font-weight: 600; color: #94a3b8; transition: all 0.2s;
       display: flex; align-items: center; justify-content: space-between;
       -webkit-tap-highlight-color: transparent;
     }
-    .menu-item:hover { background: #e9ecef; color: #1a1a1a; }
-    .menu-item.active { background: #1a1a1a; color: #ffffff; font-weight: 700; }
-    .lock-badge { font-size: 0.8rem; background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 6px; color: #f59e0b; }
-    .sidebar-footer { padding: 15px 10px; border-top: 1px solid #e0e0e0; }
-    .btn-admin-trigger { background: #f1f3f5; color: #9ca3af; }
-    .btn-admin-trigger:hover { background: #343a40; color: #fff; }
+    .menu-item:hover { background: #334155; color: #ffffff; }
+    .menu-item.active { background: #38bdf8; color: #1e293b; font-weight: 700; }
+    .lock-badge { font-size: 0.8rem; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 6px; color: #fbbf24; }
+    .sidebar-footer { padding: 15px 10px; border-top: 1px solid #334155; }
+    .btn-admin-trigger { background: #151d29; color: #64748b; }
+    .btn-admin-trigger:hover { background: #991b1b; color: #fff; }
 
     /* 📱 모바일 상단 햄버거 바 */
     .mobile-top-bar {
-      display: none; background: #ffffff; color: #1a1a1a; padding: 14px 16px;
+      display: none; background: #1e293b; color: #ffffff; padding: 14px 16px;
       align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1200;
-      border-bottom: 1px solid #e0e0e0;
+      border-bottom: 1px solid #334155;
     }
     .hamburger-btn {
-      background: none; border: none; color: #1a1a1a; font-size: 1.5rem; cursor: pointer;
+      background: none; border: none; color: #ffffff; font-size: 1.5rem; cursor: pointer;
       display: flex; align-items: center; -webkit-tap-highlight-color: transparent;
     }
     .mobile-bar-title { font-size: 1rem; font-weight: 700; }
