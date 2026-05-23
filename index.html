@@ -99,15 +99,16 @@
     .btn-admin-trigger { background: #243342; color: #a0a0b5; }
     .btn-admin-trigger:hover { background: #cf3c3c; color: #fff; }
 
-    /* 📱 모바일 상단 햄버거 바 -> 숨김 처리 완료 욘 */
+    /* 📱 모바일 상단 영역: 중복 텍스트와 배경은 없애고 햄버거 버튼 위치만 확보 욘 */
     .mobile-top-bar {
-      display: none !important;
+      display: flex; background: transparent; padding: 10px 16px;
+      align-items: center; justify-content: flex-start; position: absolute; top: 0; left: 0; z-index: 1200;
     }
     .hamburger-btn {
       background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;
       display: flex; align-items: center; -webkit-tap-highlight-color: transparent;
     }
-    .mobile-bar-title { font-size: 1rem; font-weight: 700; }
+    .mobile-bar-title { display: none; } /* 중복되는 텍스트 타이틀만 완전 차단 */
 
     /* 메인 콘텐츠 영역 */
     #main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; position: relative; z-index: 100; min-height: 100%; }
@@ -119,7 +120,7 @@
     .app-header p  { font-size: 0.82rem; opacity: 0.88; margin-top: 6px; line-height: 1.5; }
     
     .progress-wrap { background: #ecf0f1; height: 6px; position: sticky; top: 0; z-index: 1100; }
-    .progress-wrap.mobile-offset { top: 0px; } /* 상단 바가 사라졌으므로 모바일 오프셋을 0으로 당김 */
+    .progress-wrap.mobile-offset { top: 0px; }
     .progress-bar { height: 6px; background: #3498DB; transition: width 0.4s ease; width: 0%; }
     .progress-text { text-align: center; font-size: 0.78rem; color: #666; padding: 6px 0 2px; background: #FFFFFF; }
     
@@ -268,9 +269,6 @@
     /* 📱 미디어 쿼리 */
     @media (max-width: 992px) {
       body { flex-direction: column; min-height: 100dvh; }
-      
-      /* 하단 오프셋 제거를 위해 미디어쿼리 내부의 .mobile-top-bar 정의는 삭제함 */
-
       #sidebar {
         position: fixed; top: 0; left: 0; height: 100vh; width: 280px;
         transform: translateX(-100%); z-index: 2500;
