@@ -19,7 +19,6 @@
       overflow-x: hidden;
     }
 
-    /* 🍔 모달/메뉴 제어용 오버레이 백드롭 */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0, 0, 0, 0.4); display: flex; align-items: center; justify-content: center;
@@ -27,7 +26,6 @@
     }
     .modal-overlay.active { opacity: 1; visibility: visible; }
 
-    /* 📱 모바일 전용 사이드바 배경 암전용 오버레이 */
     #sidebar-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0, 0, 0, 0.3); z-index: 1400;
@@ -35,7 +33,7 @@
     }
     #sidebar-overlay.active { opacity: 1; visibility: visible; }
 
-    /* 🧭 좌측 사이드바 */
+    /* 🧭 사이드바 타이틀 영역 삭제 완료 */
     #sidebar {
       width: 260px;
       background: #1e293b; 
@@ -49,13 +47,7 @@
       transition: transform 0.3s ease;
       border-right: 1px solid #334155;
     }
-    .sidebar-top { display: flex; flex-direction: column; }
-    .sidebar-title {
-      padding: 24px 20px; font-size: 1.1rem; font-weight: 700;
-      border-bottom: 1px solid #334155;
-      background: #151d29;
-      color: #38bdf8;
-    }
+    .sidebar-top { display: flex; flex-direction: column; padding-top: 10px; }
     
     /* 👤 로그인 유저 정보 영역 */
     .user-profile-box {
@@ -96,7 +88,6 @@
     .btn-admin-trigger { background: #151d29; color: #64748b; }
     .btn-admin-trigger:hover { background: #991b1b; color: #fff; }
 
-    /* 📱 모바일 상단 햄버거 바 */
     .mobile-top-bar {
       display: none; background: #1e293b; color: #ffffff; padding: 14px 16px;
       align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1200;
@@ -108,11 +99,9 @@
     }
     .mobile-bar-title { font-size: 1rem; font-weight: 700; }
 
-    /* 메인 콘텐츠 영역 */
     #main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; position: relative; z-index: 100; min-height: 100%; background: #ffffff; }
     .content-body { flex: 1; padding-bottom: 20px; }
 
-    /* 앱 헤더 및 진행 바 - 중복 제거 */
     .app-header { background: #ffffff; padding: 10px 20px; }
     
     .progress-wrap { background: #f1f3f5; height: 6px; position: sticky; top: 0; z-index: 1100; }
@@ -127,7 +116,6 @@
     .intro-card h2 { font-size: 1.1rem; color: #1a1a1a; margin-bottom: 14px; font-weight: 700; }
     .intro-card p  { font-size: 0.9rem; line-height: 1.7; color: #374151; margin-bottom: 10px; }
     
-    /* 💾 로그인 권장/알림 박스 */
     .login-notice-box {
       background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px;
       margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; gap: 10px;
@@ -148,14 +136,12 @@
     }
     .start-btn:active { opacity: 0.85; }
     
-    /* 퀴즈 문항 */
     .q-container { padding: 16px; }
     .q-card { background: #ffffff; border-radius: 18px; padding: 22px 18px 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); margin-bottom: 16px; border: 1px solid #e5e7eb; }
     .q-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
     .q-num { background: #1a1a1a; color: #ffffff; font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
     .q-text { font-size: 0.97rem; line-height: 1.7; color: #111827; font-weight: 500; margin-bottom: 20px; }
     
-    /* 리커트 척도 */
     .likert-wrap { display: flex; justify-content: space-between; align-items: flex-end; gap: 4px; }
     .likert-option { flex: 1; text-align: center; }
     .likert-option input[type="radio"] { display: none; }
@@ -178,7 +164,6 @@
     .btn-next { background: #1a1a1a; color: #ffffff; }
     .btn-next:disabled { background: #e5e7eb; cursor: not-allowed; }
     
-    /* 결과 페이지 */
     .result-wrap { padding: 16px; }
     .result-header { background: #ffffff; border-radius: 18px; padding: 22px 18px; color: #1a1a1a; text-align: center; margin-bottom: 16px; border: 1px solid #e5e7eb; }
     .result-header h2 { font-size: 1.15rem; font-weight: 700; }
@@ -225,14 +210,12 @@
     .restart-btn { display: block; width: 100%; padding: 16px; border: none; border-radius: 14px; background: #f3f4f6; color: #1a1a1a; font-size: 1rem; font-weight: 700; cursor: pointer; text-align: center; -webkit-tap-highlight-color: transparent; }
     .restart-btn:active { opacity: 0.85; }
 
-    /* 푸터 영역 */
     .app-footer { background: #ffffff; border-top: 1px solid #f1f3f5; padding: 24px 16px; text-align: center; font-size: 0.78rem; color: #9ca3af; line-height: 1.6; }
     .footer-links { margin-bottom: 10px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
     .footer-links a { color: #6b7280; text-decoration: none; font-weight: 600; cursor: pointer; }
     .footer-links a:hover { text-decoration: underline; color: #1a1a1a; }
     .footer-info { max-width: 500px; margin: 0 auto; opacity: 0.85; }
 
-    /* 토스트 알림 */
     .toast-msg {
       position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px);
       background: #1a1a1a; color: #ffffff; padding: 12px 24px; border-radius: 30px;
@@ -241,7 +224,6 @@
     }
     .toast-msg.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
 
-    /* 결제 모달 */
     .pay-modal { background: #ffffff; width: 90%; max-width: 400px; border-radius: 20px; padding: 24px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.1); transform: scale(0.8); transition: all 0.3s ease; }
     .modal-overlay.active .pay-modal { transform: scale(1); }
     .pay-icon { font-size: 3rem; margin-bottom: 12px; display: inline-block; }
@@ -253,14 +235,12 @@
     .btn-pay-submit { background: #1a1a1a; color: #ffffff; }
     .btn-pay-cancel { background: #f3f4f6; color: #4b5563; }
 
-    /* 법적 약관 모달 */
     .policy-modal { background: #ffffff; width: 92%; max-width: 600px; max-height: 80vh; border-radius: 20px; padding: 24px; box-shadow: 0 15px 50px rgba(0,0,0,0.1); display: flex; flex-direction: column; transform: scale(0.8); transition: all 0.3s ease; color: #1a1a1a; }
     .modal-overlay.active .policy-modal { transform: scale(1); }
     .policy-header { font-size: 1.2rem; font-weight: 700; color: #111827; padding-bottom: 12px; border-bottom: 1px solid #f1f3f5; margin-bottom: 14px; }
     .policy-body { flex: 1; overflow-y: auto; text-align: left; font-size: 0.85rem; color: #374151; line-height: 1.7; white-space: pre-wrap; padding-right: 6px; }
     .policy-close-btn { background: #1a1a1a; color: #ffffff; border: none; width: 100%; padding: 13px; border-radius: 12px; font-weight: 700; margin-top: 16px; cursor: pointer; }
 
-    /* 관리자 패널 */
     .admin-panel-card { margin: 24px 16px; background: #ffffff; border-radius: 18px; padding: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); border: 1px solid #fee2e2; }
     .admin-panel-card h2 { color: #b91c1c; font-size: 1.2rem; margin-bottom: 10px; }
     .admin-grid { display: flex; flex-direction: column; gap: 14px; margin-top: 18px; }
@@ -271,7 +251,6 @@
     .admin-selector button.selected { background: #b91c1c; color: #fff; border-color: #b91c1c; }
     .admin-submit-btn { margin-top: 15px; background: #1a1a1a; color: #ffffff; padding: 14px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; width: 100%; font-size: 0.95rem; }
 
-    /* 📱 미디어 쿼리 */
     @media (max-width: 992px) {
       body { flex-direction: column; min-height: 100dvh; }
       .mobile-top-bar { display: flex; }
