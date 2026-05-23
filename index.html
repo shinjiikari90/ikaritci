@@ -749,63 +749,39 @@ deleteBtn.onclick = async (e) => {
 async function checkSharedLink() {
   const urlParams = new URLSearchParams(window.location.search);
   const sharedUid = urlParams.get('uid');
-  const sharedTime = urlParams.get('time');
+  
+  // 1. 점수 파라미터 추출 헬퍼 함수 (정의 먼저!)
+  const parseParamScore = (key) => {
+    let val = urlParams.get(key.toLowerCase()) || urlParams.get(key.toUpperCase());
+    if (val && !isNaN(Number(val))) return Number(val);
+    var saved = localStorage.getItem('lastResult');
+    if (saved) return JSON.parse(saved)[key.toUpperCase()] || 50;
+    return 50;
+  };
 
-  const hasGuestParams = urlParams.get('ns') || urlParams.get('NS') || urlParams.get('ha') || urlParams.get('HA');
+  // 2. 게스트 판별 (주소창에 유효한 점수가 있는지)
+  const ns = urlParams.get('ns') || urlParams.get('NS');
+  const isRealGuest = ns && !isNaN(Number(ns)) && ns !== 'M';
 
-  if (!sharedUid && hasGuestParams) {
-    console.log("[게스트 소환] 주소창 파라미터에서 기질 수치 추출 중... ⚡");
+  // 3. 메인 로직: 공유 링크(게스트)인지 아닌지 판단
+  if (!sharedUid && isRealGuest) {
+    console.log("[게스트 소환] 데이터 확인, 결과 페이지 렌더링 드가자 ⚡");
     
-    // 주소창에 묻어있는 진짜 숫자를 1% 단위까지 그대로 털어오는 헬퍼 함수
-    // ⚡ 주소창 파라미터 추출부 수정
-const parseParamScore = (key) => {
-  let val = urlParams.get(key.toLowerCase()) || urlParams.get(key.toUpperCase());
-  // 💥 M이 들어오면 무조건 50으로 강제 변환!
-  if (val === 'M' || val === 'm' || isNaN(Number(val))) return 50; 
-  return Number(val);
-};
-    
-    // 주소창 숫자가 화면 렌더링 엔진으로 연쇄 오차 없이 다이렉트 꽂힘!
-    const guestScores = {
-      NS: parseParamScore('NS'),
-      HA: parseParamScore('HA'),
-      RD: parseParamScore('RD'),
-      PS: parseParamScore('PS'),
-      SD: parseParamScore('SD'),
-      CO: parseParamScore('CO'),
-      ST: parseParamScore('ST')
+    // 데이터 동기화
+    window.currentScores = {
+      NS: parseParamScore('NS'), HA: parseParamScore('HA'), RD: parseParamScore('RD'),
+      PS: parseParamScore('PS'), SD: parseParamScore('SD'), CO: parseParamScore('CO'), ST: parseParamScore('ST')
     };
-
-    // 1. URL 파라미터 먼저 확인
-const urlParams = new URLSearchParams(window.location.search);
-window.currentMode = urlParams.get('mode') || 'deep';
-
-// 2. [핵심] 덮어쓰기 방어 로직!
-// 주소창에 파라미터가 없으면(게스트 소환이 아니면), 
-// 로컬스토리지에 있는 '마지막 결과'를 우선적으로 낚아챔.
-// ... (위의 URL 파라미터 로직은 그대로 두고) ...
-
-// 2. [핵심] 덮어쓰기 방어 로직!
-var savedScores = localStorage.getItem('lastResult');
-
-if (urlParams.get('ns')) { 
-  window.currentScores = guestScores;
-} else if (savedScores) {
-  window.currentScores = JSON.parse(savedScores);
-} else {
-  window.currentScores = guestScores; 
-}
-
-// 🪂 여기서 guestScores 대신 window.currentScores를 써야 진짜 데이터가 들어감!
-if (typeof window.renderFinalResult === 'function') {
-  window.renderFinalResult(window.currentScores); // 👈 중요!
-}
-if (typeof window.showScreen === 'function') {
-  window.showScreen('screen-result');
-}
     
-    return; 
+    window.renderFinalResult(window.currentScores);
+    window.showScreen('screen-result');
+  } else {
+    console.log("그냥 접속임. 홈 화면 유지함! 🏠");
+    window.showScreen('screen-home');
   }
+
+  return;
+}
 
   // 🔒 회원 전용 기존 로직 (생략 없이 유지)
   if (sharedUid && sharedTime) {
