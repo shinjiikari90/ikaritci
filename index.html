@@ -1743,7 +1743,10 @@ var deepQuestions = [
   
   return simulatedScores;
 };
-    
+    window.restartTest = function() {
+  localStorage.removeItem('lastResult');
+  window.location.href = 'index.html';
+};
     window.triggerSimulatedResult = function() {
     var scores = window.generateSimulatedResult(); 
     window.scores = scores;
@@ -2065,8 +2068,9 @@ function showCopySuccessMessage() {
     var btnGroup = document.createElement('div');
 btnGroup.className = 'action-btn-group';
 // 💡 copyResultLink() 대신 window.copyResultLinkUnified() 로 매칭해줍니다.
+// 기존 location.reload() 대신 새로운 함수를 호출하게 바꾸자 욘!
 btnGroup.innerHTML = '<button class="share-btn" onclick="window.copyResultLinkUnified()">🔗 결과 링크 복사하기</button>'
-                   + '<button class="restart-btn" onclick="location.reload()">🔄 테스트 다시 하기</button>';
+                   + '<button class="restart-btn" onclick="window.restartTest()">🔄 테스트 다시 하기</button>';
 header.appendChild(btnGroup);
 
 resultWrap.appendChild(header);
