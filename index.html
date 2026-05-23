@@ -746,7 +746,8 @@ deleteBtn.onclick = async (e) => {
 // 🕵️‍♂️ 주소창에 공유 파라미터가 붙어있는지 감시하는 내비게이터 함수 (중복 싹 제거 완료!)
 // 🕵️‍♂️ 주소창에 공유 파라미터가 붙어있는지 감시하는 내비게이터 함수 (숫자 규격 매칭 완료!)
 // 🕵️‍♂️ 주소창 파라미터 감시 및 숫자 규격 완벽 통역 함수
-async function checkSharedLink() {
+<script>
+  async function checkSharedLink() {
   const urlParams = new URLSearchParams(window.location.search);
   const sharedUid = urlParams.get('uid');
   const sharedTime = urlParams.get('time');
