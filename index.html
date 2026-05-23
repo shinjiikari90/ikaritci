@@ -1548,22 +1548,29 @@ var deepQuestions = [
   var simulatedLevels = { NS: 'mid', HA: 'mid', RD: 'mid', PS: 'mid', SD: 'mid', CO: 'mid', ST: 'mid' };
 
   window.showScreen = function(screenId) {
-    // [방어벽 시작] 공유 링크가 아닌데 결과 페이지로 가려고 하면? 🏠
+    // 1. 만약 screenId가 없거나 이상하면 홈으로 지정
+    if (!screenId) screenId = 'screen-home';
+
+    // 2. 방어벽 로직 (공유 링크 아니면 결과 페이지 차단)
     const urlParams = new URLSearchParams(window.location.search);
     const isGuest = urlParams.get('ns') || urlParams.get('uid');
 
     if (screenId === 'screen-result' && !isGuest) {
-        console.log("결과 페이지 차단! 홈 화면으로 강제 이동 🛡️");
-        screenId = 'screen-home'; // 목적지를 홈으로 바꿔버림!
+        console.log("결과 페이지 차단! 홈으로 강제 이동 🛡️");
+        screenId = 'screen-home'; 
     }
-    // [방어벽 끝]
 
+    // 3. 화면 전환 로직
     document.querySelectorAll('.screen').forEach(function(s) {
       s.classList.remove('active');
     });
+    
     var target = document.getElementById(screenId);
     if (target) {
       target.classList.add('active');
+    } else {
+      // 만약 target이 없으면(결과 페이지가 없거나 로딩 전이면) 홈이라도 띄움!
+      document.getElementById('screen-home').classList.add('active');
     }
     window.scrollTo(0, 0);
 };
