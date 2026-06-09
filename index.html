@@ -751,59 +751,42 @@ deleteBtn.onclick = async (e) => {
 async function checkSharedLink() {
   const urlParams = new URLSearchParams(window.location.search);
   const sharedUid = urlParams.get('uid');
-  
-  // 파라미터가 있는지 확인
+  const sharedTime = urlParams.get('time'); // 💡 여기서 time을 가져와야 함!
+
+  // 1. 게스트 파라미터 체크 (게스트 모드)
   const hasGuestParams = urlParams.get('ns') || urlParams.get('NS') || urlParams.get('ha') || urlParams.get('HA');
 
-  // 1. 파라미터가 없으면 그냥 함수 종료 (메인 화면 유지)
-  if (!hasGuestParams) {
-    console.log("공유된 파라미터 없음, 메인 화면 유지함! 🌿");
-    return;
-  }
-
-  console.log("[게스트 소환] 주소창 파라미터에서 기질 수치 추출 중... ⚡");
+  if (hasGuestParams) {
+    console.log("[게스트 소환] 주소창 파라미터에서 기질 수치 추출 중... ⚡");
     
-  const parseParamScore = (key) => {
-    let val = urlParams.get(key.toLowerCase()) || urlParams.get(key.toUpperCase());
-    if (val === 'M' || val === 'm' || isNaN(Number(val))) return 50; 
-    return Number(val);
-  };
+    const parseParamScore = (key) => {
+      let val = urlParams.get(key.toLowerCase()) || urlParams.get(key.toUpperCase());
+      if (val === 'M' || val === 'm' || isNaN(Number(val))) return 50; 
+      return Number(val);
+    };
     
-  const guestScores = {
-    NS: parseParamScore('NS'),
-    HA: parseParamScore('HA'),
-    RD: parseParamScore('RD'),
-    PS: parseParamScore('PS'),
-    SD: parseParamScore('SD'),
-    CO: parseParamScore('CO'),
-    ST: parseParamScore('ST')
-  };
+    const guestScores = {
+      NS: parseParamScore('NS'), HA: parseParamScore('HA'), RD: parseParamScore('RD'),
+      PS: parseParamScore('PS'), SD: parseParamScore('SD'), CO: parseParamScore('CO'), ST: parseParamScore('ST')
+    };
 
-  window.currentMode = urlParams.get('mode') || 'deep';
-  var savedScores = localStorage.getItem('lastResult');
+    window.currentMode = urlParams.get('mode') || 'deep';
+    var savedScores = localStorage.getItem('lastResult');
 
-  // 2. 데이터 결정
-  if (urlParams.get('ns')) { 
-    window.currentScores = guestScores;
-  } else if (savedScores) {
-    window.currentScores = JSON.parse(savedScores);
-  } else {
-    window.currentScores = guestScores; 
+    if (urlParams.get('ns')) { 
+      window.currentScores = guestScores;
+    } else if (savedScores) {
+      window.currentScores = JSON.parse(savedScores);
+    } else {
+      window.currentScores = guestScores; 
+    }
+
+    if (typeof window.renderFinalResult === 'function') window.renderFinalResult(window.currentScores);
+    if (typeof window.showScreen === 'function') window.showScreen('screen-result');
+    return; // 💡 여기서 함수가 종료되므로 아래 로직은 게스트가 아닐 때만 실행됨!
   }
 
-  // 3. 렌더링 및 화면 전환
-  if (typeof window.renderFinalResult === 'function') {
-    window.renderFinalResult(window.currentScores);
-  }
-  
-  // 공유 링크로 들어왔을 때만 결과창으로 튕김!
-  if (typeof window.showScreen === 'function') {
-    window.showScreen('screen-result');
-  }
-    
-  return; 
-}
-  // 🔒 회원 전용 기존 로직 (생략 없이 유지)
+  // 2. 회원 전용 공유 링크 로직 (게스트 파라미터가 없을 때만 여기까지 옴)
   if (sharedUid && sharedTime) {
     try {
       const docRef = doc(db, "tci_results", sharedUid, "history", sharedTime);
@@ -813,12 +796,8 @@ async function checkSharedLink() {
         window.currentMode = sharedData.mode;
         window.lastSavedTimestamp = sharedTime;
         
-        if (typeof window.renderFinalResult === 'function') {
-          window.renderFinalResult(sharedData.scores);
-        }
-        if (typeof window.showScreen === 'function') {
-          window.showScreen('screen-result');
-        }
+        if (typeof window.renderFinalResult === 'function') window.renderFinalResult(sharedData.scores);
+        if (typeof window.showScreen === 'function') window.showScreen('screen-result');
       } else {
         alert("❌ 링크가 만료되었거나 삭제된 검사 결과 데이터입니다.");
       }
@@ -826,7 +805,7 @@ async function checkSharedLink() {
       console.error("공유 링크 복구 중 에러 발생:", error);
     }
   }
-  }
+}
 
     // 🚨 [최종 패치] 
 // 0.6초 뒤에 무조건 실행하지 말고, URL에 파라미터가 있을 때만 실행하게 바꾸자!
