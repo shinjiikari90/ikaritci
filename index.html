@@ -673,15 +673,25 @@ deleteBtn.onclick = async (e) => {
     function renderLoggedInUI(user) {
       const profileWrap = document.getElementById("userProfileWrap");
       const introNotice = document.getElementById("introLoginNotice");
+      const badgeColor = user.loginType === 'kakao' ? '#fee500' : '#4285F4';
 
       if (profileWrap) {
-        // 💡 토스 사용자 텍스트 및 아바타 완전 삭제! 과거 이력 목록만 깔끔하게 노출 🔥
+        // 💡 핵심: 프로필로 화면을 새로 그릴 때도 하단에 'pastHistoryList'를 무조건 살려놓음!
         profileWrap.innerHTML = `
-          <div id="pastHistorySession" style="width: 100%;">
+          <div class="user-info-flex" style="margin-bottom: 12px;">
+            <img class="user-avatar" src="${user.photoURL}" alt="profile" style="border: 2px solid ${badgeColor}; width: 40px; height: 40px; border-radius: 50%;">
+            <div class="user-name-mail" style="display: flex; flex-direction: column; margin-left: 10px;">
+              <span class="user-name" style="font-weight: 700; font-size: 0.9rem; color: #fff;">${user.displayName}</span>
+              <span class="user-email" style="font-size: 0.75rem; color: #888;">${user.email}</span>
+            </div>
+          </div>
+          <button class="btn-logout" onclick="logoutAllServices()" style="margin-bottom: 15px;">로그아웃</button>
+
+          <div id="pastHistorySession" style="margin-top: 10px; border-top: 1px dashed #444; padding-top: 15px; width: 100%;">
             <h4 style="margin: 0 0 10px 0; font-size: 0.85rem; color: #b0b0c5; display: flex; align-items: center; gap: 5px; font-family: sans-serif;">
               📜 과거 검사 이력 목록
             </h4>
-            <ul id="pastHistoryList" style="list-style: none; padding: 0; margin: 0; max-height: 300px; overflow-y: auto;">
+            <ul id="pastHistoryList" style="list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto;">
               <li style="color: #666; font-size: 0.78rem; font-style: italic; font-family: sans-serif;">기록을 동기화 중입니다...</li>
             </ul>
           </div>
@@ -690,57 +700,54 @@ deleteBtn.onclick = async (e) => {
       if (introNotice) introNotice.style.display = "none";
     }
 
-   // ==========================================
-    // 🧭 [수정] 토스 인앱용 실시간 인증 상태 리스너 (소셜 로그인 버튼 완전 제거)
-    // ==========================================
-    onAuthStateChanged(auth, () => {
+    // 9️⃣ 실시간 인증 상태 리스너 (구글 및 카카오 상태 분기)
+    onAuthStateChanged(auth, (googleUser) => {
       const profileWrap = document.getElementById("userProfileWrap");
       const introNotice = document.getElementById("introLoginNotice");
+      const savedKakaoUser = localStorage.getItem('kakao_user');
       
-      // 토스 인앱용 유저 세션 강제 유지 (로그인 불필요)
-      if (!localStorage.getItem('toss_user_id')) {
-        const randomId = 'toss_' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('toss_user_id', randomId);
-      }
+      if (googleUser) {
+        window.currentUser = {
+          uid: googleUser.uid,
+          displayName: googleUser.displayName,
+          email: googleUser.email,
+          photoURL: googleUser.photoURL || 'https://via.placeholder.com/150',
+          loginType: 'google'
+        };
+        renderLoggedInUI(window.currentUser);
+        loadPastResult(googleUser.uid);
+      } else if (savedKakaoUser) {
+        window.currentUser = JSON.parse(savedKakaoUser);
+        renderLoggedInUI(window.currentUser);
+        loadPastResult(window.currentUser.uid);
+} else {
+        window.currentUser = null;
+        if (profileWrap) {
+          // 💡 로그인 버튼들 바로 밑에 과거 기록 리스트 레이아웃까지 세트로 묶어서 한방에 화면에 그려버림!
+          profileWrap.innerHTML = `
+            <button class="btn-login-google" onclick="loginWithGoogle()" style="margin-bottom: 8px;">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/120px-Google_%22G%22_logo.svg.png" width="18" alt="Google"> Google 계정 로그인
+            </button>
+            <button class="btn-login-kakao" onclick="loginWithKakao()">
+              <img src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png" width="18" alt="Kakao"> 카카오톡 로그인
+            </button>
 
-      window.currentUser = {
-        uid: localStorage.getItem('toss_user_id'),
-        displayName: "사용자",
-        loginType: 'toss'
-      };
-
-      // 👤 사이드바에 로그인 버튼 빼고, 사용자 정보와 과거 이력 목록만 한방에 그려버림!
-      if (profileWrap) {
-        profileWrap.innerHTML = `
-          <div class="user-info-flex" style="display: flex; align-items: center; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid #334155;">
-            <div class="user-avatar" style="width: 36px; height: 36px; border-radius: 50%; background: #475569;"></div>
-            <div class="user-name-mail" style="display: flex; flex-direction: column;">
-              <div class="user-name" style="font-size: 0.88rem; font-weight: 700; color: #ffffff;">토스 사용자</div>
-              <div class="user-email" style="font-size: 0.75rem; color: #94a3b8;">인앱 서비스 이용 중</div>
-            </div>
-          </div>
-
-          <div id="pastHistorySession" style="margin-top: 20px; border-top: 1px dashed #444; padding-top: 15px; width: 100%;">
-            <h4 style="margin: 0 0 10px 0; font-size: 0.85rem; color: #b0b0c5; display: flex; align-items: center; gap: 5px; font-family: sans-serif;">
-              📜 과거 검사 이력 목록
-            </h4>
-            <ul id="pastHistoryList" style="list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto;">
+            <div id="pastHistorySession" style="margin-top: 20px; border-top: 1px dashed #444; padding-top: 15px; width: 100%;">
+              <h4 style="margin: 0 0 10px 0; font-size: 0.85rem; color: #b0b0c5; display: flex; align-items: center; gap: 5px; font-family: sans-serif;">
+                📜 과거 검사 이력 목록
+              </h4>
+              <ul id="pastHistoryList" style="list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto;">
+                <li style="color: #666; font-size: 0.78rem; font-style: italic; font-family: sans-serif;">로그인 후 조회가 가능합니다.</li>
               </ul>
-          </div>
-        `;
+            </div>
+          `;
+        }
+        if (introNotice) introNotice.style.display = "flex";
       }
-
-      // 기존 UI 함수 및 데이터 로드 실행
-      try {
-        if (typeof renderLoggedInUI === "function") renderLoggedInUI(window.currentUser);
-        if (typeof loadPastResult === "function") loadPastResult(window.currentUser.uid);
-      } catch (e) {
-        console.log("UI 렌더링 또는 데이터 로드 중 대기:", e);
-      }
-
-      // 인트로 메인 화면에 있던 로그인 유도 박스는 숨김 처리
-      if (introNotice) introNotice.style.display = "none";
     });
+// 🕵️‍♂️ 주소창에 공유 파라미터가 붙어있는지 감시하는 내비게이터 함수 (중복 싹 제거 완료!)
+// 🕵️‍♂️ 주소창에 공유 파라미터가 붙어있는지 감시하는 내비게이터 함수 (숫자 규격 매칭 완료!)
+// 🕵️‍♂️ 주소창 파라미터 감시 및 숫자 규격 완벽 통역 함수
 async function checkSharedLink() {
   const urlParams = new URLSearchParams(window.location.search);
   const sharedUid = urlParams.get('uid');
@@ -875,9 +882,13 @@ if (hasParamsForInit) {
       <div class="intro-card">
         
         <div class="login-notice-box" id="introLoginNotice">
-  <div class="login-notice-text" style="text-align: center;">
-    <strong>💾 결과가 자동으로 보관됩니다!</strong><br>
-    브라우저가 닫혀도 언제든 이전 결과를 다시 조회하실 수 있습니다.
+  <div class="login-notice-text">
+    <strong>🔒 결과를 영구 보관하고 싶으신가요?</strong><br>
+    로그인을 하시면 브라우저가 닫혀도 언제든 결과를 다시 조회할 수 있습니다.
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 6px;">
+    <button onclick="loginWithGoogle()" style="padding: 6px 12px; font-weight:700; font-size:0.75rem; border-radius:6px; background:#fff; color:#222; border:1px solid #ccc; cursor:pointer;">Google 로그인</button>
+    <button onclick="loginWithKakao()" style="padding: 6px 12px; font-weight:700; font-size:0.75rem; border-radius:6px; background:#FEE500; color:#191919; border:none; cursor:pointer;">카카오 로그인</button>
   </div>
 </div>
 
