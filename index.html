@@ -982,21 +982,58 @@ if (hasParamsForInit) {
     <span class="pay-icon">🔒</span>
     <div class="pay-title">종합 심화 정밀진단 잠금해제</div>
     <div class="pay-desc">온라인 TCI 데이터 및 하위 척도 완벽 분석!<br><strong>총 105개 문항</strong>으로 더 고도화된 프로파일을 확인하세요.</div>
-    <div class="pay-price">2,900원</div>
+    <div class="pay-price">1,990원</div>
     <div class="pay-btn-group">
       <button class="pay-btn btn-pay-cancel" onclick="closeAllModals()">취소</button>
       <button class="pay-btn btn-pay-submit" id="btnPaySubmit">결제 및 잠금해제</button>
       <script>
-  // 결제 체크 함수 추가
-  function checkPaymentStatus() {
-    if (!CONFIG.isPaymentEnabled) {
-      alert("현재 유료 결제 기능은 준비 중입니다. 🚧");
-      return; // 여기서 실행을 딱 끊어버림
+ // 결제 시작 함수
+function startPayment() {
+  const IMP = window.IMP; 
+  IMP.init("imp53182105"); // 신지군의 가맹점 식별코드
+
+  IMP.request_pay({
+    pg: 'html5_inicis', 
+    // pay_method 항목을 제외하면 사용자가 직접 선택 가능!
+    merchant_uid: 'order_' + new Date().getTime(), 
+    name: 'TCI 성격 종합 심화 진단',
+    amount: 1990, // 테스트 금액
+  }, function (rsp) { 
+    if (rsp.success) {
+      console.log("결제 성공, 검증 시작:", rsp.imp_uid);
+      verifyPaymentOnServer(rsp.imp_uid); 
+    } else {
+      alert("결제에 실패했습니다: " + rsp.error_msg);
     }
-    
-    // 만약 결제 기능이 켜져 있다면, 여기서 원래 결제 로직 호출
-    // startPayment(); 
-  }
+  });
+}
+
+// 1. 결제 완료 후 정밀 진단 화면(screen-quiz)으로 이동
+function moveToDetailedDiagnosis(imp_uid) {
+  console.log("결제 완료! 정밀 진단 화면으로 전환합니다. imp_uid:", imp_uid);
+  
+  // 1. 심화 모드로 설정 (나중에 진단 로직에서 이 모드를 보고 문항수를 105개로 바꿀 거야)
+  window.currentMode = 'deep'; 
+  
+  // 2. 우리가 찾은 ID인 'screen-quiz'로 화면 전환
+  showScreen('screen-quiz'); 
+  
+  // 3. 결제 모달이 있다면 닫아주기 (보안과 깔끔함을 위해)
+  if (typeof payModal !== 'undefined' && payModal) payModal.style.display = 'none';
+  if (typeof commonOverlay !== 'undefined' && commonOverlay) commonOverlay.style.display = 'none';
+}
+
+// 2. 결제 성공 시 호출되는 함수 (verifyPaymentOnServer)
+function verifyPaymentOnServer(imp_uid) {
+  // 나중에 서버 검증 로직이 여기에 들어갈 예정임
+  // 현재는 결제 성공했으니 바로 진단 페이지로 이동
+  moveToDetailedDiagnosis(imp_uid);
+}
+
+// 3. 결제 시작 함수 (수정 없음)
+function checkPaymentStatus() {
+  startPayment();
+}
 </script>
     </div>
   </div>
