@@ -673,19 +673,17 @@ deleteBtn.onclick = async (e) => {
     function renderLoggedInUI(user) {
       const profileWrap = document.getElementById("userProfileWrap");
       const introNotice = document.getElementById("introLoginNotice");
-      const badgeColor = user.loginType === 'kakao' ? '#fee500' : '#4285F4';
 
       if (profileWrap) {
-        // 💡 핵심: 프로필로 화면을 새로 그릴 때도 하단에 'pastHistoryList'를 무조건 살려놓음!
+        // 💡 소셜 로그인 정보(이름, 이메일, 로그아웃 버튼)를 완전히 제거한 토스 전용 레이아웃!
         profileWrap.innerHTML = `
-          <div class="user-info-flex" style="margin-bottom: 12px;">
-            <img class="user-avatar" src="${user.photoURL}" alt="profile" style="border: 2px solid ${badgeColor}; width: 40px; height: 40px; border-radius: 50%;">
+          <div class="user-info-flex" style="margin-bottom: 12px; display: flex; align-items: center;">
+            <div class="user-avatar" style="width: 40px; height: 40px; border-radius: 50%; background: #475569;"></div>
             <div class="user-name-mail" style="display: flex; flex-direction: column; margin-left: 10px;">
-              <span class="user-name" style="font-weight: 700; font-size: 0.9rem; color: #fff;">${user.displayName}</span>
-              <span class="user-email" style="font-size: 0.75rem; color: #888;">${user.email}</span>
+              <span class="user-name" style="font-weight: 700; font-size: 0.9rem; color: #fff;">토스 사용자</span>
+              <span class="user-email" style="font-size: 0.75rem; color: #888;">인앱 서비스 이용 중</span>
             </div>
           </div>
-          <button class="btn-logout" onclick="logoutAllServices()" style="margin-bottom: 15px;">로그아웃</button>
 
           <div id="pastHistorySession" style="margin-top: 10px; border-top: 1px dashed #444; padding-top: 15px; width: 100%;">
             <h4 style="margin: 0 0 10px 0; font-size: 0.85rem; color: #b0b0c5; display: flex; align-items: center; gap: 5px; font-family: sans-serif;">
