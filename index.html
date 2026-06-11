@@ -1691,14 +1691,10 @@ var deepQuestions = [
   
   // 🚀 결제창이 닫히자마자 유저가 퀴즈를 바로 시작할 수 있도록 퀴즈 화면으로 즉시 이동!
   window.showScreen('screen-quiz');
-});
 
-    // 결제 기능이 켜져 있을 때만 아래 로직 실행
-    isPremiumUnlocked = true;
-    if(lockIcon) lockIcon.style.display = 'none';
-    closeAllModals();
-    window.switchMode('deep');
-  });
+  // 결제 기능이 켜져 있을 때만 아래 로직 실행되던 부분을 심화 모드로 통합
+  window.switchMode('deep');
+});
 
   window.tryEnterAdmin = function() {
     var pw = prompt("관리자 인증 비밀번호를 입력하세요:");
