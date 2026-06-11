@@ -496,19 +496,23 @@ window.uploadAllResultsToFirebase = async function() { console.log("덤프 스�
       };
 
       try {
-        console.log("🚀 파이어스토어 results 컬렉션으로 대량 배송 시작...");
-        for (const docId of Object.keys(allResults)) {
-          const resultDocRef = doc(db, "results", docId);
-          await setDoc(resultDocRef, {
-            detail: allResults[docId]
-          });
-          console.log(`✅ [배송완료] ${docId} 서버 안착 성공!`);
-        }
-        alert("🎉 14개 기질 데이터가 서버에 완벽하게 복사되었습니다! 개이득!");
-      } catch (error) {
-        console.error("❌ 덤프 중 에러 발생 샤갈 🤦‍♂️:", error);
-      }
-    };
+    console.log("🚀 파이어스토어 tci_results 컬렉션으로 대량 배송 시작");
+    
+    for (const docId of Object.keys(allResults)) {
+      const resultDocRef = doc(db, "tci_results", docId);
+      
+      await setDoc(resultDocRef, {
+        detail: allResults[docId]
+      });
+      console.log(`✅ [배송완료] ${docId} 서버 안착 성공!`);
+    }
+    
+    alert("🎉 14개 기질 데이터가 파이어스토어(tci_results)에 완벽하게 복사되었습니다!");
+  } catch (error) {
+    console.error("❌ 덤프 중 에러 발생 샤갈 🤦‍♂️:", error);
+    alert("덤프 실패! 콘솔 창을 확인하세요 :(");
+  }
+};
     // 6️⃣ 💾 Firestore에 여러 번의 결과를 시간별로 누적 저장하는 새 함수!
     window.saveResultToFirestore = async function(uid, mode, scores) {
       try {
@@ -2208,23 +2212,26 @@ if (btnStart) {
   });
 
   // 3. 🏁 다음/결과 버튼 통합 제어 함수 (모바일 터치 씹힘 완벽 방어) 🚀
-  function handleNextAction(e) {
-    if (e) {
-      // 모바일 브라우저에서 터치와 클릭이 연속으로 중복 발생해서 씹히는 현상 방지 ㄴㅁㅇ
-      e.preventDefault(); 
-      e.stopPropagation();
+  // =========================================================================
+// 📱 다음 문항으로 이동 및 마지막 페이지 처리 이벤트 핸들러
+// =========================================================================
+function handleNextAction(e) {
+  if (e) {
+    // 모바일 브라우저에서 터치와 클릭이 연속으로 중복 발생해서 씹히는 현상 방지 ㄴㅁㅇ
+    e.preventDefault(); 
+    e.stopPropagation();
+  }
+  
+  var startIdx = currentPage * itemsPerPage;
+  var endIdx = Math.min(startIdx + itemsPerPage, questions.length);
+  for (var i = startIdx; i < endIdx; i++) { 
+    if (answers[i] === 0) {
+      alert("⚠️ 아직 체크하지 않은 문항이 있습니다. 모든 항목을 선택해 주세요!");
+      return; 
     }
-    
-    var startIdx = currentPage * itemsPerPage;
-    var endIdx = Math.min(startIdx + itemsPerPage, questions.length);
-    for (var i = startIdx; i < endIdx; i++) { 
-      if (answers[i] === 0) {
-        alert("⚠️ 아직 체크하지 않은 문항이 있습니다. 모든 항목을 선택해 주세요!");
-        return; 
-      }
-    }
-    
-    // 💡 마지막 페이지일 때 결과 처리 로직 수정
+  }
+  
+  // 💡 마지막 페이지일 때 결과 처리 로직 수정
   if (currentPage === totalPages - 1) {
     // 1. 점수 계산
     var finalScores = processScores();
@@ -2244,15 +2251,21 @@ if (btnStart) {
     renderPage(currentPage + 1);
     window.scrollTo(0, 0); 
   }
-  }
+}
 
-  // 📱 PC 클릭과 모바일 터치 이벤트 둘 다 칼같이 반응하도록 2개 다 등록함 미쳤지!
+// 📱 PC 클릭과 모바일 터치 이벤트 둘 다 칼같이 반응하도록 2개 다 등록함 미쳤지!
+if (typeof btnNext !== 'undefined' && btnNext) {
   btnNext.addEventListener('click', handleNextAction);
   btnNext.addEventListener('touchstart', handleNextAction, { passive: false });
+}
 
+// 🔄 퀴즈 초기화 및 화면 세팅
+if (typeof resetQuiz === 'function') {
   resetQuiz();
+}
 
-})();
+// ⚠️ 만약 이 밑에 원래 즉시 실행 함수를 닫는 괄호( }); 이나 })(); )가 들어가서 
+// 계속 SyntaxError 에러가 나면, 바로 아랫줄에 있는 닫는 괄호 찌꺼기들을 하나씩 지워보셈임!
   window.copyResultLinkUnified = function() {
     console.log("🔥 함수 호출 성공! 신지군이 고친 엔진 가동 중!");
   var targetScores = window.scores || JSON.parse(localStorage.getItem('lastResult'));
