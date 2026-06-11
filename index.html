@@ -398,7 +398,8 @@
 // =========================================================================
     // 🚚 [치트키] 파이어스토어에 14개 기질 상세 데이터 1초 만에 자동 덤프하는 함수!
     // =========================================================================
-    window.uploadAllResultsToFirebase = async function() {
+    // 껍데기만 남겨서 괄호 에러를 원천 차단하기 ㅇㅋ!
+window.uploadAllResultsToFirebase = async function() { console.log("덤프 스킵 완료임!"); };
       // 업로드용 setDoc과 doc을 안전하게 바인딩 욘 😉
       const { setDoc, doc } = await import("https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js");
       
