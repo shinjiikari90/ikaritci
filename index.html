@@ -1598,13 +1598,28 @@ var deepQuestions = [
     // 이제 결제를 안 했더라도 리턴되지 않고, 아래로 내려가서 화면 전환이 정상적으로 일어남임!
   }
 
+  window.switchMode = function(mode) {
+  // 🔒 [방어벽] 심화진단일 때 구글 로그인 상태를 가장 먼저 1순위로 체크!
+  if (mode === 'deep') {
+    var user = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : window.currentUser;
+    
+    // 로그인이 안 되어 있으면 경고창 띄우고 여기서 함수 강제 종료!
+    if (!user) {
+      alert("🔒 안전한 결제 환경을 위해 로그인을 먼저 진행해 주세요!");
+      if (typeof window.toggleSidebar === 'function') window.toggleSidebar(false); 
+      return; 
+    }
+    // 💡 기존에 바로 결제창을 열어버리던 'openPayModal(); return;' 로직은 삭제해서 화면 전환이 먼저 일어나게 함임!
+  }
+
+  // 여기서부터 정상적으로 인트로 화면 전환 처리 진행!
   window.currentMode = mode;
   document.querySelectorAll('.menu-list .menu-item').forEach(function (el) {
     el.classList.remove('active');
   });
   
   var targetMenu = document.getElementById('menu-' + mode);
-  if(targetMenu) {
+  if (targetMenu) {
     targetMenu.classList.add('active');
   }
   
@@ -1630,41 +1645,8 @@ var deepQuestions = [
   }
   
   toggleSidebar(false);
-  resetQuiz(); // 👈 화면이 바뀌면서 인트로 화면이 부드럽게 노출됨!
+  resetQuiz(); // 👈 화면 바뀌면서 인트로 화면이 부드럽게 노출됨!
 };
-    window.currentMode = mode;
-    document.querySelectorAll('.menu-list .menu-item').forEach(function (el) {
-      el.classList.remove('active');
-    });
-    var targetMenu = document.getElementById('menu-' + mode);
-    if(targetMenu) {
-      targetMenu.classList.add('active');
-    }
-
-    var titleEl = document.getElementById('intro-title');
-    var subtitleEl = document.getElementById('intro-subtitle');
-    var metaEl = document.getElementById('intro-meta');
-    var barWrap = document.getElementById('quizProgressBarWrap');
-
-    if (mode === 'brief') {
-      titleEl.textContent = '🧬 기질 및 성격 7차원 자가진단';
-      subtitleEl.textContent = 'Cloninger 성격 모델 기반 (기본 간이진단)';
-      metaEl.innerHTML = '총 <strong>42문항</strong> / 소요시간 약 <strong>5~7분</strong>';
-    } else {
-      titleEl.textContent = '👑 TCI 종합 심화 정밀진단';
-      subtitleEl.textContent = 'Cloninger 성격 모델 기반 (프리미엄 정밀 분석)';
-      metaEl.innerHTML = '총 <strong>105문항</strong> / 소요시간 약 <strong>15~20분</strong>';
-    }
-    
-    if (window.innerWidth <= 992) {
-      barWrap.classList.add('mobile-offset');
-    } else {
-      barWrap.classList.remove('mobile-offset');
-    }
-
-    toggleSidebar(false);
-    resetQuiz();
-  };
 
   function openPayModal() {
     commonOverlay.classList.add('active');
