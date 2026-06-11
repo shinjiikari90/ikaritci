@@ -1583,23 +1583,55 @@ var deepQuestions = [
   };
 
   window.switchMode = function(mode) {
-    // 🔒 [추가된 방어벽] 심화진단일 때 구글 로그인 상태를 가장 먼저 1순위로 체크!
-    if (mode === 'deep') {
-      var user = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : window.currentUser;
-      
-      // 로그인이 안 되어 있으면 경고창 띄우고 여기서 함수 강제 종료!
-      if (!user) {
-        alert("🔒 안전한 결제 환경을 위해 로그인을 먼저 진행해 주세요!");
-        if (typeof window.toggleSidebar === 'function') window.toggleSidebar(false); 
-        return; 
-      }
-      
-      // 구글 로그인은 통과했는데, 결제를 아직 안 했다면 그때 결제창 열기!
-      if (!isPremiumUnlocked) {
-        openPayModal();
-        return;
-      }
+  // 🔒 [방어벽] 심화진단일 때 구글 로그인 상태를 가장 먼저 1순위로 체크!
+  if (mode === 'deep') {
+    var user = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : window.currentUser;
+    
+    // 로그인이 안 되어 있으면 경고창 띄우고 여기서 함수 강제 종료!
+    if (!user) {
+      alert("🔒 안전한 결제 환경을 위해 로그인을 먼저 진행해 주세요!");
+      if (typeof window.toggleSidebar === 'function') window.toggleSidebar(false); 
+      return; 
     }
+    
+    // 💡 [핵심 수정] 기존에 있던 'if (!isPremiumUnlocked) { openPayModal(); return; }' 지움!
+    // 이제 결제를 안 했더라도 리턴되지 않고, 아래로 내려가서 화면 전환이 정상적으로 일어남임!
+  }
+
+  window.currentMode = mode;
+  document.querySelectorAll('.menu-list .menu-item').forEach(function (el) {
+    el.classList.remove('active');
+  });
+  
+  var targetMenu = document.getElementById('menu-' + mode);
+  if(targetMenu) {
+    targetMenu.classList.add('active');
+  }
+  
+  var titleEl = document.getElementById('intro-title');
+  var subtitleEl = document.getElementById('intro-subtitle');
+  var metaEl = document.getElementById('intro-meta');
+  var barWrap = document.getElementById('quizProgressBarWrap');
+  
+  if (mode === 'brief') {
+    titleEl.textContent = '🧬 기질 및 성격 7차원 자가진단';
+    subtitleEl.textContent = 'Cloninger 성격 모델 기반 (기본 간이진단)';
+    metaEl.innerHTML = '총 <strong>42문항</strong> / 소요시간 약 <strong>5~7분</strong>';
+  } else {
+    titleEl.textContent = '👑 TCI 종합 심화 정밀진단';
+    subtitleEl.textContent = 'Cloninger 성격 모델 기반 (프리미엄 정밀 분석)';
+    metaEl.innerHTML = '총 <strong>105문항</strong> / 소요시간 약 <strong>15~20분</strong>';
+  }
+  
+  if (window.innerWidth <= 992) {
+    barWrap.classList.add('mobile-offset');
+  } else {
+    barWrap.classList.remove('mobile-offset');
+  }
+  
+  toggleSidebar(false);
+  resetQuiz(); // 👈 화면이 바뀌면서 인트로 화면이 부드럽게 노출됨!
+};
     window.currentMode = mode;
     document.querySelectorAll('.menu-list .menu-item').forEach(function (el) {
       el.classList.remove('active');
@@ -1669,11 +1701,15 @@ var deepQuestions = [
   };
 
   btnPaySubmit.addEventListener('click', function() {
-    // [방어벽] 결제 기능이 꺼져있으면 여기서 강제 종료!
-    if (!CONFIG.isPaymentEnabled) {
-      alert("현재 유료 결제 기능은 준비 중입니다. 🚧 나중에 다시 시도해 주세요!");
-      return; 
-    }
+  // 💡 [수정] 준비 중 경고창(CONFIG.isPaymentEnabled) 로직을 완전히 제거함!
+  // 이제 버튼을 누르면 즉시 프리미엄 잠금이 해제됨임! 🔥
+  isPremiumUnlocked = true;
+  if(lockIcon) lockIcon.style.display = 'none';
+  closeAllModals();
+  
+  // 🚀 결제창이 닫히자마자 유저가 퀴즈를 바로 시작할 수 있도록 퀴즈 화면으로 즉시 이동!
+  window.showScreen('screen-quiz');
+});
 
     // 결제 기능이 켜져 있을 때만 아래 로직 실행
     isPremiumUnlocked = true;
@@ -2173,12 +2209,21 @@ resultWrap.appendChild(header);
     window.showScreen('screen-intro');
   }
 
- // 1. 시작 버튼 이벤트 (기존 유지)
+ // 1. 시작 버튼 이벤트 (기존 기능 100% 유지 + 결제 방어벽 추가)
+if (btnStart) {
   btnStart.addEventListener('click', function () { 
+    // 👑 현재 종합 심화진단 모드인데 아직 결제하지 않았다면, 여기서 결제창 팝업!
+    if (window.currentMode === 'deep' && !isPremiumUnlocked) {
+      openPayModal();
+      return; // 결제 완료 전까지는 다음 퀴즈 화면으로 넘어가지 못하게 블로킹 ✋
+    }
+
+    // 결제가 완료되었거나 간이진단일 때는 기존 로직대로 퀴즈 시작!
     shuffleQuestions(); 
     window.showScreen('screen-quiz'); 
     renderPage(0); 
   });
+}
 
   // 2. 이전 버튼 이벤트 (기존 유지)
   btnPrev.addEventListener('click', function () { 
