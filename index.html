@@ -1,2377 +1,866 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <title>TCI 기질 및 7차원 성격 자가검사</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { font-size: 16px; -webkit-text-size-adjust: 100%; }
-    body {
-      font-family: -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-      background: #ffffff;
-      color: #1a1a1a;
-      min-height: 100dvh;
-      display: flex;
-      position: relative;
-      overflow-x: hidden;
-    }
-
-    /* 🍔 모달/메뉴 제어용 오버레이 백드롭 */
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.4); display: flex; align-items: center; justify-content: center;
-      z-index: 3000; opacity: 0; visibility: hidden; transition: all 0.3s ease;
-    }
-    .modal-overlay.active { opacity: 1; visibility: visible; }
-
-    /* 📱 모바일 전용 사이드바 배경 암전용 오버레이 */
-    #sidebar-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.3); z-index: 1400;
-      opacity: 0; visibility: hidden; transition: all 0.3s ease;
-    }
-    #sidebar-overlay.active { opacity: 1; visibility: visible; }
-
-    /* 🧭 좌측 사이드바 - 딥 네이비 적용 */
-    #sidebar {
-      width: 260px;
-      background: #1e293b; 
-      color: #f1f5f9;
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-      min-height: 100vh;
-      z-index: 1500;
-      justify-content: space-between;
-      transition: transform 0.3s ease;
-      border-right: 1px solid #334155;
-    }
-    .sidebar-top { display: flex; flex-direction: column; }
-    .sidebar-title {
-      padding: 24px 20px; font-size: 1.1rem; font-weight: 700;
-      border-bottom: 1px solid #334155;
-      background: #151d29;
-      color: #38bdf8;
-    }
-    
-    /* 👤 로그인 유저 정보 영역 */
-    .user-profile-box {
-      padding: 16px; border-bottom: 1px solid #334155; background: #1e293b;
-      display: flex; flex-direction: column; gap: 10px;
-    }
-    .user-info-flex { display: flex; align-items: center; gap: 10px; }
-    .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: #475569; object-fit: cover; }
-    .user-name-mail { display: flex; flex-direction: column; overflow: hidden; }
-    .user-name { font-size: 0.88rem; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .user-email { font-size: 0.75rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    
-    .btn-login-google {
-      width: 100%; padding: 10px; border: none; border-radius: 8px; background: #fff; color: #222;
-      font-size: 0.85rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
-    .btn-login-kakao {
-      width: 100%; padding: 10px; border: none; border-radius: 8px; background: #FEE500; color: #191919;
-      font-size: 0.85rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
-    .btn-logout {
-      width: 100%; padding: 8px; border: 1px solid #475569; border-radius: 6px; background: transparent; color: #94a3b8;
-      font-size: 0.78rem; font-weight: 600; cursor: pointer;
-    }
-    .btn-logout:hover { background: #334155; color: #fff; }
-
-    .menu-list { list-style: none; padding: 15px 10px; }
-    .menu-item {
-      padding: 14px 16px; border-radius: 10px; cursor: pointer; margin-bottom: 8px;
-      font-size: 0.95rem; font-weight: 600; color: #94a3b8; transition: all 0.2s;
-      display: flex; align-items: center; justify-content: space-between;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .menu-item:hover { background: #334155; color: #ffffff; }
-    .menu-item.active { background: #38bdf8; color: #1e293b; font-weight: 700; }
-    .lock-badge { font-size: 0.8rem; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 6px; color: #fbbf24; }
-    .sidebar-footer { padding: 15px 10px; border-top: 1px solid #334155; }
-    .btn-admin-trigger { background: #151d29; color: #64748b; }
-    .btn-admin-trigger:hover { background: #991b1b; color: #fff; }
-
-    /* 📱 모바일 상단 햄버거 바 */
-    .mobile-top-bar {
-      display: none; padding: 16px; position: fixed; top: 0; left: 0; z-index: 1200;
-      width: auto; background: transparent !important; border: none !important;
-    }
-    .hamburger-btn {
-      background: rgba(255, 255, 255, 0.8); /* 버튼이 잘 보이게 살짝 배경 추가 */
-      border: 1px solid #e5e7eb; border-radius: 8px; color: #1a1a1a; 
-      font-size: 1.5rem; cursor: pointer; padding: 4px 10px;
-      display: flex; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    .mobile-bar-title { font-size: 1rem; font-weight: 700; }
-
-    /* 메인 콘텐츠 영역 */
-    #main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; position: relative; z-index: 100; min-height: 100%; background: #ffffff; }
-    .content-body { flex: 1; padding-bottom: 20px; }
-
-    /* 앱 헤더 및 진행 바 */
-    .app-header { background: #ffffff; color: #1a1a1a; padding: 28px 20px 22px; text-align: center; border-bottom: 1px solid #f1f3f5; }
-    .app-header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.3px; color: #1a1a1a; }
-    .app-header p  { font-size: 0.82rem; opacity: 0.88; margin-top: 6px; line-height: 1.5; color: #6b7280; }
-    
-    .progress-wrap { background: #f1f3f5; height: 6px; position: sticky; top: 0; z-index: 1100; }
-    .progress-wrap.mobile-offset { top: 52px; } 
-    .progress-bar { height: 6px; background: #1a1a1a; transition: width 0.4s ease; width: 0%; }
-    .progress-text { text-align: center; font-size: 0.78rem; color: #6b7280; padding: 6px 0 2px; background: #ffffff; }
-    
-    .screen { display: none; }
-    .screen.active { display: block !important; }
-    
-    .intro-card { margin: 24px 16px; background: #ffffff; border-radius: 18px; padding: 26px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid #e0e0e0; }
-    .intro-card h2 { font-size: 1.1rem; color: #1a1a1a; margin-bottom: 14px; font-weight: 700; }
-    .intro-card p  { font-size: 0.9rem; line-height: 1.7; color: #374151; margin-bottom: 10px; }
-    
-    /* 💾 로그인 권장/알림 박스 */
-    .login-notice-box {
-      background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px;
-      margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; gap: 10px;
-    }
-    .login-notice-text { font-size: 0.82rem; color: #4b5563; line-height: 1.5; }
-
-    .dim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0; }
-    .dim-badge { border-radius: 12px; padding: 12px 10px; font-size: 0.8rem; font-weight: 600; text-align: center; line-height: 1.4; }
-    .dim-badge.t { background: #f3f4f6; color: #111827; }
-    .dim-badge.c { background: #f3f4f6; color: #111827; }
-    
-    .notice-box { background: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 12px 14px; font-size: 0.82rem; color: #92400e; line-height: 1.6; margin-top: 16px; }
-    
-    .start-btn {
-      display: block; width: 100%; margin-top: 24px; padding: 16px; border: none; border-radius: 14px;
-      background: #1a1a1a; color: #ffffff; font-size: 1rem; font-weight: 700;
-      cursor: pointer; -webkit-tap-highlight-color: transparent; transition: opacity 0.2s; position: relative; z-index: 10;
-    }
-    .start-btn:active { opacity: 0.85; }
-    
-    /* 퀴즈 문항 */
-    .q-container { padding: 16px; }
-    .q-card { background: #ffffff; border-radius: 18px; padding: 22px 18px 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); margin-bottom: 16px; border: 1px solid #e5e7eb; }
-    .q-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
-    .q-num { background: #1a1a1a; color: #ffffff; font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
-    .q-text { font-size: 0.97rem; line-height: 1.7; color: #111827; font-weight: 500; margin-bottom: 20px; }
-    
-    /* 리커트 척도 */
-    .likert-wrap { display: flex; justify-content: space-between; align-items: flex-end; gap: 4px; }
-    .likert-option { flex: 1; text-align: center; }
-    .likert-option input[type="radio"] { display: none; }
-    .likert-label { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-    .likert-circle {
-      width: 36px; height: 36px; border-radius: 50%; border: 2px solid #e5e7eb; background: #ffffff;
-      display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700;
-      color: #9ca3af; transition: all 0.18s ease;
-    }
-    .likert-option input:checked + .likert-label .likert-circle {
-      background: #1a1a1a; border-color: #1a1a1a; color: #ffffff; transform: scale(1.1); box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    .likert-desc { font-size: 0.6rem; color: #9ca3af; line-height: 1.3; max-width: 52px; white-space: pre-line; }
-    .likert-option input:checked + .likert-label .likert-desc { color: #1a1a1a; font-weight: 600; }
-    
-    .nav-row { display: flex; gap: 10px; margin: 20px 0 0; }
-    .nav-btn { flex: 1; padding: 13px; border: none; border-radius: 12px; font-size: 0.92rem; font-weight: 600; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: opacity 0.2s, transform 0.1s; }
-    .nav-btn:active { opacity: 0.82; transform: scale(0.98); }
-    .btn-prev { background: #f3f4f6; color: #4b5563; }
-    .btn-next { background: #1a1a1a; color: #ffffff; }
-    .btn-next:disabled { background: #e5e7eb; cursor: not-allowed; }
-    
-    /* 결과 페이지 */
-    .result-wrap { padding: 16px; }
-    .result-header { background: #ffffff; border-radius: 18px; padding: 22px 18px; color: #1a1a1a; text-align: center; margin-bottom: 16px; border: 1px solid #e5e7eb; }
-    .result-header h2 { font-size: 1.15rem; font-weight: 700; }
-    .result-header p  { font-size: 0.82rem; opacity: 0.88; margin-top: 6px; line-height: 1.5; color: #6b7280; }
-    
-    .section-title { font-size: 0.88rem; font-weight: 700; color: #6b7280; letter-spacing: 0.5px; margin: 18px 0 10px; padding-left: 4px; }
-    .dim-result-card { background: #ffffff; border-radius: 14px; padding: 16px; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #e5e7eb; }
-    .dim-result-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .dim-result-name { font-size: 0.95rem; font-weight: 700; color: #111827; }
-    .dim-result-score { font-size: 0.85rem; font-weight: 600; color: #1a1a1a; background: #f3f4f6; padding: 3px 10px; border-radius: 20px; }
-    
-    .bar-track { background: #f3f4f6; border-radius: 8px; height: 10px; overflow: hidden; margin-bottom: 8px; }
-    .bar-fill { height: 100%; border-radius: 8px; width: 0%; transition: width 0.8s cubic-bezier(.4,0,.2,1); background: #1a1a1a; }
-    
-    .level-label { font-size: 0.75rem; font-weight: 600; padding: 2px 8px; border-radius: 8px; display: inline-block; }
-    .level-high { background: #e5e7eb; color: #1a1a1a; }
-    .level-mid  { background: #f3f4f6; color: #4b5563; }
-    .level-low  { background: #f9fafb; color: #9ca3af; }
-    
-    .dim-result-desc { font-size: 0.82rem; color: #374151; line-height: 1.65; margin-top: 8px; border-top: 1px solid #f1f3f5; padding-top: 8px; }
-    
-    .premium-upsell-card {
-      background: #f9fafb; border: 2px dashed #1a1a1a; border-radius: 16px;
-      padding: 22px 18px; margin: 20px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.02); text-align: center;
-    }
-    .upsell-tag { display: inline-block; background: #1a1a1a; color: #ffffff; font-size: 0.75rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; margin-bottom: 10px; }
-    .upsell-title { font-size: 1.1rem; font-weight: 800; color: #111827; margin-bottom: 8px; }
-    .upsell-desc { font-size: 0.85rem; color: #6b7280; line-height: 1.6; margin-bottom: 16px; }
-    .upsell-btn {
-      width: 100%; padding: 14px; border: none; border-radius: 12px; background: #1a1a1a;
-      color: #ffffff; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: transform 0.1s;
-    }
-    .upsell-btn:active { transform: scale(0.98); }
-
-    .summary-box { background: #ffffff; border-radius: 14px; padding: 18px 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 12px; border: 1px solid #e5e7eb; color: #1a1a1a; }
-    .summary-box.prescription { background: #f9fafb; border: 1px solid #1a1a1a; }
-    .summary-box h3 { font-size: 0.95rem; font-weight: 700; color: #1a1a1a; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
-    .summary-box p  { font-size: 0.85rem; color: #374151; line-height: 1.65; }
-    .type-title { font-size: 1.1rem; font-weight: 700; color: #1a1a1a; margin-bottom: 8px; }
-    
-    .action-btn-group { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
-    .share-btn { display: block; width: 100%; padding: 16px; border: none; border-radius: 14px; background: #1a1a1a; color: #ffffff; font-size: 1rem; font-weight: 700; cursor: pointer; text-align: center; -webkit-tap-highlight-color: transparent; }
-    .share-btn:active { opacity: 0.85; }
-    .restart-btn { display: block; width: 100%; padding: 16px; border: none; border-radius: 14px; background: #f3f4f6; color: #1a1a1a; font-size: 1rem; font-weight: 700; cursor: pointer; text-align: center; -webkit-tap-highlight-color: transparent; }
-    .restart-btn:active { opacity: 0.85; }
-
-    /* 푸터 영역 */
-    .app-footer { background: #ffffff; border-top: 1px solid #f1f3f5; padding: 24px 16px; text-align: center; font-size: 0.78rem; color: #9ca3af; line-height: 1.6; }
-    .footer-links { margin-bottom: 10px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
-    .footer-links a { color: #6b7280; text-decoration: none; font-weight: 600; cursor: pointer; }
-    .footer-links a:hover { text-decoration: underline; color: #1a1a1a; }
-    .footer-info { max-width: 500px; margin: 0 auto; opacity: 0.85; }
-
-    /* 토스트 알림 */
-    .toast-msg {
-      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px);
-      background: #1a1a1a; color: #ffffff; padding: 12px 24px; border-radius: 30px;
-      font-size: 0.88rem; font-weight: 600; opacity: 0; visibility: hidden; z-index: 4000;
-      transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    }
-    .toast-msg.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
-
-    /* 결제 모달 */
-    .pay-modal { background: #ffffff; width: 90%; max-width: 400px; border-radius: 20px; padding: 24px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.1); transform: scale(0.8); transition: all 0.3s ease; }
-    .modal-overlay.active .pay-modal { transform: scale(1); }
-    .pay-icon { font-size: 3rem; margin-bottom: 12px; display: inline-block; }
-    .pay-title { font-size: 1.2rem; font-weight: 700; color: #111827; margin-bottom: 8px; }
-    .pay-price { font-size: 1.6rem; font-weight: 800; color: #ef4444; margin: 12px 0; }
-    .pay-desc { font-size: 0.88rem; color: #6b7280; line-height: 1.6; margin-bottom: 20px; }
-    .pay-btn-group { display: flex; gap: 10px; }
-    .pay-btn { flex: 1; padding: 14px; border: none; border-radius: 12px; font-size: 0.95rem; font-weight: 700; cursor: pointer; }
-    .btn-pay-submit { background: #1a1a1a; color: #ffffff; }
-    .btn-pay-cancel { background: #f3f4f6; color: #4b5563; }
-
-    /* 법적 약관 모달 */
-    .policy-modal { background: #ffffff; width: 92%; max-width: 600px; max-height: 80vh; border-radius: 20px; padding: 24px; box-shadow: 0 15px 50px rgba(0,0,0,0.1); display: flex; flex-direction: column; transform: scale(0.8); transition: all 0.3s ease; color: #1a1a1a; }
-    .modal-overlay.active .policy-modal { transform: scale(1); }
-    .policy-header { font-size: 1.2rem; font-weight: 700; color: #111827; padding-bottom: 12px; border-bottom: 1px solid #f1f3f5; margin-bottom: 14px; }
-    .policy-body { flex: 1; overflow-y: auto; text-align: left; font-size: 0.85rem; color: #374151; line-height: 1.7; white-space: pre-wrap; padding-right: 6px; }
-    .policy-close-btn { background: #1a1a1a; color: #ffffff; border: none; width: 100%; padding: 13px; border-radius: 12px; font-weight: 700; margin-top: 16px; cursor: pointer; }
-
-    /* 관리자 패널 */
-    .admin-panel-card { margin: 24px 16px; background: #ffffff; border-radius: 18px; padding: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); border: 1px solid #fee2e2; }
-    .admin-panel-card h2 { color: #b91c1c; font-size: 1.2rem; margin-bottom: 10px; }
-    .admin-grid { display: flex; flex-direction: column; gap: 14px; margin-top: 18px; }
-    .admin-row { display: flex; align-items: center; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px dashed #e5e7eb; }
-    .admin-label { font-size: 0.9rem; font-weight: 700; color: #111827; }
-    .admin-selector { display: flex; gap: 5px; }
-    .admin-selector button { padding: 6px 12px; border: 1px solid #e5e7eb; background: #ffffff; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; color: #4b5563; }
-    .admin-selector button.selected { background: #b91c1c; color: #fff; border-color: #b91c1c; }
-    .admin-submit-btn { margin-top: 15px; background: #1a1a1a; color: #ffffff; padding: 14px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; width: 100%; font-size: 0.95rem; }
-
-    /* 📱 미디어 쿼리 */
-    @media (max-width: 992px) {
-      .mobile-top-bar { display: flex; }
-
-      #sidebar {
-        position: fixed; top: 0; left: 0; height: 100vh; width: 280px;
-        transform: translateX(-100%); z-index: 2500; box-shadow: 10px 0 30px rgba(0,0,0,0.05);
-      }
-      #sidebar.active { transform: translateX(0); }
-    }
-</style>
-
-  <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
-
-<script type="module">
-    // 💡 에러 완전 방어! 맨 끝에 collection과 getDocs를 확실하게 추가 수입해왔음! 🔥
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
-
-    // 🔑 Firebase 설정값
-    const firebaseConfig = {
-      apiKey: "AIzaSyCU_BgjyEwdkJx1zVZPh3ZICPez00ninAw",
-      authDomain: "tci-shinji-app.firebaseapp.com",
-      projectId: "tci-shinji-app",
-      storageBucket: "tci-shinji-app.firebasestorage.app",
-      messagingSenderId: "647223634150",
-      appId: "1:647223634150:web:5715af2936ca7b1329f327"
-    };
-
-    // Firebase 앱 및 인스턴스 초기화
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const provider = new GoogleAuthProvider();
-
-    // 2️⃣ 카카오 SDK 초기화
-    try {
-      if (window.Kakao && !window.Kakao.isInitialized()) {
-        window.Kakao.init('a33dc86efa2e6b93f5ff5a18aa8bb7c1'); 
-        console.log("카카오 초기화 성공 여부:", window.Kakao.isInitialized());
-      }
-    } catch (e) {
-      console.error("카카오 초기화 에러:", e);
-    }
-
-    // 3️⃣ 구글 로그인 함수
-    window.loginWithGoogle = async function() {
-      try {
-        localStorage.removeItem('kakao_user');
-        const result = await signInWithPopup(auth, provider);
-        alert(`${result.user.displayName}님 반갑습니다!`);
-      } catch (error) {
-        console.error("로그인 실패:", error);
-        alert("구글 로그인에 실패했습니다.");
-      }
-    };
-
-    // 4️⃣ 카카오 로그인 함수
-    window.loginWithKakao = function() {
-      if (!window.Kakao || !window.Kakao.isInitialized()) {
-        alert("카카오 라이브러리가 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.");
-        return;
-      }
-      
-      window.Kakao.Auth.login({
-        success: function(authObj) {
-          window.Kakao.API.request({
-            url: '/v2/user/me',
-            success: function(res) {
-              window.currentUser = {
-                uid: 'kakao_' + res.id,
-                displayName: res.properties.nickname,
-                email: res.kakao_account && res.kakao_account.email ? res.kakao_account.email : 'kakao_user@test.com',
-                photoURL: res.properties.profile_image || 'https://via.placeholder.com/150',
-                loginType: 'kakao'
-              };
-              
-              localStorage.setItem('kakao_user', JSON.stringify(window.currentUser));
-              alert(`${window.currentUser.displayName}님 반갑습니다! 😉`);
-              
-              renderLoggedInUI(window.currentUser);
-              loadPastResult(window.currentUser.uid); 
-            },
-            fail: function(error) { 
-              console.error("카카오 유저 정보 요청 실패:", error); 
-            }
-          });
-        },
-        fail: function(err) { 
-          console.error("카카오 로그인 실패:", err);
-          alert("카카오 로그인에 실패했습니다."); 
-        }
-      });
-    };
-
-    // 5️⃣ 로그아웃 통합 처리 함수
-    window.logoutAllServices = async function() {
-      const savedKakaoUser = localStorage.getItem('kakao_user');
-      
-      if (savedKakaoUser || (window.currentUser && window.currentUser.loginType === 'kakao')) {
-        if (window.Kakao && window.Kakao.Auth && window.Kakao.Auth.getAccessToken()) {
-          window.Kakao.Auth.logout(function() {
-            localStorage.removeItem('kakao_user');
-            alert("카카오 로그아웃 완료! 👋");
-            location.reload();
-          });
-        } else {
-          localStorage.removeItem('kakao_user');
-          location.reload();
-        }
-      } else {
-        try {
-          await signOut(auth);
-          alert("구글 로그아웃 완료! 👋");
-          location.reload();
-        } catch (error) {
-          console.error("로그아웃 실패:", error);
-        }
-      }
-    };
-// =========================================================================
-    // 🚚 [치트키] 파이어스토어에 14개 기질 상세 데이터 1초 만에 자동 덤프하는 함수!
-    // =========================================================================
-    // 껍데기만 남겨서 괄호 에러를 원천 차단하기 ㅇㅋ!
-window.uploadAllResultsToFirebase = async function() { console.log("덤프 스킵 완료임!"); };
-      
-      const allResults = {
-        // 1. 자극추구 (NS)
-        "NS_high": {
-          money: "💰 [트렌디 하이리스크 투자] 힙한 신규 테마주나 가상자산 등 고위험 고수익 자산에 충동적으로 끌리기 쉽습니다. 오픈런이나 핫플레이스 소비 등 기분파 지출이 잦은 편입니다.",
-          work: "💼 [아이디어 뱅크 트렌드세터] 스타트업, 신사업 기획, 기술 영업 등 역동적인 환경에서 엄청난 추진력을 발휘합니다. 다만, 지루한 서류 작업이나 단순 반복 업무에는 쥐약입니다.",
-          love: "❤️ [금방 타오르는 불꽃] 첫눈에 스파크가 튀는 강렬한 연애를 선호합니다. 상대방의 새로운 매력을 끊임없이 발견하고 싶어 하며, 관계가 익숙해지면 권태기를 비교적 빨리 느낄 수 있습니다.",
-          caution: "⚡ 뒤마무리가 흐지부지되거나 충동적인 계약으로 손해를 볼 수 있으니, 무조건 3일의 생각 시간을 두는 소비/투자 브레이크가 필수적입니다."
-        },
-        "NS_low": {
-          money: "💰 [안정 중심 로우리스크 지향] 예적금이나 대형 우량주 위주의 보수적인 자산 운용을 선호하며 지출 계획을 꼼꼼하게 따집니다.",
-          work: "💼 [신중한 마스터] 정돈된 시스템 안에서 높은 완성도를 추구하며, 반복적인 서류 작업이나 세밀한 검토 업무에 강점을 보입니다.",
-          love: "❤️ [은은하게 타오르는 온돌] 서서히 알아가며 깊어지는 신뢰 기반의 관계를 선호하고 권태기가 적은 편입니다.",
-          caution: "⚡ 새로운 변화나 기회를 지나치게 경계하다가 좋은 타이밍을 놓칠 수 있으니 유연한 판단이 필요합니다."
-        },
-        // 2. 위험회피 (HA)
-        "HA_high": {
-          money: "💰 [철벽 방어형 자산 관리] 원금 손실에 극도의 스트레스를 받으며 보험이나 안전 자산에 집중하는 경향이 있습니다.",
-          work: "💼 [완벽주의 리스크 관리자] 발생 가능한 변수를 미리 예측하고 대비하는 능력이 탁월하나 결정 장애가 올 수 있습니다.",
-          love: "❤️ [돌다리도 두드리는 연애] 상처받는 것에 두려움이 있어 마음을 열기까지 시간이 다소 걸리지만 헌신적입니다.",
-          caution: "⚡ 과도한 걱정과 불안으로 인해 새로운 도전이나 과감한 투자를 주저하여 정체될 수 있습니다."
-        },
-        "HA_low": {
-          money: "💰 [낙천적인 과감한 베팅] 위기에 유연하게 대처하며 리스크가 있더라도 공격적인 자산 증식을 시도합니다.",
-          work: "💼 [위기 돌파 해결사] 압박감이 심한 상황에서도 평정심을 유지하며 과감한 의사결정으로 프로젝트를 이끕니다.",
-          love: "❤️ [쿨하고 당당한 매력] 밀당에 연연하지 않고 직진하는 스타일이며 이별 후에도 비교적 회복탄력성이 좋습니다.",
-          caution: "⚡ 안전 불감증으로 인해 치명적인 손실을 입을 수 있으니 중요한 계약 전 리스크 체크는 필수입니다."
-        },
-        // 3. 사회적 민감성 (RD)
-        "RD_high": {
-          money: "💰 [관계형 지출과 온정주의] 주변 사람들에게 밥이나 선물을 사주는 등 '관계 유지'를 위한 지출이 많습니다. 거절을 못 해 돈을 빌려주고 마음고생을 하기도 합니다.",
-          work: "💼 [윤활유 같은 협업 마스터] 뛰어난 공감 능력으로 팀원 간의 소통을 돕고 고객과의 유대를 이끌어내는 마케팅, 기술 영업, 인사/상담 부서의 에이스입니다.",
-          love: "❤️ [사랑에 올인하는 해바라기] 연인의 감정과 컨디션에 내 멘탈이 완벽하게 동기화됩니다. 끊임없는 애정 확인과 정서적 유대를 원하며 사랑받을 때 세상 가장 행복해합니다.",
-          caution: "⚡ 타인의 눈치를 보느라 거절을 못 하는 '착한 사람 증후군'을 경계해야 합니다. 내면의 감정 방화벽을 튼튼히 세우는 연습이 필요합니다."
-        },
-        "RD_low": {
-          money: "💰 [철저한 실리주의 계산] 감정에 휘둘린 지출이 없으며, 인맥 관리를 위한 유흥비나 경조사비도 기준에 맞춰 철저하게 효율적으로 통제합니다.",
-          work: "💼 [데이터 기반 팩트 폭격기] 인간관계의 사적인 친분에 얽매이지 않고, 오직 객관적인 성과 수치와 논리적 데이터로만 평가하고 판단하는 냉철한 전문가입니다.",
-          love: "❤️ [독립적인 마이웨이 연애] 연인이 생겨도 나만의 취미 생활, 나만의 공간과 시간은 무조건 침범받지 않아야 합니다. 가끔 상대방에게 서운함과 차가운 벽을 느끼게 만들 수 있습니다.",
-          caution: "⚡ 정서적 공감 한 스푼이 부족해 가장 가까운 가족이나 연인에게 '비수 같은 말'로 상처를 주기 쉬우니 리액션에 신경 써야 합니다."
-        },
-        // 4. 자율성 (PS)
-        "PS_high": {
-          money: "💰 [장기 고배당 및 복리 머신] 눈앞의 잔파도에 흔들리지 않고 수년 동안 꾸준히 우량주나 고배당주를 모아 나가며 자산을 빌딩하는 복리의 마술사 같은 투자 성향을 가집니다.",
-          work: "💼 [엉덩이 무거운 최종 보스] 아무리 어렵고 지루한 장기 프로젝트라도 묵묵히 자리를 지키며 기어코 결과물을 완성해 내는 완벽한 뚝심과 근성의 소유자입니다.",
-          love: "❤️ [한결같은 소나무 연애] 관계에 고비나 갈등이 찾아와도 쉽게 포기하거나 이별을 입에 담지 않고, 책임감을 갖고 관계를 개선하기 위해 끝까지 진중하게 노력합니다.",
-          caution: "⚡ 이미 효율이 안 좋거나 실패가 확정된 노선임에도 '오기'와 '완고함' 때문에 멈추지 못해 매몰비용을 키울 수 있습니다."
-        },
-        "PS_low": {
-          money: "💰 [가성비 위주의 단기 순환] 장기 묶돈 투자보다는 회전율이 빠르거나 단기적으로 성과가 확실하게 눈에 보이는 가성비 중심의 재테크를 선호합니다.",
-          work: "💼 [상황 대응형 전략가] 시장 상황이나 트렌드가 바뀌면 미련 없이 기존 기획을 뒤엎고 더 나은 대안으로 빠르게 갈아타는 스피디함이 장점입니다.",
-          love: "❤️ [유연하고 부담 없는 연애] 무겁고 구속력 있는 관계보다는 서로에게 긍정적인 자극을 주는 가볍고 트렌디한 관계를 좋아하며, 지루해지면 관계가 소원해지기 쉽습니다.",
-          caution: "⚡ 고비가 오면 쉽게 흥미를 잃어 깊은 내공을 쌓기 전에 판을 떠날 수 있으니, 스스로 정한 임계점까지는 버텨보는 지구력이 필요합니다."
-        },
-        // 5. 연대감 (SD)
-        "SD_high": {
-          money: "💰 [주도적 자산 설계] 남의 리포트나 유튜버의 말에 휘둘리지 않고, 본인만의 명확한 자산 로드맵을 수립하여 철저히 계획 하에 돈을 통제하고 굴립니다.",
-          work: "💼 [자기 완결형 탑 퍼포머] 누가 시키지 않아도 알아서 목표를 세우고 일의 우선순위를 정해 마스터피스를 뽑아냅니다. 환경 탓을 하지 않는 성숙한 핵심 인재입니다.",
-          love: "❤️ [건강하고 성숙한 파트너십] 상대에게 과하게 의존하거나 집착하지 않으며, 서로의 독립성을 존중하면서도 단단하게 지지해 주는 가장 이상적이고 편안한 연애를 합니다.",
-          caution: "⚡ 본인이 워낙 철저하다 보니 의지가 약해 흔들리거나 징징대는 타인을 속으로 한심하게 평가절하하거나 냉정하게 잘라낼 위험이 있습니다."
-        },
-        "SD_low": {
-          money: "💰 [충동적 스트레스 지출] 감정이 우울하거나 멘탈이 흔들릴 때 충동적인 '시발비용' 지출이 잦으며, 재테크도 남들이 좋다는 소문에 휩쓸리기 쉽습니다.",
-          work: "💼 [피드백 취약형 실무자] 상사의 사소한 꾸중이나 업무 피드백에도 크게 위축되어 일손을 놓거나, 실패했을 때 남 탓이나 환경 탓으로 도피하려는 경향이 있습니다.",
-          love: "❤️ [정서적 과의존 연애] 내 행복의 주도권을 상대방에게 통째로 넘겨주어, 연인의 반응에 따라 내 하루 전체가 천국과 지옥을 오가는 롤러코스터 연애를 하기 쉽습니다.",
-          caution: "⚡ 자존감 붕괴로 남에게 휘둘리기 쉬우니 매일 아침 이불 개기 같은 100% 통제 가능한 작은 성취부터 쌓아야 합니다."
-        },
-        // 6. 협조성 (CO)
-        "CO_high": {
-          money: "💰 [상생 및 이타적 소비] 공정무역, 친환경 제품 등 가치 소비에 지갑을 잘 열며, 가족이나 연인을 위해 아낌없이 지출하지만 정작 본인을 위한 돈은 아끼는 편입니다.",
-          work: "💼 [조직의 위대한 중재자] 동료들의 고충을 잘 들어주고 부서 간의 이권 갈등을 윈-윈(Win-Win)으로 풀어내는 최고의 팀 플레이어이자 인덕이 넘치는 리더감입니다.",
-          love: "❤️ [무조건적인 포용과 헌신] 상대의 허물이나 치명적인 단점까지 '내가 품어줘야지'라며 너그럽게 포용하고 헌신합니다. 갈등을 피하려 본인의 서운함을 속으로 다 삭입니다.",
-          caution: "⚡ 악의를 가지고 접근하는 사람조차 봐주다가 경제적·정서적 호구가 될 수 있으니 공과 사의 선을 칼같이 그어야 합니다."
-        },
-        "CO_low": {
-          money: "💰 [철저한 기여도 중심 정산] 데이트 비용이든 동업 지출이든 1원 단위까지 칼같이 n분의 1로 정산하며, 내가 기여한 만큼 정당한 실리적 대가를 받아야 직성이 풀립니다.",
-          work: "💼 [날카로운 구조조정 비평가] 감상주의를 철저히 배격하고 오직 업무 효율성과 조직의 생존, 개인의 실리를 최우선으로 검토하는 냉정한 칼잡이 스타일입니다.",
-          love: "❤️ [손해 없는 기브앤테이크] 내가 배려한 만큼 상대방도 똑같이 움직여주길 기대하며, 선을 넘거나 대가 없는 헌신 요구를 마주하면 즉시 냉정하게 마음의 문을 닫아버립니다.",
-          caution: "⚡ 피도 눈물도 없다는 독선적인 평판을 얻어 결정적인 순간에 인맥의 도움을 받지 못하고 고립될 수 있으니 주의하세요."
-        },
-        // 7. 자기초월 (ST)
-        "ST_high": {
-          money: "💰 [비물질적 가치 지향] 돈 자체에 얽매이기보다 내 정신을 풍요롭게 하는 예술품, 고전 클래식 Vinyl(LP) 수집, SF 소설이나 여행 같은 경험적 가치에 큰돈을 아끼지 않습니다.",
-          work: "💼 [창의적이고 영감 가득한 구도자] 눈앞의 성과보다 거시적인 비전과 철학, 인류에 기여하는 예술적 영감이나 깊은 의미가 있는 연구/크리에이티브 직무에서 천재성을 보입니다.",
-          love: "❤️ [소울메이트를 찾는 낭만파] 단순한 조건을 넘어 영혼이 통하는 정신적 깊이의 교감을 원합니다. 운명적인 인연을 믿으며, 연인과 함께 우주와 자연의 아름다움을 논하는 데 기쁨을 느낀다.",
-          caution: "⚡ 현실 감각이 옅어져 당장 내야 하는 가계부 정산, 공과금 납부 같은 경제적 의무를 귀찮아해 주변 사람을 고생시킬 수 있습니다."
-        },
-        "ST_low": {
-          money: "💰 [철저한 계량형 자산가] 눈에 보이지 않는 가치는 믿지 않습니다. 확실하게 계산되는 예적금 이자, 정확한 주식 포트폴리오 수익률 지표만 보며 자산을 굴립니다.",
-          work: "💼 [실용주의적 테크니컬 마스터] 추상적인 아이디어는 배격하고 현장에서 즉시 적용 가능한 실용적 기술, 구체적인 수치와 명확한 팩트를 다루는 필드 실무에 강합니다.",
-          love: "❤️ [지극히 현실적인 조건 매칭] 정서적인 환상이나 운명론을 믿지 않으며 성격, 직업, 경제력 등 눈에 보이는 조건과 가치관의 궁합을 차분하고 이성적으로 맞춰보며 연애합니다.",
-          caution: "⚡ 삶을 지나치게 숫자로만 해석해 정서적 건조함을 느끼기 쉽습니다. 나이 들수록 낭만 없는 고집쟁이가 되기 쉬우니 가끔은 예술을 강제 주입해 보세요."
-        }
-      };
-
-      try {
-    console.log("🚀 파이어스토어 tci_results 컬렉션으로 대량 배송 시작");
-    
-    for (const docId of Object.keys(allResults)) {
-      const resultDocRef = doc(db, "tci_results", docId);
-      
-      await setDoc(resultDocRef, {
-        detail: allResults[docId]
-      });
-      console.log(`✅ [배송완료] ${docId} 서버 안착 성공!`);
-    }
-    
-    alert("🎉 14개 기질 데이터가 파이어스토어(tci_results)에 완벽하게 복사되었습니다!");
-  } catch (error) {
-    console.error("❌ 덤프 중 에러 발생 샤갈 🤦‍♂️:", error);
-    alert("덤프 실패! 콘솔 창을 확인하세요 :(");
-  }
-};
-    // 6️⃣ 💾 Firestore에 여러 번의 결과를 시간별로 누적 저장하는 새 함수!
-    window.saveResultToFirestore = async function(uid, mode, scores) {
-      try {
-        const timestamp = new Date().toISOString();
-        // tci_results 컬렉션 내부 유저 UID 폴더 밑에 'history' 폴더를 파서 시간별로 기록함!
-        const docRef = doc(db, "tci_results", uid, "history", timestamp); 
-        
-        await setDoc(docRef, {
-          mode: mode,
-          scores: scores,
-          savedAt: timestamp
-        });
-        console.log("Firestore 데이터 누적 소장 성공! 🌟");
-      } catch (e) {
-        console.error("데이터 저장 실패:", e);
-      }
-    };
-
-    // 7️⃣ ⏳ 과거 모든 진단 이력을 불러와 최신순으로 정렬 후 선택하게 만드는 새 함수!
-    // 7️⃣ ⏳ 과거 모든 진단 이력을 불러와 최신순으로 정렬 후 사이드바에 버튼 목록으로 박아넣는 새 함수!
-    async function loadPastResult(uid) {
-      // 1단계: 삭제를 위해 deleteDoc을 파이어베이스에서 안전하게 땡겨옵니다.
-      const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js");
-      try {
-        console.log(`[디비 탐색] UID(${uid})의 모든 히스토리 수집 중... 🔎`);
-        
-        const historyRef = collection(db, "tci_results", uid, "history");
-        const querySnapshot = await getDocs(historyRef);
-        const pastListEl = document.getElementById("pastHistoryList");
-
-        if (!pastListEl) {
-          console.error("사이드바에 pastHistoryList 엘리먼트가 존재하지 않음!");
-          return;
-        }
-
-        // 만약 과거에 검사한 이력이 하나라도 존재한다면 실행
-        if (!querySnapshot.empty) {
-          let historyList = [];
-          
-          querySnapshot.forEach((doc) => {
-            historyList.push(doc.data());
-          });
-
-          // 💡 최신순(가장 최근에 검사한 날짜)으로 칼정렬
-          historyList.sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt));
-          console.log(`총 ${historyList.length}개의 기록 리스트 로드 완료!`, historyList);
-
-          // 💥 핵심: "동기화 중..." 문구를 지우고 비워줌!
-          pastListEl.innerHTML = "";
-
-          // 📜 불러온 히스토리 개수만큼 사이드바 목록에 버튼 하나씩 조립해서 채워넣기!
-          historyList.forEach((data, index) => {
-            const KSTDate = new Date(data.savedAt).toLocaleString("ko-KR", {
-              month: "short",
-              day: "numeric",
-              hour: "2-digit",
-              minute: "2-digit"
-            });
-
-            const modeBadge = data.mode === 'deep' ? '🧬심화' : '🌱간이';
-
-            // 리스트용 li 태그 생성 및 스타일링 욘 😉
-            const li = document.createElement("li");
-li.style.cssText = "padding: 8px 10px; margin-bottom: 6px; background: #2a2a3d; border-radius: 6px; font-size: 0.78rem; color: #fff; cursor: pointer; transition: background 0.2s; display: flex; justify-content: space-between; align-items: center; position: relative;";
-
-// 텍스트 내용 좌측 배치 + 우측 끝에 예쁜 빨간색 휴지통(🗑️) 배치
-li.innerHTML = `
-  <div style="display:flex; align-items:center; gap:8px;">
-    <span>${KSTDate}</span> 
-    <span style="font-size:0.7rem; padding:1px 5px; border-radius:4px; background:#4776e6; font-weight:700;">${modeBadge}</span>
-  </div>
-  <span class="delete-history-btn" style="font-size:0.7rem; cursor:pointer; padding: 2px 6px; color:#ff6b6b; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">✖</span>
-`;
-
-// 마우스 오버 효과
-li.onmouseover = () => li.style.background = "#3e3e56";
-li.onmouseout = () => li.style.background = "#2a2a3d";
-
-// 🗑️ 휴지통 버튼을 누르면 작동하는 삭제 로직 연동
-const deleteBtn = li.querySelector('.delete-history-btn');
-deleteBtn.onclick = async (e) => {
-  e.stopPropagation(); // ⭐ 중요: 휴지통을 누를 때 리스트 클릭(결과 열람) 이벤트가 동시에 발동하는 것을 막아줍니다!
-
-  if (confirm(`🚨 [경고] ${KSTDate}에 검사한 기록을 정말로 영구 삭제하시겠습니까?`)) {
-    try {
-      // Firestore 데이터베이스에서 해당 유저의 정확한 시점 문서를 타격해 삭제
-      const docRef = doc(db, "tci_results", uid, "history", data.savedAt);
-      await deleteDoc(docRef);
-
-      alert("🗑️ 기록이 안전하게 삭제되었습니다.");
-
-      // 데이터가 지워졌으니 사이드바 목록을 즉시 새로고침하여 리프레시해줍니다.
-      loadPastResult(uid); 
-    } catch (error) {
-      console.error("기록 삭제 중 오류 발생:", error);
-      alert("기록을 삭제하지 못했습니다. 보안 규칙을 확인해 주세요.");
-    }
-  }
-};
-            
-            // 리스트 마우스 오버 효과
-            li.onmouseover = () => li.style.background = "#3e3e56";
-            li.onmouseout = () => li.style.background = "#2a2a3d";
-
-            // 🖱️ 과거 기록 날짜 클릭 시 이벤트 구문 내부 완벽 수정!
-            li.onclick = () => {
-              window.currentMode = data.mode;
-              
-              // 🔥 [성공] 목록에서 클릭한 과거 기록의 정확한 생성 시간을 전역 변수에 동기화!
-              window.lastSavedTimestamp = data.savedAt; 
-              
-              if (typeof window.renderFinalResult === 'function') {
-                window.renderFinalResult(data.scores);
-              } else {
-                console.error("renderFinalResult 함수가 없음!");
-              }
-
-              if (typeof window.showScreen === 'function') {
-                window.showScreen('screen-result');
-              } else {
-                const resultScreen = document.getElementById('screen-result');
-                if (resultScreen) {
-                  document.querySelectorAll('.screen, [id^="screen-"]').forEach(s => s.style.display = 'none');
-                  resultScreen.style.display = 'block';
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCI 기질 및 성격 검사 | Mind Insight</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Noto Sans KR -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Noto Sans KR', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        }
+                    }
                 }
-              }
-              // 모바일 배려: 클릭 시 사이드바 닫기 기능 안전장치
-              if (typeof window.toggleSidebar === 'function') window.toggleSidebar(false);
-              
-              alert(`${KSTDate} (${modeBadge}) 결과를 불러왔습니다! 🔴`);
-            };
-
-            pastListEl.appendChild(li);
-          });
-          // 🔥 최초 로그인 시 딱 한 번만 가장 최근 데이터를 팝업으로 안내하고 자동 오픈해줌!
-          if (!window.alreadyLoadedNotice) {
-            window.alreadyLoadedNotice = true;
-            const latestData = historyList[0];
-            const savedDate = new Date(latestData.savedAt).toLocaleString();
-
-            if (confirm(`[기록 발견] 과거에 검사한 이력이 총 ${historyList.length}개 존재합니다.\n\n가장 최근 검사(${savedDate}) 결과를 바로 확인하시겠습니까?`)) {
-              window.currentMode = latestData.mode;
-              if (typeof window.renderFinalResult === 'function') window.renderFinalResult(latestData.scores);
-              if (typeof window.showScreen === 'function') window.showScreen('screen-result');
             }
-          }
-
-        } else {
-          console.log("과거 검사 이력이 존재하지 않는 신규 유저이시네요. 🔴");
-          pastListEl.innerHTML = `<li style="color: #666; font-size: 0.78rem; font-style: italic; font-family: sans-serif; text-align:center;">과거 검사 기록이 없습니다. 🌱</li>`;
         }
-      } catch (error) {
-        console.error("과거 기록 조회 중 치명적 에러 발생:", error);
-        const pastListEl = document.getElementById("pastHistoryList");
-        if (pastListEl) pastListEl.innerHTML = `<li style="color: #ff6b6b; font-size: 0.75rem;">⚠️ 기록 로드 에러</li>`;
-      }
-    }
+    </script>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #ffffff;
+            color: #0f172a;
+            -webkit-font-smoothing: antialiased;
+            word-break: keep-all;
+            overflow-wrap: break-word;
+            overflow-x: hidden;
+        }
+        /* Ensure Korean text wraps naturally by complete words */
+        *, ::before, ::after {
+            word-break: keep-all;
+            overflow-wrap: break-word;
+        }
+        .custom-radio:checked + label {
+            background-color: #0f172a;
+            color: #ffffff;
+            border-color: #0f172a;
+        }
+        .transition-all-200 {
+            transition: all 0.2s ease-in-out;
+        }
+        /* Custom scrollbar for clean dark style */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-white text-slate-900 selection:bg-slate-900 selection:text-white w-full overflow-x-hidden">
 
-    // 8️⃣ 로그인 성공 시 UI 렌더링 함수 통합
-    // 🎨 7️⃣ 로그인 성공 시 UI 렌더링 함수 (과거 기록 상자 유지 버전!)
-    function renderLoggedInUI(user) {
-      const profileWrap = document.getElementById("userProfileWrap");
-      const introNotice = document.getElementById("introLoginNotice");
-      const badgeColor = user.loginType === 'kakao' ? '#fee500' : '#4285F4';
-
-      if (profileWrap) {
-        // 💡 핵심: 프로필로 화면을 새로 그릴 때도 하단에 'pastHistoryList'를 무조건 살려놓음!
-        profileWrap.innerHTML = `
-          <div class="user-info-flex" style="margin-bottom: 12px;">
-            <img class="user-avatar" src="${user.photoURL}" alt="profile" style="border: 2px solid ${badgeColor}; width: 40px; height: 40px; border-radius: 50%;">
-            <div class="user-name-mail" style="display: flex; flex-direction: column; margin-left: 10px;">
-              <span class="user-name" style="font-weight: 700; font-size: 0.9rem; color: #fff;">${user.displayName}</span>
-              <span class="user-email" style="font-size: 0.75rem; color: #888;">${user.email}</span>
+    <!-- Header Navigation -->
+    <header class="border-b border-slate-200 sticky top-0 bg-white/95 backdrop-blur-md z-40 w-full">
+        <div class="max-w-5xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-2">
+            <div class="flex items-center space-x-2 sm:space-x-3 cursor-pointer shrink-0" onclick="showView('home')">
+                <div class="w-8 h-8 rounded border-2 border-slate-900 flex items-center justify-center font-bold text-sm bg-slate-900 text-white shrink-0">
+                    TCI
+                </div>
+                <span class="font-bold text-base sm:text-lg tracking-tight">Mind Insight</span>
             </div>
-          </div>
-          <button class="btn-logout" onclick="logoutAllServices()" style="margin-bottom: 15px;">로그아웃</button>
+            <nav class="flex items-center space-x-1 sm:space-x-4 text-xs sm:text-sm font-medium">
+                <button onclick="startTest('quick')" class="px-2 sm:px-3 py-1.5 rounded hover:bg-slate-100 transition-colors text-slate-700 whitespace-nowrap">⚡ 간이 검사</button>
+                <button onclick="startTest('full')" class="px-2 sm:px-3 py-1.5 rounded hover:bg-slate-100 transition-colors text-slate-700 whitespace-nowrap">🔍 심화 검사</button>
+            </nav>
+        </div>
+    </header>
 
-          <div id="pastHistorySession" style="margin-top: 10px; border-top: 1px dashed #444; padding-top: 15px; width: 100%;">
-            <h4 style="margin: 0 0 10px 0; font-size: 0.85rem; color: #b0b0c5; display: flex; align-items: center; gap: 5px; font-family: sans-serif;">
-              📜 과거 검사 이력 목록
-            </h4>
-            <ul id="pastHistoryList" style="list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto;">
-              <li style="color: #666; font-size: 0.78rem; font-style: italic; font-family: sans-serif;">기록을 동기화 중입니다...</li>
-            </ul>
-          </div>
-        `;
-      }
-      if (introNotice) introNotice.style.display = "none";
-    }
+    <!-- Main Container -->
+    <main class="flex-grow max-w-4xl w-full mx-auto px-3 sm:px-6 py-6 sm:py-12 overflow-x-hidden">
 
-    // 9️⃣ 실시간 인증 상태 리스너 (구글 및 카카오 상태 분기)
-    onAuthStateChanged(auth, (googleUser) => {
-      const profileWrap = document.getElementById("userProfileWrap");
-      const introNotice = document.getElementById("introLoginNotice");
-      const savedKakaoUser = localStorage.getItem('kakao_user');
-      
-      if (googleUser) {
-        window.currentUser = {
-          uid: googleUser.uid,
-          displayName: googleUser.displayName,
-          email: googleUser.email,
-          photoURL: googleUser.photoURL || 'https://via.placeholder.com/150',
-          loginType: 'google'
+        <!-- HOME VIEW -->
+        <section id="view-home" class="space-y-8 sm:space-y-10 w-full">
+            <!-- Hero Title & Subtitle -->
+            <div class="text-center space-y-4 pt-2 sm:pt-4 max-w-2xl mx-auto">
+                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-slate-200 text-xs font-semibold bg-slate-50 text-slate-700 max-w-full">
+                    <span class="truncate">🧠 심리학 및 생물학 기반 기질·성격 분석</span>
+                </div>
+                <h1 class="text-2xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                    손쉽게 검사하는 나의 기질 🌱
+                </h1>
+                <div class="space-y-2 pt-2 px-1 text-center">
+                    <p class="font-semibold text-slate-800 text-base sm:text-lg">
+                        "같은 상황이라도 나는 왜 이렇게 생각하고 행동할까?"
+                    </p>
+                    <p class="text-slate-600 text-xs sm:text-sm md:text-base leading-relaxed">
+                        최근 TV 프로그램과 상담 현장에서 널리 인지도를 얻은 <strong>TCI(Temperament and Character Inventory) 검사</strong>는 C.R. Cloninger 교수의 심리생물학적 성격모형에 기반하여, 선천적인 <strong>기질(Temperament)</strong>과 후천적인 <strong>성격(Character)</strong>을 다각도로 분석합니다.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Mode Selection Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 pt-2 sm:pt-4 w-full">
+                <!-- Quick Test Card -->
+                <div class="border-2 border-slate-200 rounded-2xl p-5 sm:p-8 hover:border-slate-900 transition-all duration-300 flex flex-col justify-between group bg-white shadow-sm hover:shadow-md min-w-0">
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-start">
+                            <span class="text-2xl">⚡</span>
+                            <span class="text-xs font-bold px-2.5 py-1 rounded bg-slate-100 text-slate-700">소요시간 약 3분</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-900 group-hover:text-black">간이 검사 (14문항)</h3>
+                            <p class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+                                각 평가 요인당 핵심 2문항씩으로 빠르게 측정합니다. 바쁜 일상 속에서 나의 대표적인 기질 성향을 핵심 요약 형태로 가볍게 파악하고 싶을 때 적합합니다.
+                            </p>
+                        </div>
+                        <ul class="text-xs text-slate-500 space-y-1.5 pt-2 border-t border-slate-100">
+                            <li class="flex items-center gap-1.5">✓ 요인당 2질문 (총 14문항)</li>
+                            <li class="flex items-center gap-1.5">✓ 2줄 핵심 직관 요약 해설 제공</li>
+                        </ul>
+                    </div>
+                    <button onclick="startTest('quick')" class="mt-6 sm:mt-8 w-full py-3 px-4 bg-slate-900 hover:bg-black text-white font-semibold rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 text-sm sm:text-base">
+                        <span>간이 검사 시작하기</span>
+                        <span>→</span>
+                    </button>
+                </div>
+
+                <!-- Full Test Card -->
+                <div class="border-2 border-slate-900 rounded-2xl p-5 sm:p-8 hover:bg-slate-900/5 transition-all duration-300 flex flex-col justify-between group bg-white shadow-sm hover:shadow-md relative overflow-hidden min-w-0">
+                    <div class="absolute top-0 right-0 bg-slate-900 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg">RECOMMENDED</div>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-start">
+                            <span class="text-2xl">🔍</span>
+                            <span class="text-xs font-bold px-2.5 py-1 rounded bg-slate-900 text-white">소요시간 약 8~10분</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-900">심화 심층 검사 (49문항)</h3>
+                            <p class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+                                각 평가 요인당 7문항씩 신뢰도 높게 다각도로 분석합니다. 실제 심리상담 센터에서 받는 듯한 깊이 있는 분석과 대인관계 갈등 패턴 해설을 제공합니다.
+                            </p>
+                        </div>
+                        <ul class="text-xs text-slate-600 space-y-1.5 pt-2 border-t border-slate-100 font-medium">
+                            <li class="flex items-center gap-1.5">✓ 요인당 7질문 (총 49문항)</li>
+                            <li class="flex items-center gap-1.5">✓ 심리상담 스타일 심층 해설</li>
+                            <li class="flex items-center gap-1.5">✓ 갈등 패턴 & 안 맞는 유형 & 개선 가이드</li>
+                        </ul>
+                    </div>
+                    <button onclick="startTest('full')" class="mt-6 sm:mt-8 w-full py-3 px-4 bg-slate-900 hover:bg-black text-white font-semibold rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 text-sm sm:text-base">
+                        <span>심화 검사 시작하기</span>
+                        <span>→</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Theory Overview & Legal Disclaimer -->
+            <div class="border border-slate-200 rounded-xl p-4 sm:p-6 bg-slate-50 space-y-3 text-xs sm:text-sm text-slate-600 w-full">
+                <div class="space-y-2">
+                    <h4 class="font-bold text-slate-900 text-xs sm:text-base">📌 TCI 검사의 핵심 구성 요소</h4>
+                    <p class="leading-relaxed">
+                        TCI는 타고난 자동적 정서 반응인 <strong>기질(4가지)</strong>과, 살아가며 발달하는 성숙도인 <strong>성격(3가지)</strong>을 구분하여 통합 파악합니다.
+                    </p>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 text-center font-medium text-xs">
+                        <div class="bg-white p-2 rounded border border-slate-200 truncate">자극추구 (NS)</div>
+                        <div class="bg-white p-2 rounded border border-slate-200 truncate">위험회피 (HA)</div>
+                        <div class="bg-white p-2 rounded border border-slate-200 truncate">사회적 민감성 (RD)</div>
+                        <div class="bg-white p-2 rounded border border-slate-200 truncate">인내력 (P)</div>
+                    </div>
+                </div>
+                <div class="pt-3 border-t border-slate-200 text-slate-500 text-[11px] sm:text-xs text-center leading-normal">
+                    ⚠️ 본 테스트는 자기보고식 단순 참고용 웹 검사이며, 실제 병원/상담센터의 정식 지필 검사를 대체하는 법적·의학적 효력이 없음을 알립니다.
+                </div>
+            </div>
+        </section>
+
+        <!-- TEST QUESTION VIEW -->
+        <section id="view-test" class="hidden space-y-6 w-full">
+            <!-- Progress Bar Header -->
+            <div class="space-y-2 w-full">
+                <div class="flex justify-between items-center text-xs sm:text-sm font-semibold text-slate-600">
+                    <span id="test-mode-badge" class="px-2 py-0.5 sm:px-2.5 rounded bg-slate-100 text-slate-800 border border-slate-200 text-xs">검사 진행 중</span>
+                    <span><strong id="current-q-num" class="text-slate-900 text-sm sm:text-base">1</strong> / <span id="total-q-num">14</span></span>
+                </div>
+                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                    <div id="progress-bar" class="h-full bg-slate-900 transition-all duration-300 w-0"></div>
+                </div>
+            </div>
+
+            <!-- Question Card Container -->
+            <div class="border border-slate-200 rounded-2xl p-4 sm:p-10 bg-white shadow-sm space-y-6 sm:space-y-8 min-h-[300px] flex flex-col justify-between w-full">
+                <!-- Question Text -->
+                <div class="space-y-2 sm:space-y-3 pt-1">
+                    <span class="text-[11px] sm:text-xs font-semibold tracking-wider text-slate-400 uppercase" id="question-category">CATEGORY</span>
+                    <h2 id="question-text" class="text-lg sm:text-2xl font-bold text-slate-900 leading-snug sm:leading-normal">
+                        질문이 로딩 중입니다...
+                    </h2>
+                </div>
+
+                <!-- Likert Scale Options (1 to 5) -->
+                <div class="space-y-3 w-full">
+                    <div class="grid grid-cols-5 gap-1.5 sm:gap-4 w-full">
+                        <button onclick="selectScore(1)" class="scale-btn flex flex-col items-center justify-center p-2.5 sm:p-4 border-2 border-slate-200 rounded-xl hover:border-slate-900 hover:bg-slate-50 transition-all group min-w-0">
+                            <span class="text-base sm:text-xl font-bold text-slate-700 group-hover:text-black">1</span>
+                            <span class="text-[10px] sm:text-xs text-slate-500 mt-1 hidden sm:inline text-center">매우 그렇지 않다</span>
+                        </button>
+                        <button onclick="selectScore(2)" class="scale-btn flex flex-col items-center justify-center p-2.5 sm:p-4 border-2 border-slate-200 rounded-xl hover:border-slate-900 hover:bg-slate-50 transition-all group min-w-0">
+                            <span class="text-base sm:text-xl font-bold text-slate-700 group-hover:text-black">2</span>
+                            <span class="text-[10px] sm:text-xs text-slate-500 mt-1 hidden sm:inline text-center">그렇지 않다</span>
+                        </button>
+                        <button onclick="selectScore(3)" class="scale-btn flex flex-col items-center justify-center p-2.5 sm:p-4 border-2 border-slate-200 rounded-xl hover:border-slate-900 hover:bg-slate-50 transition-all group min-w-0">
+                            <span class="text-base sm:text-xl font-bold text-slate-700 group-hover:text-black">3</span>
+                            <span class="text-[10px] sm:text-xs text-slate-500 mt-1 hidden sm:inline text-center">보통이다</span>
+                        </button>
+                        <button onclick="selectScore(4)" class="scale-btn flex flex-col items-center justify-center p-2.5 sm:p-4 border-2 border-slate-200 rounded-xl hover:border-slate-900 hover:bg-slate-50 transition-all group min-w-0">
+                            <span class="text-base sm:text-xl font-bold text-slate-700 group-hover:text-black">4</span>
+                            <span class="text-[10px] sm:text-xs text-slate-500 mt-1 hidden sm:inline text-center">그렇다</span>
+                        </button>
+                        <button onclick="selectScore(5)" class="scale-btn flex flex-col items-center justify-center p-2.5 sm:p-4 border-2 border-slate-200 rounded-xl hover:border-slate-900 hover:bg-slate-50 transition-all group min-w-0">
+                            <span class="text-base sm:text-xl font-bold text-slate-700 group-hover:text-black">5</span>
+                            <span class="text-[10px] sm:text-xs text-slate-500 mt-1 hidden sm:inline text-center">매우 그렇다</span>
+                        </button>
+                    </div>
+                    <div class="flex justify-between text-[10px] sm:text-xs text-slate-400 font-medium px-1 sm:hidden">
+                        <span>매우 그렇지 않다</span>
+                        <span>보통이다</span>
+                        <span>매우 그렇다</span>
+                    </div>
+                </div>
+
+                <!-- Nav Prev/Next Buttons -->
+                <div class="flex justify-between items-center pt-3 border-t border-slate-100 w-full">
+                    <button id="btn-prev" onclick="prevQuestion()" class="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed shrink-0">
+                        ← 이전 질문
+                    </button>
+                    <span class="text-[11px] sm:text-xs text-slate-400 text-right truncate pl-2">선택 시 다음 문항 이동</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- RESULT VIEW -->
+        <section id="view-result" class="hidden space-y-8 sm:space-y-10 w-full">
+            <!-- Result Header Banner -->
+            <div class="text-center space-y-3 border-b border-slate-200 pb-6 sm:pb-8 w-full">
+                <div class="inline-block px-3 py-1 rounded-full border border-slate-200 text-xs font-semibold bg-slate-50 text-slate-700" id="result-mode-tag">
+                    간이 검사 결과 리포트
+                </div>
+                <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
+                    당신의 TCI 기질 및 성격 프로필 📊
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-500 max-w-xl mx-auto leading-relaxed px-2">
+                    아래 결과는 7가지 주요 평가 축에 대한 백분위 점수 및 심리학적 해설입니다.
+                </p>
+            </div>
+
+            <!-- Radar Chart & Summary Card -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 items-center border border-slate-200 rounded-2xl p-4 sm:p-8 bg-white shadow-sm w-full overflow-hidden">
+                <div class="md:col-span-6 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-slate-100 pb-6 md:pb-0 md:pr-6 w-full">
+                    <div class="w-full max-w-[270px] sm:max-w-[320px] aspect-square mx-auto relative flex items-center justify-center">
+                        <canvas id="resultChart"></canvas>
+                    </div>
+                    <span class="text-[11px] text-slate-400 mt-2 text-center">프로필 레이더 차트 (50점 기준 중앙)</span>
+                </div>
+                <div class="md:col-span-6 space-y-3 sm:space-y-4 w-full">
+                    <h3 class="text-base sm:text-lg font-bold text-slate-900 border-b border-slate-200 pb-2">💡 검사 요약 브리핑</h3>
+                    <div id="brief-summary" class="text-xs sm:text-sm text-slate-700 space-y-2 leading-relaxed">
+                        <!-- Dynamic Briefing -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Factor Analyses -->
+            <div class="space-y-4 sm:space-y-6 w-full">
+                <h3 class="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2 border-b border-slate-200 pb-3">
+                    <span>🔬 7대 요인별 진단 및 정밀 해설</span>
+                </h3>
+
+                <div id="factor-details-container" class="space-y-4 sm:space-y-6 w-full">
+                    <!-- Dynamic Factor Cards Injection -->
+                </div>
+            </div>
+
+            <!-- Actions Bar -->
+            <div class="flex flex-col sm:flex-row gap-3 justify-center pt-4 sm:pt-6 border-t border-slate-200 w-full">
+                <button onclick="showView('home')" class="py-3 px-6 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold rounded-xl text-xs sm:text-sm transition-colors">
+                    🔄 다시 검사하기
+                </button>
+                <button onclick="copyResultSummary()" class="py-3 px-6 bg-slate-900 hover:bg-black text-white font-semibold rounded-xl text-xs sm:text-sm transition-colors flex items-center justify-center gap-2">
+                    📋 결과 요약 복사하기
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-200 bg-slate-50 py-6 mt-12 text-center text-xs text-slate-500">
+        <div class="max-w-4xl mx-auto px-4 space-y-1">
+            <p>© 2026 Mind Insight - TCI Temperament & Character Analysis Tool</p>
+            <p class="text-[11px] text-slate-400">본 사이트의 문항은 TCI 이론에 바탕을 두어 재구성한 가벼운 자가진단도구입니다.</p>
+        </div>
+    </footer>
+
+    <script>
+        /**
+         * TCI Question Database
+         * 7 Factors:
+         * NS: Novelty Seeking (자극추구)
+         * HA: Harm Avoidance (위험회피)
+         * RD: Reward Dependence (사회적 민감성)
+         * P: Persistence (인내력)
+         * SD: Self-Directedness (자율성)
+         * CO: Cooperativeness (연대감)
+         * ST: Self-Transcendence (자기초월)
+         */
+        const TCI_QUESTIONS = [
+            // NS: Novelty Seeking (7 Items)
+            { id: 'NS_1', factor: 'NS', factorName: '자극추구 (Novelty Seeking)', text: '새롭고 짜릿한 경험이나 새로운 장소를 탐험하는 것을 무척 좋아한다.' },
+            { id: 'NS_2', factor: 'NS', factorName: '자극추구 (Novelty Seeking)', text: '규칙적이고 반복적인 일상보다는 예측할 수 없는 변화와 자유를 선호한다.' },
+            { id: 'NS_3', factor: 'NS', factorName: '자극추구 (Novelty Seeking)', text: '생각이 나면 깊이 재지 않고 즉흥적으로 결정하여 실행하는 편이다.' },
+            { id: 'NS_4', factor: 'NS', factorName: '자극추구 (Novelty Seeking)', text: '돈이나 시간을 쓸 때 꼼꼼히 따지기보다 기분에 따라 시원하게 쓰는 편이다.' },
+            { id: 'NS_5', factor: 'NS', factorName: '자극추구 (Novelty Seeking)', text: '지루한 설명이나 틀에 박힌 규칙을 오래 견디기 힘들어한다.' },
+            { id: 'NS_6', factor: 'NS', factorName: '자극추구 (Novelty Seeking)', text: '새로운 호기심이 생기면 곧바로 그것에 몰두하곤 한다.' },
+            { id: 'NS_7', factor: 'NS', factorName: '자극추구 (Novelty Seeking)', text: '상황이 너무 안정적이면 쉽게 지루함을 느끼며 색다른 자극을 찾는다.' },
+
+            // HA: Harm Avoidance (7 Items)
+            { id: 'HA_1', factor: 'HA', factorName: '위험회피 (Harm Avoidance)', text: '새로운 일이나 낯선 상황에 직면하면 일단 걱정과 불안이 먼저 앞선다.' },
+            { id: 'HA_2', factor: 'HA', factorName: '위험회피 (Harm Avoidance)', text: '피곤함을 쉽게 느끼며 에너지가 금방 고갈된다고 느낀다.' },
+            { id: 'HA_3', factor: 'HA', factorName: '위험회피 (Harm Avoidance)', text: '혹시 모를 위험이나 실수를 방지하기 위해 매우 신중하게 계획을 세운다.' },
+            { id: 'HA_4', factor: 'HA', factorName: '위험회피 (Harm Avoidance)', text: '낯선 사람 모임이나 어색한 자리에서는 말이나 행동이 조심스러워진다.' },
+            { id: 'HA_5', factor: 'HA', factorName: '위험회피 (Harm Avoidance)', text: '미래에 생길지 모르는 불확실한 문제에 대해 자주 걱정하는 편이다.' },
+            { id: 'HA_6', factor: 'HA', factorName: '위험회피 (Harm Avoidance)', text: '작은 실패나 비판에도 쉽게 신체적·정신적 위축감을 경험한다.' },
+            { id: 'HA_7', factor: 'HA', factorName: '위험회피 (Harm Avoidance)', text: '안전함이 확실히 보장되지 않은 도전은 되도록 피하고 싶다.' },
+
+            // RD: Reward Dependence (7 Items)
+            { id: 'RD_1', factor: 'RD', factorName: '사회적 민감성 (Reward Dependence)', text: '타인의 칭찬이나 따뜻한 감정 표현에 크게 힘을 얻고 감동한다.' },
+            { id: 'RD_2', factor: 'RD', factorName: '사회적 민감성 (Reward Dependence)', text: '주변 사람들의 표정이나 기분 변화를 민감하게 잘 알아차린다.' },
+            { id: 'RD_3', factor: 'RD', factorName: '사회적 민감성 (Reward Dependence)', text: '나의 마음과 생각을 타인과 깊이 공유하며 친밀해지는 것이 중요하다.' },
+            { id: 'RD_4', factor: 'RD', factorName: '사회적 민감성 (Reward Dependence)', text: '다른 사람의 부탁을 거절하는 것이 꽤 미안하고 어렵다.' },
+            { id: 'RD_5', factor: 'RD', factorName: '사회적 민감성 (Reward Dependence)', text: '감수성이 풍부하여 영화나 다른 사람의 이야기에 금방 공감한다.' },
+            { id: 'RD_6', factor: 'RD', factorName: '사회적 민감성 (Reward Dependence)', text: '혼자 일하는 것보다 좋은 사람들과 인정받으며 함께 일할 때 즐겁다.' },
+            { id: 'RD_7', factor: 'RD', factorName: '사회적 민감성 (Reward Dependence)', text: '타인이 나를 어떻게 평가하고 생각할지 마음속으로 자주 신경 쓴다.' },
+
+            // P: Persistence (7 Items)
+            { id: 'P_1', factor: 'P', factorName: '인내력 (Persistence)', text: '좌절이나 피로감이 찾아와도 한 번 시작한 일은 끝까지 해낸다.' },
+            { id: 'P_2', factor: 'P', factorName: '인내력 (Persistence)', text: '즉각적인 보상이 없더라도 목표를 향해 꾸준히 노력을 지속한다.' },
+            { id: 'P_3', factor: 'P', factorName: '인내력 (Persistence)', text: '완벽함을 추구하며 내 맡은 바에 대해 끝까지 책임을 다하려 한다.' },
+            { id: 'P_4', factor: 'P', factorName: '인내력 (Persistence)', text: '남들이 포기할 만한 까다롭고 어려운 난관도 끈기 있게 돌파한다.' },
+            { id: 'P_5', factor: 'P', factorName: '인내력 (Persistence)', text: '목표 달성을 위해 현재의 편안함이나 즐거움을 기꺼이 유예한다.' },
+            { id: 'P_6', factor: 'P', factorName: '인내력 (Persistence)', text: '시작한 과업을 도중에 유야무야 흐지부지 끝내는 법이 거의 없다.' },
+            { id: 'P_7', factor: 'P', factorName: '인내력 (Persistence)', text: '스스로에게 엄격하고 부지런한 기준을 적용하는 편이다.' },
+
+            // SD: Self-Directedness (7 Items)
+            { id: 'SD_1', factor: 'SD', factorName: '자율성 (Self-Directedness)', text: '내 삶의 성패와 결과는 타인이나 운이 아닌 나 자신에게 달려 있다고 믿는다.' },
+            { id: 'SD_2', factor: 'SD', factorName: '자율성 (Self-Directedness)', text: '명확한 삶의 장기적 목표와 가치를 가지고 행동을 조절한다.' },
+            { id: 'SD_3', factor: 'SD', factorName: '자율성 (Self-Directedness)', text: '나 자신의 장단점을 있는 그대로 인정하고 수용하는 편이다.' },
+            { id: 'SD_4', factor: 'SD', factorName: '자율성 (Self-Directedness)', text: '어려운 상황이 닥쳐도 다른 사람이나 환경을 탓하지 않고 대안을 찾는다.' },
+            { id: 'SD_5', factor: 'SD', factorName: '자율성 (Self-Directedness)', text: '상황 변화에 유연하게 대처하며 나의 행동을 스스로 통제할 수 있다.' },
+            { id: 'SD_6', factor: 'SD', factorName: '자율성 (Self-Directedness)', text: '좋은 습관을 유지하고 나쁜 습관을 스스로 고칠 수 있는 자제력이 있다.' },
+            { id: 'SD_7', factor: 'SD', factorName: '자율성 (Self-Directedness)', text: '어떤 일을 진행할 때 타인의 승인 없이도 스스로 주도성을 발휘한다.' },
+
+            // CO: Cooperativeness (7 Items)
+            { id: 'CO_1', factor: 'CO', factorName: '연대감 (Cooperativeness)', text: '나와 가치관이 다른 사람이라도 있는 그대로 인정하고 수용하려 노력한다.' },
+            { id: 'CO_2', factor: 'CO', factorName: '연대감 (Cooperativeness)', text: '타인을 비난하거나 시기하기보다 진심으로 이해하고 공감하려고 한다.' },
+            { id: 'CO_3', factor: 'CO', factorName: '연대감 (Cooperativeness)', text: '자신의 이익만을 따지기보다 공동체와 상대방을 위해 양보할 수 있다.' },
+            { id: 'CO_4', factor: 'CO', factorName: '연대감 (Cooperativeness)', text: '대화할 때 상대방의 입장을 먼저 고려하며 협력적인 자세를 취한다.' },
+            { id: 'CO_5', factor: 'CO', factorName: '연대감 (Cooperativeness)', text: '사람들의 보편적인 선의와 정직함을 기본적으로 신뢰한다.' },
+            { id: 'CO_6', factor: 'CO', factorName: '연대감 (Cooperativeness)', text: '다른 사람의 성취에 함께 기뻐하며 진심어린 축하를 건넨다.' },
+            { id: 'CO_7', factor: 'CO', factorName: '연대감 (Cooperativeness)', text: '복수나 원망보다는 용서와 와해를 우선시한다.' },
+
+            // ST: Self-Transcendence (7 Items)
+            { id: 'ST_1', factor: 'ST', factorName: '자기초월 (Self-Transcendence)', text: '자연, 예술, 우주를 접할 때 시공간을 잊을 만큼 깊은 몰입감을 느낀다.' },
+            { id: 'ST_2', factor: 'ST', factorName: '자기초월 (Self-Transcendence)', text: '눈에 보이는 현실 너머의 영적이거나 초월적인 가치에 관심이 있다.' },
+            { id: 'ST_3', factor: 'ST', factorName: '자기초월 (Self-Transcendence)', text: '모든 생명체와 만물이 하나로 연결되어 있다는 거대 자아감을 느낀다.' },
+            { id: 'ST_4', factor: 'ST', factorName: '자기초월 (Self-Transcendence)', text: '직관이나 신비로운 경험, 창의적 영감을 자주 신뢰한다.' },
+            { id: 'ST_5', factor: 'ST', factorName: '자기초월 (Self-Transcendence)', text: '고난이나 시련 속에서도 삶의 숭고한 의미를 발견하곤 한다.' },
+            { id: 'ST_6', factor: 'ST', factorName: '자기초월 (Self-Transcendence)', text: '물질적 성공이나 욕망을 넘어선 더 큰 가치에 기꺼이 헌신할 의향이 있다.' },
+            { id: 'ST_7', factor: 'ST', factorName: '자기초월 (Self-Transcendence)', text: '논리적으로 설명할 수 없는 직관적 확신을 자주 느낀다.' }
+        ];
+
+        // Explanations Dictionary for Quick (2 lines) and Full (~10 lines depth counseling)
+        const FACTOR_INFO = {
+            NS: {
+                name: '자극추구 (NS)',
+                type: '기질',
+                desc: '새로운 자극이나 잠재적 보상 신호에 끌리며 행동이 활성화되는 유전적 기질입니다.',
+                quick: {
+                    high: '호기심과 에너지가 넘치고 변화에 유연하지만, 쉽게 지루함을 느끼고 즉흥적 결정을 내리기 쉽습니다.',
+                    low: '신중하고 절제력이 뛰어나며 질서를 중요시하지만, 새로운 변화나 도전을 부담스러워할 수 있습니다.'
+                },
+                full: {
+                    high: `<div class="space-y-3">
+                        <p><strong>[특성 분석]</strong> 당신은 새로운 아이디어나 자극적인 도전에 강한 흥미를 느끼는 탐구자 유형입니다. 호기심이 많고 열정적이며 모험을 두려워하지 않는 역동성을 지니고 있습니다.</p>
+                        <p><strong>[대인관계 및 갈등 패턴]</strong> 타인과의 관계에서 흥미진진한 주도권을 쥐는 것을 좋아하나, 상대방의 답답함이나 느린 대처에 조급증을 느끼기 쉽습니다. 특히 극도로 틀에 박힌 규칙이나 보수적인 가치관을 가진 사람과 일할 때 답답함으로 인한 마찰이 발생할 수 있습니다.</p>
+                        <p><strong>[개선 포인트]</strong> 즉흥적 행동으로 인한 후회를 줄이기 위해 중대한 결정 시 '24시간 유예 규칙'을 적용해 보세요. 당신의 넘치는 에너지를 체계화된 프로젝트로 연결할 때 최고의 성과를 낼 것입니다.</p>
+                    </div>`,
+                    low: `<div class="space-y-3">
+                        <p><strong>[특성 분석]</strong> 당신은 체계적이고 안정적인 일상을 선호하며 한 번 세운 계획을 차분하게 이행하는 절제된 성향입니다. 섣부른 모험보다는 검증된 방식에 신뢰를 둡니다.</p>
+                        <p><strong>[대인관계 및 갈등 패턴]</strong> 예측 불가능하고 지나치게 즉흥적인 사람과의 관계에서 극심한 피로감이나 불확실성에 대한 거부감을 느낄 수 있습니다. 신중함이 자칫 타인에게 보수적이거나 고집스럽게 비쳐 갈등을 유발할 수 있습니다.</p>
+                        <p><strong>[개선 포인트]</strong> 때로는 예기치 않은 변수나 새로운 시도를 성장의 기회로 받아들이는 마음의 유연성을 키우는 것이 도움이 됩니다.</p>
+                    </div>`
+                }
+            },
+            HA: {
+                name: '위험회피 (HA)',
+                type: '기질',
+                desc: '처벌이나 위험 신호에 민감하게 반응하여 행동이 억제되고 조심성이 커지는 기질입니다.',
+                quick: {
+                    high: '매사 신중하고 위험 요소를 미리 대비하지만, 불안감이 많고 낯선 환경에서 위축되기 쉽습니다.',
+                    low: '낙천적이고 자신감이 넘치며 위기 상황에서도 담대하지만, 위험 조짐을 무시하거나 방심할 수 있습니다.'
+                },
+                full: {
+                    high: `<div class="space-y-3">
+                        <p><strong>[특성 분석]</strong> 만약의 위험과 실수를 사전에 예방하는 철저함과 조심성을 가지고 있습니다. 신중한 일 처리 능력은 큰 장점이지만, 내면의 불안 수준이 높아 사서 고생하는 경향이 있습니다.</p>
+                        <p><strong>[대인관계 및 갈등 패턴]</strong> 타인의 비판이나 어색한 관계에 대해 매우 민감하게 위축될 수 있습니다. 대책 없이 무모하거나 유쾌함만을 추구하는 사람과 함께 있을 때 불안감이 가중되어 거리를 두려 할 수 있습니다.</p>
+                        <p><strong>[개선 포인트]</strong> 일어나지 않은 미래의 불안을 '팩트'와 '걱정'으로 구분하는 연습이 필요합니다. 자신에게 "실패해도 괜찮아"라는 수용적 태도를 건네어 보세요.</p>
+                    </div>`,
+                    low: `<div class="space-y-3">
+                        <p><strong>[특성 분석]</strong> 당신은 걱정이 적고 낙천적이며 세세한 위험에 연연하지 않는 담대한 마음가짐을 가지고 있습니다. 낯선 사람이나 새로운 환경에서도 주눅 들지 않습니다.</p>
+                        <p><strong>[대인관계 및 갈등 패턴]</strong> 세심하고 걱정이 많은 사람들의 염려를 '과도한 걱정'으로 치부해버려 세심한 배려가 부족하다는 오해를 살 수 있습니다.</p>
+                        <p><strong>[개선 포인트]</strong> 자신감을 유지하되 중요한 리스크나 세부적인 안전 점검 단계를 한 번 더 짚고 넘어가는 돌다리 체크가 요구됩니다.</p>
+                    </div>`
+                }
+            },
+            RD: {
+                name: '사회적 민감성 (RD)',
+                type: '기질',
+                desc: '사회적 신호(칭찬, 공감, 정서적 유대)에 민감하게 반응하는 정서적 친밀성 기질입니다.',
+                quick: {
+                    high: '공감 능력이 탁월하고 친근한 관계를 잘 형성하지만, 타인의 시선과 신호에 지나치게 얽매일 수 있습니다.',
+                    low: '실용적이고 타인의 평가에 흔들리지 않는 독립성이 강하지만, 냉정하거나 차갑게 보일 수 있습니다.'
+                },
+                full: {
+                    high: `<div class="space-y-3">
+                        <p><strong>[특성 분석]</strong> 타인의 감정 상태를 스펀지처럼 흡수하는 뛰어난 공감력과 다정함을 지니고 있습니다. 따뜻한 정서적 교류를 소중히 여기며 관계 속에서 큰 만족감을 얻습니다.</p>
+                        <p><strong>[대인관계 및 갈등 패턴]</strong> 거절을 힘들어하여 과도한 부탁을 떠안거나, 타인의 차가운 반응 하나에 깊이 마상을 입을 수 있습니다. 정서적 교류에 무심하거나 지나치게 비판적이고 논리만을 내세우는 인물과 깊은 갈등을 경험하기 쉽습니다.</p>
+                        <p><strong>[개선 포인트]</strong> 타인의 기분은 타인의 몫임을 인정하고, '정서적 경계선'을 설정하여 건강한 거절을 연습하는 것이 중요합니다.</p>
+                    </div>`,
+                    low: `<div class="space-y-3">
+                        <p><strong>[특성 분석]</strong> 타인의 칭찬이나 평가에 쉽게 좌지우지되지 않고 독자적인 주관과 논리를 유지하는 독립적 성향입니다.</p>
+                        <p><strong>[대인관계 및 갈등 패턴]</strong> 정서적 위로나 공감이 필요한 상황에서도 솔루션만을 제시하려 하여 상대방에게 '차가운 사람'이라는 인상을 줄 수 있습니다.</p>
+                        <p><strong>[개선 포인트]</strong> 논리적 해결책을 내놓기 전에 상대방의 감정에 먼저 공감하는 시늉이라도 해주는 태도가 인간관계의 매끄러움을 만듭니다.</p>
+                    </div>`
+                }
+            },
+            P: {
+                name: '인내력 (P)',
+                type: '기질',
+                desc: '보상이 즉각 주어지지 않더라도 지속적으로 과업을 추진하는 인내와 집념의 기질입니다.',
+                quick: {
+                    high: '끈기와 성실함으로 신뢰를 얻으며 완벽을 추구하지만, 비효율적인 상황에서도 융통성 없이 집착할 수 있습니다.',
+                    low: '융통성이 있고 수용력이 높으며 빠른 전환이 가능하지만, 포기가 빠르거나 마무리가 약할 수 있습니다.'
+                },
+                full: {
+                    high: `<div class="space-y-3">
+                        <p><strong>[특성 분석]</strong> 당신은 한 번 목표를 정하면 어떤 난관이 찾아와도 이를 악물고 해내는 불굴의 집념을 가진 사람입니다. 강한 책임감과 완벽주의 성향을 탑재하고 있습니다.</p>
+                        <p><strong>[대인관계 및 갈등 패턴]</strong> 자신이 세운 엄격한 기준을 타인에게도 동일하게 기대하다 보니, 인내심이 부족하거나 매듭을 잘 짓지 못하는 동료를 볼 때 극심한 답답함과 갈등을 느낍니다.</p>
+                        <p><strong>[개선 포인트]</strong> 무조건 버티는 것만이 능사는 아닙니다. 때로는 효율성이 떨어지는 목표에 대해 시의적절하게 전략을 수정하거나 내려놓을 줄 아는 '지혜로운 포기'를 배워야 합니다.</p>
+                    </div>`,
+                    low: `<div class="space-y-3">
+                        <p><strong>[특성 분석]</strong> 상황의 변화에 기민하게 반응하고 안 되는 일에 미련을 두지 않으며 빠르게 대안을 찾아 갈아탈 줄 아는 유연성을 가지고 있습니다.</p>
+                        <p><strong>[대인관계 및 갈등 패턴]</strong> 끈기 있게 끝까지 밀어붙여야 하는 팀 과제에서 포기가 빠르다는 평을 받거나 지나치게 완벽을 요구하는 사람과 대립할 수 있습니다.</p>
+                        <p><strong>[개선 포인트]</strong> 진득한 호흡이 필요한 장기 과제에 대비하여 소규모 달성 단계를 설정하고 작은 마무리의 성공 경험을 축적해 보세요.</p>
+                    </div>`
+                }
+            },
+            SD: {
+                name: '자율성 (SD)',
+                type: '성격',
+                desc: '스스로 목표를 설정하고 상황에 맞춰 자신의 행동을 조율하는 성숙한 자아 통제력입니다.',
+                quick: {
+                    high: '자존감이 높고 책임감이 강하며 주도적으로 삶을 개척하지만, 때로 스스로에게 과하게 엄격할 수 있습니다.',
+                    low: '남을 탓하거나 상황에 끌려다니기 쉽고 무력감을 느낄 수 있으므로 자아 확립 노력이 필요합니다.'
+                },
+                full: {
+                    high: `<div class="space-y-3">
+                        <p><strong>[특성 분석]</strong> 자신의 선택과 행동 결과에 대해 깔끔하게 책임질 줄 아는 주체적이고 성숙한 자아를 확립하고 있습니다. 높은 자아존중감과 명확한 가치관을 보유하고 있습니다.</p>
+                        <p><strong>[대인관계 및 갈등 패턴]</strong> 타인에게 의존하기보다 문제 해결의 중심에 서며, 피해의식에 빠져 남 탓만 하는 부류의 사람들과 대화할 때 피로감을 쉽게 느낍니다.</p>
+                        <p><strong>[개선 포인트]</strong> 높은 자율성을 바탕으로 타인의 미숙함을 품어줄 수 있는 여유와 포용력을 한 단계 더 넓혀보세요.</p>
+                    </div>`,
+                    low: `<div class="space-y-3">
+                        <p><strong>[특성 분석]</strong> 살면서 부딪히는 문제들의 원인을 외부 환경이나 타인의 탓으로 돌리려는 경향이 있어 내면의 무력감을 자주 경험할 수 있습니다.</p>
+                        <p><strong>[대인관계 및 갈등 패턴]</strong> 의사결정 시 남에게 지나치게 의존하거나, 예상대로 되지 않았을 때 상대방을 원망하게 되어 인간관계가 꼬이기 쉽습니다.</p>
+                        <p><strong>[개선 포인트]</strong> 작은 일부터 스스로 결정하고 책임지는 '소소한 주도성'을 매일 연습하여 자아의 근력을 키워야 합니다.</p>
+                    </div>`
+                }
+            },
+            CO: {
+                name: '연대감 (CO)',
+                type: '성격',
+                desc: '타인을 사회적 인격체로 존중하고 타인과의 이타적 관계 및 협력을 추구하는 성숙도입니다.',
+                quick: {
+                    high: '배려심과 이타심이 깊어 어디서나 환영받지만, 자기 이익을 지나치게 챙기지 못할 수 있습니다.',
+                    low: '비판적이고 자기중심적일 수 있으며 타인을 수용하는 데 한계가 있어 협력적 관계 형성이 필요합니다.'
+                },
+                full: {
+                    high: `<div class="space-y-3">
+                        <p><strong>[특성 분석]</strong> 타인의 결점이나 다양성을 너그럽게 품을 수 있는 이타성과 협동심을 겸비한 인격체입니다. 세상과 타인을 향한 따뜻한 신뢰를 지니고 있습니다.</p>
+                        <p><strong>[대인관계 및 갈등 패턴]</strong> 대부분의 사람들과 원만한 연대를 이루지만, 이기적이고 타인을 이용하려는 상대를 만났을 때도 과도하게 참아주다가 속으로 병들 수 있습니다.</p>
+                        <p><strong>[개선 포인트]</strong> 무조건적인 수용만이 연대감은 아닙니다. 부당함에 대해서는 단호하게 상계를 선언하는 건강한 당당함을 결합하세요.</p>
+                    </div>`,
+                    low: `<div class="space-y-3">
+                        <p><strong>[특성 분석]</strong> 타인에 대한 경계심이나 비판적 시각이 앞서며, 공동체의 이익보다는 개인의 실리를 우선시하는 냉철한 면모가 있습니다.</p>
+                        <p><strong>[대인관계 및 갈등 패턴]</strong> 대화 시 지적이나 비판이 앞서 상대방을 방어적으로 만들고 팀워크를 해치는 갈등의 원인이 될 수 있습니다.</p>
+                        <p><strong>[개선 포인트]</strong> 상대방의 단점 뒤에 숨겨진 장점을 의식적으로 한 가지씩 찾아 표현해 주는 시도가 인간관계를 대폭 개선합니다.</p>
+                    </div>`
+                }
+            },
+            ST: {
+                name: '자기초월 (ST)',
+                type: '성격',
+                desc: '우주나 자연, 거대 자아와의 연결감을 경험하고 의미와 창의성을 추구하는 성숙도입니다.',
+                quick: {
+                    high: '영감과 창의성이 풍부하고 삶의 숭고한 의미를 잘 발견하지만, 현실감각이 다소 떨어질 수 있습니다.',
+                    low: '지극히 현실적이고 합리적이며 논리적이지만, 삶의 깊은 영적 만족이나 통찰력이 부족할 수 있습니다.'
+                },
+                full: {
+                    high: `<div class="space-y-3">
+                        <p><strong>[특성 분석]</strong> 일상적 범주를 넘어선 거대한 자연, 예술, 우주적 연결감을 느끼는 풍부한 통찰력과 직관, 창의성의 소유자입니다.</p>
+                        <p><strong>[대인관계 및 갈등 패턴]</strong> 삶의 숭고한 가치와 의미를 중요하게 생각하므로, 지나치게 계산적이고 물질 만능주의적인 사람과 깊은 대화를 나누기 힘들어합니다.</p>
+                        <p><strong>[개선 포인트]</strong> 당신의 높은 이상과 창의적인 영감을 눈에 보이는 현실적인 결과물로 구현하는 논리적 구체화 작업에 신경 쓰세요.</p>
+                    </div>`,
+                    low: `<div class="space-y-3">
+                        <p><strong>[특성 분석]</strong> 증명 가능한 사실과 눈앞의 실재만을 믿는 매우 철저하고 실용적인 현실주의자입니다.</p>
+                        <p><strong>[대인관계 및 갈등 패턴]</strong> 감성적이거나 비논리적인 이야기, 영적인 주제를 이야기하는 상대방을 맹목적이거나 허황되다고 치부할 수 있습니다.</p>
+                        <p><strong>[개선 포인트]</strong> 가끔은 논리의 잣대를 내려놓고 예술이나 자연 속에서 이유 없는 몰입과 휴식을 경험해 보세요.</p>
+                    </div>`
+                }
+            }
         };
-        renderLoggedInUI(window.currentUser);
-        loadPastResult(googleUser.uid);
-      } else if (savedKakaoUser) {
-        window.currentUser = JSON.parse(savedKakaoUser);
-        renderLoggedInUI(window.currentUser);
-        loadPastResult(window.currentUser.uid);
-} else {
-        window.currentUser = null;
-        if (profileWrap) {
-          // 💡 로그인 버튼들 바로 밑에 과거 기록 리스트 레이아웃까지 세트로 묶어서 한방에 화면에 그려버림!
-          profileWrap.innerHTML = `
-            <button class="btn-login-google" onclick="loginWithGoogle()" style="margin-bottom: 8px;">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/120px-Google_%22G%22_logo.svg.png" width="18" alt="Google"> Google 계정 로그인
-            </button>
-            <button class="btn-login-kakao" onclick="loginWithKakao()">
-              <img src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png" width="18" alt="Kakao"> 카카오톡 로그인
-            </button>
 
-            <div id="pastHistorySession" style="margin-top: 20px; border-top: 1px dashed #444; padding-top: 15px; width: 100%;">
-              <h4 style="margin: 0 0 10px 0; font-size: 0.85rem; color: #b0b0c5; display: flex; align-items: center; gap: 5px; font-family: sans-serif;">
-                📜 과거 검사 이력 목록
-              </h4>
-              <ul id="pastHistoryList" style="list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto;">
-                <li style="color: #666; font-size: 0.78rem; font-style: italic; font-family: sans-serif;">로그인 후 조회가 가능합니다.</li>
-              </ul>
-            </div>
-          `;
+        // Global Application State
+        let currentMode = 'quick'; // 'quick' (14 Qs) or 'full' (49 Qs)
+        let activeQuestions = [];
+        let currentIndex = 0;
+        let userAnswers = {}; // { questionId: score 1~5 }
+        let chartInstance = null;
+
+        /**
+         * Fisher-Yates Random Shuffle Algorithm
+         */
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
         }
-        if (introNotice) introNotice.style.display = "flex";
-      }
-    });
-// 🕵️‍♂️ 주소창에 공유 파라미터가 붙어있는지 감시하는 내비게이터 함수 (중복 싹 제거 완료!)
-// 🕵️‍♂️ 주소창에 공유 파라미터가 붙어있는지 감시하는 내비게이터 함수 (숫자 규격 매칭 완료!)
-// 🕵️‍♂️ 주소창 파라미터 감시 및 숫자 규격 완벽 통역 함수
-async function checkSharedLink() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const sharedUid = urlParams.get('uid');
-  const sharedTime = urlParams.get('time'); // 💡 여기서 time을 가져와야 함!
 
-  // 1. 게스트 파라미터 체크 (게스트 모드)
-  const hasGuestParams = urlParams.get('ns') || urlParams.get('NS') || urlParams.get('ha') || urlParams.get('HA');
-
-  if (hasGuestParams) {
-    console.log("[게스트 소환] 주소창 파라미터에서 기질 수치 추출 중... ⚡");
-    
-    const parseParamScore = (key) => {
-      let val = urlParams.get(key.toLowerCase()) || urlParams.get(key.toUpperCase());
-      if (val === 'M' || val === 'm' || isNaN(Number(val))) return 50; 
-      return Number(val);
-    };
-    
-    const guestScores = {
-      NS: parseParamScore('NS'), HA: parseParamScore('HA'), RD: parseParamScore('RD'),
-      PS: parseParamScore('PS'), SD: parseParamScore('SD'), CO: parseParamScore('CO'), ST: parseParamScore('ST')
-    };
-
-    window.currentMode = urlParams.get('mode') || 'deep';
-    var savedScores = localStorage.getItem('lastResult');
-
-    if (urlParams.get('ns')) { 
-      window.currentScores = guestScores;
-    } else if (savedScores) {
-      window.currentScores = JSON.parse(savedScores);
-    } else {
-      window.currentScores = guestScores; 
-    }
-
-    if (typeof window.renderFinalResult === 'function') window.renderFinalResult(window.currentScores);
-    if (typeof window.showScreen === 'function') window.showScreen('screen-result');
-    return; // 💡 여기서 함수가 종료되므로 아래 로직은 게스트가 아닐 때만 실행됨!
-  }
-
-  // 2. 회원 전용 공유 링크 로직 (게스트 파라미터가 없을 때만 여기까지 옴)
-  if (sharedUid && sharedTime) {
-    try {
-      const docRef = doc(db, "tci_results", sharedUid, "history", sharedTime);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const sharedData = docSnap.data();
-        window.currentMode = sharedData.mode;
-        window.lastSavedTimestamp = sharedTime;
-        
-        if (typeof window.renderFinalResult === 'function') window.renderFinalResult(sharedData.scores);
-        if (typeof window.showScreen === 'function') window.showScreen('screen-result');
-      } else {
-        alert("❌ 링크가 만료되었거나 삭제된 검사 결과 데이터입니다.");
-      }
-    } catch (error) {
-      console.error("공유 링크 복구 중 에러 발생:", error);
-    }
-  }
-}
-
-    // 🚨 [최종 패치] 
-// 0.6초 뒤에 무조건 실행하지 말고, URL에 파라미터가 있을 때만 실행하게 바꾸자!
-const urlParamsForInit = new URLSearchParams(window.location.search);
-const hasParamsForInit = urlParamsForInit.get('ns') || urlParamsForInit.get('NS') || 
-                         urlParamsForInit.get('ha') || urlParamsForInit.get('HA') || 
-                         urlParamsForInit.get('uid'); // uid도 체크!
-
-if (hasParamsForInit) {
-    setTimeout(checkSharedLink, 600);
-} else {
-    console.log("공유 파라미터 없음, 자동 실행 차단됨! 🌿");
-}
-</script>
-<body>
-
-<div id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
-
-<div class="mobile-top-bar" style="background: transparent; border: none; justify-content: flex-start;">
-  <button class="hamburger-btn" onclick="toggleSidebar(true)" style="color: #1a1a1a;">☰</button>
-</div>
-
-<div id="sidebar">
-  <div class="sidebar-top">
-    <div class="sidebar-title">🧭 TCI 성격 진단</div>
-    
-    <div class="user-profile-box" id="userProfileWrap"></div>
-
-    <ul class="menu-list">
-      <li class="menu-item active" id="menu-brief" onclick="switchMode('brief')">
-        <span>🌱 기본 간이진단</span>
-      </li>
-      <li class="menu-item" id="menu-deep" onclick="switchMode('deep')">
-        <span>🧬 종합 심화진단</span>
-        <span class="lock-badge" id="lockIcon">🔑 1990원</span>
-      </li>
-    </ul>
-  </div>
-  <div class="sidebar-footer">
-    <div class="menu-item btn-admin-trigger" onclick="tryEnterAdmin()">
-      <span>⚙️ 관리자 페이지</span>
-    </div>
-  </div>
-</div>
-
-<div id="main-content">
-  <div class="content-body">
-
-    <div id="screen-intro" class="screen active">
-      <div class="app-header">
-        <h1 id="intro-title">🧬 기질 및 성격 7차원 자가진단</h1>
-        <p id="intro-subtitle">Cloninger 성격 모델 기반 (기본 간이진단)</p>
-      </div>
-      <div class="intro-card">
-        
-        <div class="login-notice-box" id="introLoginNotice">
-  <div class="login-notice-text">
-    <strong>🔒 결과를 영구 보관하고 싶으신가요?</strong><br>
-    로그인을 하시면 브라우저가 닫혀도 언제든 결과를 다시 조회할 수 있습니다.
-  </div>
-  <div style="display: flex; flex-direction: column; gap: 6px;">
-    <button onclick="loginWithGoogle()" style="padding: 6px 12px; font-weight:700; font-size:0.75rem; border-radius:6px; background:#fff; color:#222; border:1px solid #ccc; cursor:pointer;">Google 로그인</button>
-    <button onclick="loginWithKakao()" style="padding: 6px 12px; font-weight:700; font-size:0.75rem; border-radius:6px; background:#FEE500; color:#191919; border:none; cursor:pointer;">카카오 로그인</button>
-  </div>
-</div>
-
-        <h2>검사 소개</h2>
-<p style="line-height: 1.6; text-align: justify; text-align-last: left; word-break: keep-all;">
-  나는 왜 같은 상황에서도 늘 다르게 반응할까?<br>
-  Robert Cloninger 박사의 심리생물학적 성격 모델에 기초한 검사로, <strong>타고난 기질(4가지)</strong>과 <strong>후천적 성격(3가지)</strong> 총 7차원을 과학적으로 측정합니다.
-  <br><br>
-  친숙한 MBTI가 상황과 감정에 따라 결과가 달라질 수 있는 반면, TCI는 기질과 성격을 분리 측정하여 보다 일관되고 심층적인 자기 이해를 가능하게 하며, 심리 상담 현장에서 가장 널리 활용되는 검사 중 하나입니다. 최근 부부 및 이혼 상담 전문 TV 프로그램에서 출연자 간 갈등 원인을 분석하는 심리 도구로 소개되어 큰 화제를 모았습니다.
-</p>
-        <div class="dim-grid">
-          <div class="dim-badge t">🔍 자극추구 (NS)</div>
-          <div class="dim-badge t">🛡 위험회피 (HA)</div>
-          <div class="dim-badge t">🤝 사회적민감성 (RD)</div>
-          <div class="dim-badge t">💪 인내력 (PS)</div>
-          <div class="dim-badge c">🌟 자율성 (SD)</div>
-          <div class="dim-badge c">❤️ 연대감 (CO)</div>
-          <div class="dim-badge c">🌌 자기초월 (ST)</div>
-        </div>
-        <p>각 문항을 읽고 <strong>자신에게 해당하는 정도</strong>를 1~5점으로 선택해 주세요.</p>
-        <p id="intro-meta">총 <strong>42문항</strong> / 소요시간 약 <strong>5~7분</strong></p>
-        <div class="notice-box">
-          ⚠️ 이 검사는 일반적인 학술 이론 정보에 기반하여 제작된 <strong>개인 참고용 진단</strong>입니다. 의학적 또는 임상적 진단 목적으로는 사용할 수 없으며 본 페이지의 진단 결과는 법적 사용 근거가 없음을 알립니다.
-        </div>
-        <button class="start-btn" id="btnStart">검사 시작하기 →</button>
-      </div>
-    </div>
-
-    <div id="screen-quiz" class="screen">
-      <div class="progress-wrap" id="quizProgressBarWrap">
-        <div class="progress-bar" id="progressBar"></div>
-      </div>
-      <p class="progress-text" id="progressText">0 / 42</p>
-      <div class="q-container">
-        <div id="quizBlock"></div>
-        <div class="nav-row">
-          <button class="nav-btn btn-prev" id="btnPrev">← 이전</button>
-          <button class="nav-btn btn-next" id="btnNext">다음 →</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="screen-admin" class="screen">
-      <div class="app-header" style="background: #cf3c3c;">
-        <h1>⚙️ 시뮬레이터 마스터 컨트롤</h1>
-        <p>결과 보고서를 직접 조합하여 미리보기 테스트하는 공간입니다.</p>
-      </div>
-      <div class="admin-panel-card">
-        <h2>지표 레벨 세팅</h2>
-        <p style="font-size:0.8rem; color:#666;">원하는 스케일을 지정하고 아래 버튼을 누르면 즉시 맞춤 결과서로 이동</p>
-        <div class="admin-grid" id="adminGrid"></div>
-        <button class="admin-submit-btn" onclick="triggerSimulatedResult()">🎯 지정 스케일로 결과서 즉시 생성</button>
-      </div>
-    </div>
-
-    <div id="screen-result" class="screen">
-      <div class="app-header">
-        <h1>📊 검사 결과</h1>
-        <p>기질 및 성격 7차원 프로파일</p>
-      </div>
-      <div class="result-wrap" id="resultWrap"></div>
-    </div>
-
-  </div>
-
-  <footer class="app-footer">
-    <div class="footer-links">
-      <a onclick="openPolicyModal('terms')">이용약관</a>
-      <span>|</span>
-      <a onclick="openPolicyModal('privacy')">개인정보처리방침</a>
-      <span>|</span>
-      <a onclick="openPolicyModal('refund')">환불정책 및 고지사항</a>
-      <span>|</span>
-      <a onclick="openPolicyModal('cs')">고객센터</a>
-    </div>
-    <div class="footer-info">
-      <p style="margin: 10px 0; font-size: 0.9em; color: #555;">
-        <strong>plan:it Labs</strong> | 대표: 이종석 | 사업자번호: 284-46-01304<br>
-        주소: 경기도 오산시 죽담로 11 | 문의: 010-9906-5190
-      </p>
-      본 진단 시스템은 개인 연구 및 심리 지표 시뮬레이션 용도로 제공되는 비임상 도구입니다.<br>
-      © plan:it Labs. All Rights Reserved.
-    </div>
-  </footer>
-</div>
-
-<div class="toast-msg" id="toastMsg">복사 완료! 원하는 곳에 붙여 넣으세요.</div>
-
-<div class="modal-overlay" id="commonModalOverlay" onclick="handleOverlayClick(event)">
-  <div class="pay-modal" id="payModal" style="display:none;">
-    <span class="pay-icon">🔒</span>
-    <div class="pay-title">종합 심화 정밀진단 잠금해제</div>
-    <div class="pay-desc">온라인 TCI 데이터 및 하위 척도 완벽 분석!<br><strong>총 105개 문항</strong>으로 더 고도화된 프로파일을 확인하세요.</div>
-    <div class="pay-price">1,990원</div>
-    <div class="pay-btn-group">
-      <button class="pay-btn btn-pay-cancel" onclick="closeAllModals()">취소</button>
-      <button class="pay-btn btn-pay-submit" id="btnPaySubmit">결제 및 잠금해제</button>
-      <script>
- // 결제 시작 함수
-function startPayment() {
-  const IMP = window.IMP; 
-  IMP.init("imp53182105"); // 신지군의 가맹점 식별코드
-
-  IMP.request_pay({
-    pg: 'html5_inicis', 
-    // pay_method 항목을 제외하면 사용자가 직접 선택 가능!
-    merchant_uid: 'order_' + new Date().getTime(), 
-    name: 'TCI 성격 종합 심화 진단',
-    amount: 1990, // 테스트 금액
-  }, function (rsp) { 
-    if (rsp.success) {
-      console.log("결제 성공, 검증 시작:", rsp.imp_uid);
-      verifyPaymentOnServer(rsp.imp_uid); 
-    } else {
-      alert("결제에 실패했습니다: " + rsp.error_msg);
-    }
-  });
-}
-
-// 1. 결제 완료 후 정밀 진단 화면(screen-quiz)으로 이동
-function moveToDetailedDiagnosis(imp_uid) {
-  console.log("결제 완료! 정밀 진단 화면으로 전환합니다. imp_uid:", imp_uid);
-  
-  // 1. 심화 모드로 설정 (나중에 진단 로직에서 이 모드를 보고 문항수를 105개로 바꿀 거야)
-  window.currentMode = 'deep'; 
-  
-  // 2. 우리가 찾은 ID인 'screen-quiz'로 화면 전환
-  showScreen('screen-quiz'); 
-  
-  // 3. 결제 모달이 있다면 닫아주기 (보안과 깔끔함을 위해)
-  if (typeof payModal !== 'undefined' && payModal) payModal.style.display = 'none';
-  if (typeof commonOverlay !== 'undefined' && commonOverlay) commonOverlay.style.display = 'none';
-}
-
-// 2. 결제 성공 시 호출되는 함수 (verifyPaymentOnServer)
-function verifyPaymentOnServer(imp_uid) {
-  // 나중에 서버 검증 로직이 여기에 들어갈 예정임
-  // 현재는 결제 성공했으니 바로 진단 페이지로 이동
-  moveToDetailedDiagnosis(imp_uid);
-}
-
-// 3. 결제 시작 함수 (수정 없음)
-function checkPaymentStatus() {
-  startPayment();
-}
-</script>
-    </div>
-  </div>
-
-  <div class="policy-modal" id="policyModal" style="display:none;">
-    <div class="policy-header" id="policyModalTitle">약관 정보</div>
-    <div class="policy-body" id="policyModalBody">내용이 로드되지 않았습니다.</div>
-    <button class="policy-close-btn" onclick="closeAllModals()">확인 및 닫기</button>
-  </div>
-</div>
-
-<script>
-const CONFIG = {
-      isServiceEnabled: true,
-      isPaymentEnabled: true
-    };
-  // 1️⃣ 브라우저의 기본 스크롤 복원 기능 강제로 끄기
-if ('scrollRestoration' in history) {
-  history.scrollRestoration = 'manual';
-}
-
-// 2️⃣ 화면이 새로 켜질 때 스크롤 맨 위로 올리기
-window.addEventListener('DOMContentLoaded', function() {
-  window.scrollTo(0, 0);
-});
-  (function () {
-  'use strict';
-  
-  var ADMIN_PASSWORD = "1l9j0s2";
-  var isPremiumUnlocked = true;
-// =======================================================
-  // 🛡️ [보안 1.5단계] 개발자 도구 및 마우스 우클릭 원천 차단
-  // =======================================================
-  // 🖱️ 마우스 우클릭 차단
-  document.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-  }, false);
-
-  // ⌨️ 개발자 도구 단축키(F12, Ctrl+Shift+I, Ctrl+U 등) 차단
-  document.addEventListener('keydown', function(e) {
-    // F12 차단
-    if (e.keyCode === 123) {
-      e.preventDefault();
-    }
-    // Ctrl + Shift + I (크롬 개발자도구) 차단
-    if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
-      e.preventDefault();
-    }
-    // Ctrl + U (페이지 소스 보기) 차단
-    if (e.ctrlKey && e.keyCode === 85) {
-      e.preventDefault();
-    }
-  }, false);
-  // =======================================================
-  var policyTexts = {
-    terms: {
-      title: "이용약관 (Terms of Service)",
-      body: "제 1 조 (목적)\n본 약관은 'plan:it Labs'(이하 '회사')이 제공하는 온라인 심리 지표 시뮬레이션 검사 및 관련 프리미엄 콘텐츠 서비스(이하 '서비스')의 이용 조건 및 절차에 관한 사항을 규정함을 목적으로 합니다.\n\n제 2 조 (이용 계약의 성립)\n1. 본 서비스는 회원이 본 약관에 동의하고, 제공되는 자가진단 문항에 응답하거나 유료 서비스의 경우 정해진 대금을 결제함으로써 이용 계약이 성립됩니다.\n2. 회사는 만 14세 미만 아동의 광범위한 결제 및 이용을 제한할 수 있습니다.\n\n제 3 조 (서비스의 성격 및 면책)\n1. 본 서비스가 제공하는 모든 분석 결과, 매커니즘 처방 및 지표는 일반적인 심리학적 학술 이론에 기초하여 산출된 '시뮬레이션 데이터'입니다.\n2. 본 서비스는 의료법상의 의료행위나 정신건강의학과 전문의의 임상적 진단, 혹은 전문 심리상담을 대체할 수 없으며, 회사는 결과의 임상적 신뢰성이나 의학적 효능에 대해 어떠한 법적 담보도 하지 않습니다.\n3. 회원은 결과 데이터를 학습 및 단순 참고용으로만 활용해야 하며, 이를 바탕으로 행한 본인의 선택이나 행위에 대해 회사는 책임을 지지 않습니다."
-    },
-    privacy: {
-      title: "개인정보처리방침 (Privacy Policy)",
-      body: "plan:it Labs는 개인정보보호법에 의거하여 이용자의 개인정보 및 권익을 보호하고 이와 관련한 고충을 원활하게 처리할 수 있도록 다음과 같은 처리방침을 두고 있습니다.\n\n1. 수집하는 개인정보 항목\n- 필수 항목: 성격 자가진단 답변 데이터, 서비스 이용 기록, 기기 식별 정보.\n- 유료 서비스 이용 시: 결제 대행사(PG)를 통한 결제 인증 정보 (회사는 카드번호 등 민감 결제 정보를 직접 저장하지 않습니다.)\n\n2. 개인정보의 처리 목적\n수집된 정보는 성격 유형 분석 결과 도출, 서비스 최적화, 통계 목적의 학술 데이터 연구 및 구매 회원 식별·CS 응대에 한하여 활용됩니다.\n\n3. 개인정보의 보유 및 파기\n이용자가 작성한 답변 데이터 및 결과 정보는 원칙적으로 목적 달성 시 혹은 세션 종료 시 지체 없이 파기됩니다. 단, 전자상거래법 등 관계 법령에 따라 보존할 필요가 있는 결제 및 계약 기록은 5년간 보관 후 안전하게 파기됩니다."
-    },
-    refund: {
-      title: "환불정책 및 고지사항 (Refund Policy)",
-      body: "본 서비스에서 제공하는 프리미엄 심화 정밀진단 리포트는 전자상거래 등에서의 소비자보호에 관한 법률 제17조 제2항 제5호에 따른 '디지털콘텐츠'에 해당합니다.\n\n1. 청약철회(환불) 제한\n디지털 콘텐츠의 특성상 결제 완료 후 제공되는 문항 데이터 및 프리미엄 결과 잠금해제가 즉시 개시되므로, 원칙적으로 단순 변심에 의한 청약철회 및 환불은 불가능합니다.\n\n2. 환불이 가능한 예외 경우\n- 결제를 완료했으나 기술적 오류로 인해 프리미엄 검사 페이지에 진입하지 못했거나, 단 한 문항도 테스트를 시작하지 않은 경우 (결제 후 7일 이내 신청 필수)\n- 시스템의 치명적인 결함으로 인해 결과 리포트 조회가 원천적으로 불가능한 경우\n\n3. 신청 방법\n고객센터 서면 접수(leejs5190601@gmail.com)를 통해 결제 내역 확인 후 증빙 절차를 거쳐 3영업일 이내에 환불을 진행합니다."
-    },
-    cs: {
-      title: "고객센터 (Customer Support)",
-      body: "plan:it Labs를 이용해 주셔서 감사합니다. 서비스 이용 중 불편 사항, 기술적 오류, 결제 관련 문의가 있으신 경우 아래 채널로 접수해 주시면 평일 기준 24시간 이내에 답변드리겠습니다.\n\n■ 대표 이메일: leejs5190601@gmail.com\n■ 운영 시간: 평일 10:00 ~ 17:00 (주말 및 공휴일 휴무)\n■ 점심 시간: 12:30 ~ 13:30\n\n※ 문의 접수 시 원활한 처리를 위해 '결제 일시', '결제 금액' 및 오류 화면 스크린샷을 함께 첨부해 주시면 더욱 신속하게 도와드릴 수 있습니다."
-    }
-  };
-
-  var briefQuestions = [
-    { dim:"NS", text:"새롭고 낯선 상황을 만나면 흥분되고 에너지가 넘친다." },
-    { dim:"NS", text:"여러 가지 일을 동시에 시도하는 것을 즐긴다." },
-    { dim:"NS", text:"예측하기 어려운 상황이 오히려 매력적으로 느껴진다." },
-    { dim:"NS", text:"규칙이나 관례를 무시하고 싶을 때가 자주 있다." },
-    { dim:"NS", text:"충동적으로 결정을 내리는 편이다." },
-    { dim:"NS", text:"모험적이고 스릴 있는 활동을 즐기는 편이다." },
-    { dim:"HA", text:"앞으로 일어날 일들에 대해 걱정하는 편이다." },
-    { dim:"HA", text:"낯선 사람이나 새로운 상황을 접하면 긴장하거나 불안해진다." },
-    { dim:"HA", text:"실패할 가능성이 있으면 시도하기가 두렵다." },
-    { dim:"HA", text:"위험하거나 불확실한 상황은 피하고 싶다." },
-    { dim:"HA", text:"불안하거나 걱정되면 쉽게 피로해진다." },
-    { dim:"HA", text:"다른 사람들보다 수줍음을 많이 타는 편이다." },
-    { dim:"RD", text:"다른 사람의 감정을 쉽게 파악하고 공감한다." },
-    { dim:"RD", text:"가깝고 친한 사람의 인정과 지지가 내게 매우 중요하다." },
-    { dim:"RD", text:"슬픈 이야기나 영화를 보면 쉽게 눈물이 난다." },
-    { dim:"RD", text:"다른 사람이 나에게 실망할까 봐 신경 쓰인다." },
-    { dim:"RD", text:"사람들과 따뜻한 관계를 맺는 것이 내 삶에서 중요하다." },
-    { dim:"RD", text:"친밀한 관계를 오래 유지하려고 노력하는 편이다." },
-    { dim:"PS", text:"결과가 불확실해도 한 번 시작한 일은 끝까지 해낸다." },
-    { dim:"PS", text:"즉각적인 보상이 없어도 꾸준히 노력할 수 있다." },
-    { dim:"PS", text:"어려운 상황에서도 쉽게 포기하지 않는다." },
-    { dim:"PS", text:"오래 걸리는 목표도 꾸준히 추진하는 편이다." },
-    { dim:"PS", text:"지루하고 반복적인 일도 완수하려고 노력한다." },
-    { dim:"PS", text:"실패하더라도 다시 도전하는 끈기가 있다." },
-    { dim:"SD", text:"나는 내 삶의 목적과 방향을 명확히 알고 있다." },
-    { dim:"SD", text:"나 자신의 장단점을 객관적으로 받아들인다." },
-    { dim:"SD", text:"내가 세운 목표를 위해 스스로를 규율하고 조절할 수 있다." },
-    { dim:"SD", text:"나는 내 감정과 행동에 책임감을 느낀다." },
-    { dim:"SD", text:"어려운 상황에서도 자신을 믿는 편이다." },
-    { dim:"SD", text:"내 가치관과 신념에 따라 결정을 내린다." },
-    { dim:"CO", text:"다른 사람의 입장에서 생각하는 것이 자연스럽다." },
-    { dim:"CO", text:"사회 전체의 이익을 위해 내 이익을 양보할 수 있다." },
-    { dim:"CO", text:"다른 사람을 도울 때 진심으로 기쁨을 느낀다." },
-    { dim:"CO", text:"나는 사람들과 협력하는 것을 좋아한다." },
-    { dim:"CO", text:"다른 사람의 감정을 이해하고 배려하려 노력한다." },
-    { dim:"CO", text:"공동체의 일원으로서 역할을 다하려 한다." },
-    { dim:"ST", text:"가끔 자신이 우주나 자연의 일부라고 느끼는 순간이 있다." },
-    { dim:"ST", text:"일상적인 것에서도 깊은 의미나 아름다움을 발견한다." },
-    { dim:"ST", text:"삶 속에서 신비롭거나 초월적인 경험을 한 적이 있다." },
-    { dim:"ST", text:"물질적인 것보다 정신적이고 영적인 가치를 중시한다." },
-    { dim:"ST", text:"나는 나 자신보다 더 큰 무언가에 속해 있다는 느낌을 받는다." },
-    { dim:"ST", text:"창의적이고 영감 어린 경험을 자주 한다." }
-  ];
-// ==========================================
-// [여기서부터 복사] 심화 진단용 105개 정밀 질문 리스트
-// ==========================================
-var deepQuestions = [
-  // ===== 1. 자극추구 (NS) : 15문항 =====
-  { dim: "NS", text: "새롭고 낯선 상황을 만나면 흥분되고 에너지가 넘친다." },
-  { dim: "NS", text: "여러 가지 일을 동시에 시도하는 것을 즐긴다." },
-  { dim: "NS", text: "예측하기 어려운 상황이 오히려 매력적으로 느껴진다." },
-  { dim: "NS", text: "규칙이나 관례에 얽매이는 것을 싫어하고 자유로운 것이 좋다." },
-  { dim: "NS", text: "흥미로운 일을 발견하면 앞뒤 재지 않고 즉각 뛰어든다." },
-  { dim: "NS", text: "지루하고 반복적인 일상적인 업무는 쉽게 싫증을 느낀다." },
-  { dim: "NS", text: "새로운 자극이나 경험을 위해서라면 위험을 감수할 수 있다." },
-  { dim: "NS", text: "즉흥적으로 돈을 쓰거나 충동구매를 하는 편이다." },
-  { dim: "NS", text: "생각보다 행동이 앞서서 나중에 후회할 때가 많다." },
-  { dim: "NS", text: "새로운 패션 스타일이나 트렌드를 남들보다 빠르게 시도한다." },
-  { dim: "NS", text: "자유분방한 사람들과 어울릴 때 마음이 가장 편안하다." },
-  { dim: "NS", text: "주변 환경이 자주 바뀌거나 인테리어를 자주 바꾸는 것을 좋아한다." },
-  { dim: "NS", text: "호기심을 자극하는 새로운 취미를 끊임없이 찾아다닌다." },
-  { dim: "NS", text: "일의 정밀한 마무리보다는 시작 단계의 짜릿함을 더 즐긴다." },
-  { dim: "NS", text: "단조로운 설명이나 분석을 듣는 것보다 직접 겪어보는 것을 선호한다." },
-
-  // ===== 2. 위험회피 (HA) : 15문항 =====
-  { dim: "HA", text: "문제가 생길 가능성이 조금이라도 있으면 미리 크게 걱정한다." },
-  { dim: "HA", text: "새로운 사람을 만나거나 낯선 환경에 가면 쉽게 긴장한다." },
-  { dim: "HA", text: "피로를 쉽게 느끼며 스트레스를 받으면 몸이 먼저 반응한다." },
-  { dim: "HA", text: "작은 비판이나 부정적인 피드백에도 쉽게 상처를 받는다." },
-  { dim: "HA", text: "위험 부담이 있는 투자나 모험은 절대 하지 않는 편이다." },
-  { dim: "HA", text: "안전벨트나 비상 플랜 B가 확실히 준비되어 있어야 안심이 된다." },
-  { dim: "HA", text: "실패했을 때 겪을 대미지를 생각하면 쉽게 시작하기 어렵다." },
-  { dim: "HA", text: "매사에 조심성이 많아 돌발 변수를 통제하려는 성향이 강하다." },
-  { dim: "HA", text: "대중 앞에 서거나 발표를 할 때 과도하게 긴장하는 편이다." },
-  { dim: "HA", text: "컨디션이 나빠지면 부정적인 생각들이 꼬리를 물고 이어진다." },
-  { dim: "HA", text: "이미 결정된 일이라도 잘못된 부분이 없을지 계속 되짚어본다." },
-  { dim: "HA", text: "타인의 불평등한 요구나 부당한 상황에서도 갈등이 무서워 참는 편이다." },
-  { dim: "HA", text: "내 건강 상태나 신체적 변화에 대해 예민하게 관찰하고 걱정한다." },
-  { dim: "HA", text: "환경이 급격하게 바뀌면 적응하기까지 심적으로 많은 에너지가 소모된다." },
-  { dim: "HA", text: "돈을 잃거나 손해를 보는 것에 대해 과도한 거부감과 스트레스를 느낀다." },
-
-  // ===== 3. 사회적민감성 (RD) : 15문항 =====
-  { dim: "RD", text: "다른 사람의 감정 변화나 기분을 눈치채는 것이 아주 빠르다." },
-  { dim: "RD", text: "주변 사람들에게 따뜻하고 정이 많다는 이야기를 자주 듣는다." },
-  { dim: "RD", text: "타인과 깊은 정서적 유대감을 형성하는 것을 중요하게 생각한다." },
-  { dim: "RD", text: "칭찬이나 인정을 받으면 다른 사람보다 훨씬 더 큰 활력을 얻는다." },
-  { dim: "RD", text: "슬픈 영화나 다른 사람의 불행한 사연에 쉽게 눈물을 흘린다." },
-  { dim: "RD", text: "주변의 거절이나 차가운 시선에 큰 소외감과 마음의 상처를 입는다." },
-  { dim: "RD", text: "혼자 일하는 것보다 마음이 맞는 사람들과 팀으로 협동할 때 행복하다." },
-  { dim: "RD", text: "누군가 나에게 도움을 요청하면 외면하기가 무척 어렵다." },
-  { dim: "RD", text: "기념일이나 주변 사람들의 경조사를 세심하게 챙기려고 노력한다." },
-  { dim: "RD", text: "다른 사람의 조언이나 사회적 평판에 큰 영향을 받는 편이다." },
-  { dim: "RD", text: "소외받는 동료를 보면 먼저 다가가서 챙겨주고 싶은 마음이 든다." },
-  { dim: "RD", text: "사람들과의 관계를 유지하기 위한 지출이나 선물 투자를 아끼지 않는다." },
-  { dim: "RD", text: "상대방이 내 진심을 몰라주거나 오해할 때 가장 가슴이 아프다." },
-  { dim: "RD", text: "말 한마디를 하더라도 상대방이 상처받지 않게 세심하게 고르는 편이다." },
-  { dim: "RD", text: "타인의 기쁨과 성공을 내 일처럼 진심으로 축하해 줄 수 있다." },
-
-  // ===== 4. 인내력 (PS) : 15문항 =====
-  { dim: "PS", text: "아무리 지루하고 힘든 일이라도 한 번 시작하면 끝까지 해낸다." },
-  { dim: "PS", text: "보상이 당장 없더라도 미래의 성과를 믿고 묵묵히 버텨낸다." },
-  { dim: "PS", text: "주변에서 포기하라고 말려도 내 목표가 뚜렷하면 꺾이지 않는다." },
-  { dim: "PS", text: "한 번 세운 계획이나 원칙은 상황이 바뀌어도 철저하게 고수한다." },
-  { dim: "PS", text: "실패나 좌절을 겪어도 오뚝이처럼 다시 일어나 도전하는 뚝심이 있다." },
-  { dim: "PS", text: "스스로를 엄격하게 채찍질하며 완벽한 결과물을 만들어내려 노력한다." },
-  { dim: "PS", text: "주변 환경의 유혹이나 잔파도에 내 페이스가 쉽게 흔들리지 않는다." },
-  { dim: "PS", text: "남들이 기피하는 까다롭고 장기적인 프로젝트도 마다하지 않는다." },
-  { dim: "PS", text: "재테크나 주식 투자 시 잔파도에 흔들리지 않고 장기 복리 효과를 노린다." },
-  { dim: "PS", text: "해야 할 일의 효율성이 다소 떨어지더라도 끝까지 매듭짓는 오기가 있다." },
-  { dim: "PS", text: "피로가 누적되어도 오늘 하기로 마음먹은 분량은 반드시 끝내고 잔다." },
-  { dim: "PS", text: "관계나 업무에 고비가 찾아와도 책임감을 가지고 진중하게 타개책을 찾는다." },
-  { dim: "PS", text: "나만의 확실한 루틴이 있으며 이를 수년 동안 꾸준히 유지할 수 있다." },
-  { dim: "PS", text: "단기적인 유행을 쫓기보다 깊이 있는 한 가지 내공을 쌓는 것을 선호한다." },
-  { dim: "PS", text: "어려운 과제를 만났을 때 회피하기보다 도전 욕구가 강하게 샘솟는다." },
-
-  // ===== 5. 자율성 (SD) : 15문항 =====
-  { dim: "SD", text: "내 인생의 목표와 방향성은 전적으로 내가 주도해서 결정한다." },
-  { dim: "SD", text: "나 자신의 장점과 단점을 객관적으로 잘 파악하고 수용한다." },
-  { dim: "SD", text: "어려운 상황이 닥쳐도 환경 탓을 하지 않고 내 책임을 다한다." },
-  { dim: "SD", text: "어떤 행동을 할 때 스스로 동기부여를 하는 능력이 탁월하다." },
-  { dim: "SD", text: "타인의 의견에 무조건 휘둘리지 않고 주체적으로 필터링한다." },
-  { dim: "SD", text: "내 삶을 개선하기 위한 구체적이고 현실적인 단기/장기 플랜을 가지고 있다." },
-  { dim: "SD", text: "컨디션이나 감정이 요동치더라도 스스로 빠르게 평정심을 회복한다." },
-  { dim: "SD", text: "약속 시간이나 마감 기한을 지키는 것은 나 자신과의 신뢰 문제라고 생각한다." },
-  { dim: "SD", text: "남들이 알아주지 않아도 내 가치관에 맞는 선택이라면 당당히 나아간다." },
-  { dim: "SD", text: "내 지출과 자산, 시간 관리를 철저히 내 통제 하에 두고 운영한다." },
-  { dim: "SD", text: "실수를 했을 때 변명하기보다 깨끗하게 인정하고 대안을 마련한다." },
-  { dim: "SD", text: "내 행복의 주도권은 타인의 반응이 아닌 나 자신에게 있다고 믿는다." },
-  { dim: "SD", text: "매일 작은 성취(방 청소, 루틴 수행 등)를 쌓으며 자존감을 직접 빌딩한다." },
-  { dim: "SD", text: "불확실한 미래에 막연한 두려움을 갖기보다 현재 내가 할 일에 집중한다." },
-  { dim: "SD", text: "누구에게 의존하기보다 내 문제는 내 힘으로 완벽하게 해결하려 한다." },
-
-  // ===== 6. 연대감 (CO) : 15문항 =====
-  { dim: "CO", text: "나와 가치관이 다른 사람이라도 그들의 입장과 배경을 존중한다." },
-  { dim: "CO", text: "사소한 잘못을 저지른 사람에게 관대하고 너그럽게 용서하는 편이다." },
-  { dim: "CO", text: "사회의 공익이나 타인의 성장을 돕는 일에 보람과 가치를 느낀다." },
-  { dim: "CO", text: "경쟁해서 이기는 것보다 다 함께 상생하고 협력하는 구조를 좋아한다." },
-  { dim: "CO", text: "인간은 누구나 완벽하지 않으며 서로 돕고 살아야 하는 존재라고 믿는다." },
-  { dim: "CO", text: "친구의 허물이나 단점도 '그럴 만한 사정이 있겠지'라며 품어주는 편이다." },
-  { dim: "CO", text: "이기적인 이익 챙기기보다는 공정과 배려를 기반으로 소통하려고 한다." },
-  { dim: "CO", text: "조직 내에서 갈등이 발생했을 때 중재자 역할을 부드럽게 잘 해낸다." },
-  { dim: "CO", text: "친환경 제품이나 공정무역 등 가치 있는 소비에 관심이 많다." },
-  { dim: "CO", text: "내 지식이나 노하우를 타인에게 아낌없이 공유하는 편이다." },
-  { dim: "CO", text: "더불어 사는 삶을 위해 나 개인의 사소한 불편은 기꺼이 감수할 수 있다." },
-  { dim: "CO", text: "상대방의 실수를 날카롭게 비판하기보다 부드럽게 감싸주며 대안을 준다." },
-  { dim: "CO", text: "나와 직접적인 이해관계가 없는 사람들의 고충에도 귀를 기울인다." },
-  { dim: "CO", text: "이기적인 독불장군 스타일의 사람들을 보면 안타까운 마음이 든다." },
-  { dim: "CO", text: "동료들의 역량을 신뢰하고 그들이 빛날 수 있도록 서포트하는 데 능숙하다." },
-
-  // ===== 7. 자기초월 (ST) : 15문항 =====
-  { dim: "ST", text: "대자연 속에 있거나 아름다운 예술 작품을 볼 때 깊은 경외감을 느낀다." },
-  { dim: "ST", text: "시간이 가는 줄 모를 정도로 무언가에 깊이 몰입하는 경험을 자주 한다." },
-  { dim: "ST", text: "눈에 보이지 않는 영적인 세계나 우주의 섭리에 대해 관심이 있다." },
-  { dim: "ST", text: "모든 만물과 인간은 보이지 않는 끈으로 연결되어 있다고 느낀다." },
-  { dim: "ST", text: "현실적인 고난이나 시련도 내 영혼이 성장하는 과정이라고 생각한다." },
-  { dim: "ST", text: "우연한 일치나 직감, 운명적인 이끌림을 무시하지 않고 믿는 편이다." },
-  { dim: "ST", text: "물질적인 성공이나 명예보다 정신적인 평온과 깨달음이 더 중요하다." },
-  { dim: "ST", text: "명상, 멍때리기, 혹은 음악 감상을 하며 자아를 초월한 평화로움을 느낀다." },
-  { dim: "ST", text: "인생의 거대한 흐름 앞에 내 개인의 존재가 아주 작고 겸손하게 느껴진다." },
-  { dim: "ST", text: "합리적인 이성만으로는 설명할 수 없는 초자연적인 신비로움이 존재한다고 본다." },
-  { dim: "ST", text: "삶과 죽음의 본질적인 의미에 대해 깊이 사색해보곤 한다." },
-  { dim: "ST", text: "과거의 상처나 미래의 불안에 얽매이지 않고 '지금 여기'에 온전히 존재한다." },
-  { dim: "ST", text: "세상의 고통받는 존재들을 향해 조건 없는 자비심이나 온정주의를 느낀다." },
-  { dim: "ST", text: "나를 초월한 거대한 존재나 신성한 메커니즘이 나를 보호하고 있다고 믿는다." },
-  { dim: "ST", text: "눈앞의 이익보다 삶의 근원적인 가치와 낭만을 쫓는 편이다." }
-];
-// ==========================================
-// [여기까지 복사]
-// ==========================================
-  var dimensionMeta = {
-    NS: { 
-      name: "자극추구 (Novelty Seeking)", 
-      low: "🔹 <strong>조용하고 신중한 현실주의자</strong><br>새로운 모험보다는 익숙하고 검증된 환경에서 심리적 안정감을 느낍니다. 변화에 충동적으로 휩쓸리지 않으며 절제력이 뛰어납니다. 다만, 보수적인 성향 탓에 새로운 기회나 트렌드를 관망하다가 한발 늦게 진입할 수 있으니 의도적인 유연함이 도움이 됩니다.", 
-      mid: "⚖️ <strong>균형 잡힌 에너자이저</strong><br>새로운 것에 대한 호기심을 적절히 품으면서도, 현실적인 선을 넘지 않는 뛰어난 조율력을 보여줍니다. 일상에 활력을 불어넣을 줄 알며 필요할 땐 과감한 시도도 마다하지 않는 건강한 상태입니다.", 
-      high: "🚀 <strong>역동적인 트렌드 세터</strong><br>새로운 자극과 변화를 보면 심장이 뛰고 추진력이 솟구치는 타입입니다. 호기심이 많고 자유분방하여 아이디어가 넘치지만, 뒷마무리가 흐지부지되거나 지루한 반복 업무에 쉽게 권태를 느낄 수 있으니 페이스 조절과 규칙적인 시스템 마련이 필수적입니다." 
-    },
-    HA: { 
-      name: "위험회피 (Harm Avoidance)", 
-      low: "☀️ <strong>낙천적이고 겁없는 낙관주의자</strong><br>미래의 불확실한 리스크나 실패 가능성에 대해 크게 개의치 않는 덤덤하고 쿨한 멘탈의 소유자입니다. 위기 상황에서도 평정심을 유지하는 대범함이 돋보이지만, 안전장치를 간과하여 돌발 손실을 입을 수 있으니 타인의 현실적인 경고를 귀담아들을 필요가 있습니다.", 
-      mid: "⚖️ <strong>적절한 레이더망 작동 중</strong><br>필요한 순간에는 신중하게 돌발 변수를 계산할 줄 알고, 평소에는 지나친 걱정 없이 편안한 일상을 유지합니다. 방어와 전진의 밸런스가 아주 이상적으로 잡혀 있는 상태입니다.", 
-      high: "🛡️ <strong>완벽을 기하는 신중한 기획자</strong><br>일어나지 않은 미래의 불안 요소를 미리 예측하고 꼼꼼하게 플랜 B를 세워두는 리스크 매니저입니다. 실수를 줄이는 능력이 탁월하지만, 걱정 센서가 너무 과하게 작동하면 쉽게 피로해지고 새로운 도전을 주저하게 되니 가끔은 내면의 스위치를 꺼두는 이완이 중요합니다." 
-    },
-    RD: { 
-      name: "사회적민감성 (Reward Dependence)", 
-      low: "🎯 <strong>독립적인 마이웨이 전문가</strong><br>타인의 인정이나 사적인 평가에 쉽게 휘둘리지 않고, 본인만의 명확한 논리와 객관적인 데이터로 움직이는 냉철한 실리주의자입니다. 공과 사의 구분이 확실하지만, 소중한 주변 사람들에게 정서적으로 다소 건조하거나 차가운 벽을 느끼게 할 수 있으니 따뜻한 리액션 한 스푼이 필요합니다.", 
-      mid: "⚖️ <strong>조화로운 소통가</strong><br>인간관계의 따뜻한 유대를 소중히 여기면서도, 내 주관을 잃지 않는 건강한 정서적 거리를 유지합니다. 타인과 협력할 때 갈등 없이 매끄럽게 융화되는 훌륭한 소통 방식을 가집니다.", 
-      high: "🤝 <strong>공감 능력이 뛰어난 치유자</strong><br>타인의 감정과 에너지를 스펀지처럼 흡수하고 깊이 공감하는 따뜻한 심성의 소유자입니다. 사람들과의 친밀한 유대 속에서 행복을 찾지만, 거절을 잘 못해 속앓이를 하거나 타인의 반응에 내 하루 컨디션이 동기화될 수 있으니 마음의 방화벽을 세우는 연습이 요구됩니다." 
-    },
-    PS: { 
-      name: "인내력 (Persistence)", 
-      low: "🍃 <strong>유연하고 유연한 전략가</strong><br>상황이 유동적으로 변하거나 효율이 나지 않을 때, 미련 없이 기존 계획을 수정하여 더 나은 대안으로 빠르게 갈아타는 스피디함이 장점입니다. 다만 고비가 찾아왔을 때 깊은 내공을 쌓기 전에 쉽게 흥미를 잃고 판을 떠날 수 있으니 임계점까지 버티는 지구력이 가끔은 필요합니다.", 
-      mid: "⚖️ <strong>끈기와 타협의 밸런서</strong><br>쉽게 포기하지 않는 진중한 지구력을 가지고 있으면서도, 현실적으로 불가능한 목표라면 유연하게 타협할 줄 아는 현명한 끈기를 발휘합니다. 대부분의 프로젝트를 안정적으로 완수해 냅니다.", 
-      high: "⛰️ <strong>근성과 집념의 뚝심 대장</strong><br>눈앞에 즉각적인 보상이 없거나 아무리 지루하고 장기적인 싸움이라도 묵묵히 자리를 지키며 기어코 결과물을 완성해 내는 마스터피스형 인간입니다. 뚝심이 엄청나지만, 이미 효율이 떨어지거나 실패한 노선임에도 완고함과 오기 때문에 멈추지 못해 매몰비용을 키울 수 있으니 주의해야 합니다." 
-    },
-    SD: { 
-      name: "자율성 (Self-Directedness)", 
-      low: "🌪️ <strong>감정 롤러코스터 실무자</strong><br>외부 환경이나 상사의 사소한 피드백, 연인의 반응에 내면의 자존감 베이스가 쉽게 흔들리는 약한 회복탄력성을 보입니다. 스트레스 상황에서 남 탓이나 환경 탓으로 도피하려는 경향이 생길 수 있으니, 매일 아침 이불 개기 같은 100% 통제 가능한 작은 성취부터 쌓아 올려 자존감을 복구해야 합니다.", 
-      mid: "⚖️ <strong>무난한 자아 조절력</strong><br>내 가치관과 목표를 인지하고 있으며, 일상적인 스트레스 상황에서도 스스로를 통제하고 책임지려고 노력하는 보편적이고 성숙한 멘탈 상태를 유지하고 있습니다.", 
-      high: "👑 <strong>주도적인 인생의 마스터</strong><br>환경이나 조건 탓을 하지 않고, 명확한 삶의 목적을 가지고 스스로를 규율하는 강력한 멘탈의 소유자입니다. 책임감이 강하고 회복탄력성이 높아 어떤 역경도 주도적으로 해결하지만, 본인이 완벽한 만큼 의지가 약해 흔들리는 타인을 속으로 은근히 평가절하하지 않도록 관용이 필요합니다." 
-    },
-    CO: { 
-      name: "연대감 (Cooperativeness)", 
-      low: "⚔️ <strong>실리 중심의 구조조정가</strong><br>감상주의를 배격하고 철저하게 기여도와 효율성 중심으로 공정하게 정산하고 판단하는 것을 선호합니다. 정당한 대가를 요구하는 실리주의자이지만, 조직이나 가정 내에서 피도 눈물도 없다는 독선적인 평판을 얻어 고립될 수 있으니 이타적인 양보도 가끔은 필요합니다.", 
-      mid: "⚖️ <strong>공동체의 평화로운 일원</strong><br>나의 이익을 챙기면서도 타인을 배려하고 공동체의 규칙과 융화를 이룰 줄 아는 균형 잡힌 평화주의자입니다. 모난 곳 없이 팀 플레이를 훌륭히 수행합니다.", 
-      high: "🕊️ <strong>이타적인 포용주의자</strong><br>다른 사람의 실수나 허물을 '내가 안고 가야지'라며 너그럽게 품어주고, 공동체의 이익을 위해 기꺼이 자신을 양보하는 헌신적인 리더감입니다. 하지만 악의를 가지고 접근하는 사람조차 무조건 포용하다가 경제적·정서적으로 호구가 될 위험이 있으니 공과 사의 선을 칼같이 그어야 합니다." 
-    },
-    ST: { 
-      name: "자기초월 (Self-Transcendence)", 
-      low: "👁️ <strong>발을 땅에 붙인 극현실주의자</strong><br>눈에 보이지 않는 추상적인 아이디어나 운명론을 믿지 않으며, 오직 확실하게 계산되는 수치 and 지표, 실용적인 기술만 신뢰하는 스마트한 현실주의자입니다. 실무에 강하지만 삶을 너무 숫자로만 해석하여 정서적 건조함에 갇힐 수 있으니 가끔은 클래식 Vinyl을 듣는 등의 낭만을 강제 주입해 보세요.", 
-      mid: "⚖️ <strong>낭만과 현실의 조율사</strong><br>눈앞의 실용적인 현실을 단단히 붙잡으면서도, 가끔은 일상의 아름다움이나 예술, 거시적인 비전 속에서 깊은 의미를 찾아낼 줄 아는 멋진 감수성을 가졌습니다.", 
-      high: "🌌 <strong>영감 가득한 정신적 구도자</strong><br>물질적인 성과를 넘어 거시적인 철학, 예술적 영감, 혹은 인류에 기여하는 깊은 정신적 가치를 지향하는 타입입니다. 일상 속 소소한 것에서도 우주적 아름다움을 발견하는 창의성이 빛나지만, 당장 처리해야 할 공과금 납부나 현실적인 의무를 귀찮아해 주변을 고생시킬 수 있습니다." 
-    }
-  };
-
-  var premiumDimensionMeta = {
-  NS: {
-    name: "자극추구 (Novelty Seeking)",
-    high: {
-      money: "💰 [트렌디 하이리스크 투자] 힙한 신규 테마주나 가상자산 등 고위험 고수익 자산에 충동적으로 끌리기 쉽습니다. 오픈런이나 핫플레이스 소비 등 기분파 지출이 잦은 편입니다.",
-      work: "💼 [아이디어 뱅크 트렌드세터] 스타트업, 신사업 기획, 기술 영업 등 역동적인 환경에서 엄청난 추진력을 발휘합니다. 다만, 지루한 서류 작업이나 단순 반복 업무에는 쥐약입니다.",
-      love: "❤️ [금방 타오르는 불꽃] 첫눈에 스파크가 튀는 강렬한 연애를 선호합니다. 상대방의 새로운 매력을 끊임없이 발견하고 싶어 하며, 관계가 익숙해지면 권태기를 비교적 빨리 느낄 수 있습니다.",
-      caution: "⚡ 뒤마무리가 흐지부지되거나 충동적인 계약으로 손해를 볼 수 있으니, 무조건 3일의 생각 시간을 두는 소비/투자 브레이크가 필수적입니다.",
-      symptom: "🧠 [심리적 취약성] 일시적인 과부하나 권태 상황에서 <strong>'충동 조절 저하'</strong>가 발생할 수 있으며, 이로 인해 기존의 성과나 장기적 계획을 순간적으로 철회하는 정서적 변동성을 주의해야 합니다."
-    },
-    low: {
-      money: "💰 [보수적 자산 방어] 검증된 예적금이나 초우량 대형주 위주의 안전자산 위주로 굴립니다. 가계부를 꼼꼼히 쓰며 계획에 없는 지출을 극도로 혐오합니다.",
-      work: "💼 [안정적인 시스템 수호자] 감사, 재무, 품질 관리 등 프로세스가 정밀하게 짜인 조직에서 최고의 효율을 냅니다. 급격한 조직 개편이나 불확실한 신사업은 스트레스 요인입니다.",
-      love: "❤️ [돌다리형 장기 연애] 오랜 시간 친구처럼 지내며 신뢰를 쌓은 뒤에야 연인으로 발전합니다. 한 번 마음을 주면 변치 않는 안정감을 주지만, 가끔은 너무 건조하다는 소리를 듣기도 합니다.",
-      caution: "⚡ 보수적인 성향 탓에 시대의 변화나 리밸런싱 기회, 좋은 재테크 타이밍을 과도한 신중함 때문에 놓쳐버릴 수 있습니다.",
-      symptom: "🧠 [심리적 취약성] 급격한 환경 변화나 위기 국면에서 유연한 대처가 어려워지는 <strong>'인지적 고착(Cognitive Fixation)'</strong>이나 상황을 관망하며 대처를 미루는 회피적 성향을 경계해야 합니다."
-    }
-  },
-  HA: {
-    name: "위험회피 (Harm Avoidance)",
-    high: {
-      money: "💰 [완벽한 원금 보존주의] 돈을 잃는 고통을 너무 크게 느끼기 때문에 고수익 투자는 시도조차 안 합니다. 보험 가입이나 예적금, 연금 등 방어형 자산 구축에 진심입니다.",
-      work: "💼 [돌발 사고 방지 레이더] 돌발 변수를 미리 예측하고 꼼꼼히 플랜 B를 짜두는 리스크 매니저입니다. 기술적인 오류를 잡아내거나 완벽한 퀄리티를 유지해야 하는 직무에 잘 맞습니다.",
-      love: "❤️ [돌진 불가 섬세파] 거절당하는 두려움이 커 호감이 있어도 쉽게 다가가지 못합니다. 연인의 말 한마디, 행동 하나에 깊은 상처를 받기도 하지만 그만큼 상대를 세심하게 배려합니다.",
-      caution: "⚡ 일어나지 않은 미래의 불안감 때문에 온몸의 에너지를 선독점당하기 쉽습니다. 과도한 스트레스는 만성 피로로 이어지니 주의하세요.",
-      symptom: "🧠 [심리적 취약성] 불확실성에 직면했을 때 최악의 상황을 먼저 상정하는 <strong>'파국화(Catastrophizing)'</strong> 오류에 취약하며, 스트레스 누적 시 무력감과 시도 자체를 단념하는 <strong>'학습된 무기력'</strong> 기제가 활성화될 수 있습니다."
-    },
-    low: {
-      money: "💰 [과감한 모험주의 지출] '돈은 또 벌면 되지'라는 생각으로 과감하게 투자하거나 레버리지를 일으키기도 합니다. 큰돈이 나갈 때도 덤덤한 편입니다.",
-      work: "💼 [위기에 강한 중심 리더] 압박 면접, 긴급 장애 발생, 마감 직전의 혼란 속에서도 평정심을 유지하며 시원시원하게 문제를 해결해 나가는 대범한 해결사 스타일입니다.",
-      love: "❤️ [쿨내 진동 직진 연애] 밀당 없이 솔직하게 감정을 표현하고, 이별 후에도 상대적으로 후유증이 적고 빠르게 훌훌 털어냅니다. 연인의 사소한 징징거림은 쿨하게 무시하기도 합니다.",
-      caution: "⚡ 안전장치 없는 과감함 때문에 투자 사기를 당하거나 신체적인 부상을 입기 쉬우니 타인의 조언과 경고를 유념해야 합니다.",
-      symptom: "🧠 [심리적 취약성] 잠재적 리스크에 대한 과도한 낙관주의로 인해 객관적인 경고 신호를 간과하는 <strong>'통제 환상(Illusion of Control)'</strong>이나 자기 과신에 따른 방어막 부재 현상을 주의해야 합니다."
-    }
-  },
-  RD: {
-    name: "사회적민감성 (Reward Dependence)",
-    high: {
-      money: "💰 [관계형 지출과 온정주의] 주변 사람들에게 밥이나 선물을 사주는 등 '관계 유지'를 위한 지출이 많습니다. 거절을 못 해 돈을 빌려주고 마음고생을 하기도 합니다.",
-      work: "💼 [윤활유 같은 협업 마스터] 뛰어난 공감 능력으로 팀원 간의 소통을 돕고 고객과의 유대를 이끌어내는 마케팅, 기술 영업, 인사/상담 부서의 에이스입니다.",
-      love: "❤️ [사랑에 올인하는 해바라기] 연인의 감정과 컨디션에 내 멘탈이 완벽하게 동기화됩니다. 끊임없는 애정 확인과 정서적 유대를 원하며 사랑받을 때 세상 가장 행복해합니다.",
-      caution: "⚡ 타인의 눈치를 보느라 거절을 못 하는 '착한 사람 증후군'을 경계해야 합니다. 내면의 감정 방화벽을 튼튼히 세우는 연습이 필요합니다.",
-      symptom: "🧠 [심리적 취약성] 거절이나 관계 단절에 대한 불안으로 타인에게 과도하게 동조하는 <strong>'피플 플리징(People Pleasing)'</strong> 경향이 있으며, 내적 억압이 임계점을 넘을 경우 타인에게 부정적 감정을 뒤집어씌우는 <strong>'감정적 투사(Projection)'</strong>가 나타날 수 있습니다."
-    },
-    low: {
-      money: "💰 [철저한 실리주의 계산] 감정에 휘둘린 지출이 없으며, 인맥 관리를 위한 유흥비나 경조사비도 기준에 맞춰 철저하게 효율적으로 통제합니다.",
-      work: "💼 [데이터 기반 팩트 폭격기] 인간관계의 사적인 친분에 얽매이지 않고, 오직 객관적인 성과 수치와 논리적 데이터로만 평가하고 판단하는 냉철한 전문가입니다.",
-      love: "❤️ [독립적인 마이웨이 연애] 연인이 생겨도 나만의 취미 생활, 나만의 공간과 시간은 무조건 침범받지 않아야 합니다. 가끔 상대방에게 서운함과 차가운 벽을 느끼게 만들 수 있습니다.",
-      caution: "⚡ 정서적 공감 한 스푼이 부족해 가장 가까운 가족이나 연인에게 '비수 같은 말'로 상처를 주기 쉬우니 리액션에 신경 써야 합니다.",
-      symptom: "🧠 [심리적 취약성] 대인관계 갈등 발생 시 감정적 소통을 단절하고 정서적 거리를 두는 <strong>'고립적 방어(Isolating Defense)'</strong>가 작동하기 쉬우며, 타인의 정서적 요구를 냉소적으로 치부하는 경향을 보일 수 있습니다."
-    }
-  },
-  PS: {
-    name: "인내력 (Persistence)",
-    high: {
-      money: "💰 [장기 고배당 및 복리 머신] 눈앞의 잔파도에 흔들리지 않고 수년 동안 꾸준히 우량주나 고배당주를 모아 나가며 자산을 빌딩하는 복리의 마술사 같은 투자 성향을 가집니다.",
-      work: "💼 [엉덩이 무거운 최종 보스] 아무리 어렵고 지루한 장기 프로젝트라도 묵묵히 자리를 지키며 기어코 결과물을 완성해 내는 완벽한 뚝심과 근성의 소유자입니다.",
-      love: "❤️ [한결같은 소나무 연애] 관계에 고비나 갈등이 찾아와도 쉽게 포기하거나 이별을 입에 담지 않고, 책임감을 갖고 관계를 개선하기 위해 끝까지 진중하게 노력합니다.",
-      caution: "⚡ 이미 효율이 안 좋거나 실패가 확정된 노선임에도 '오기'와 '완고함' 때문에 멈추지 못해 매몰비용을 키울 수 있습니다.",
-      symptom: "🧠 [심리적 취약성] 목표 성취에 과몰입하여 신체적·정신적 한계를 인지하지 못하는 <strong>'과잉 적응 증후군'</strong>에 직면할 수 있으며, 대안의 타당성을 인정하지 않으려는 <strong>'인지적 경직성'</strong>을 주의해야 합니다."
-    },
-    low: {
-      money: "💰 [가성비 위주의 단기 순환] 장기 목돈 투자보다는 회전율이 빠르거나 단기적으로 성과가 확실하게 눈에 보이는 가성비 중심의 재테크를 선호합니다.",
-      work: "💼 [상황 대응형 전략가] 시장 상황이나 트렌드가 바뀌면 미련 없이 기존 기획을 뒤엎고 더 나은 대안으로 빠르게 갈아타는 스피디함이 장점입니다.",
-      love: "❤️ [유연하고 부담 없는 연애] 무겁고 구속력 있는 관계보다는 서로에게 긍정적인 자극을 주는 가볍고 트렌디한 관계를 좋아하며, 지루해지면 관계가 소원해지기 쉽습니다.",
-      caution: "⚡ 고비가 오면 쉽게 흥미를 잃어 깊은 내공을 쌓기 전에 판을 떠날 수 있으니, 스스로 정한 임계점까지는 버텨보는 지구력이 필요합니다.",
-      symptom: "🧠 [심리적 취약성] 즉각적인 보상이 주어지지 않을 때 급격한 심리적 동요를 느끼는 <strong>'좌절 초조감'</strong> 현상이 빈번할 수 있으며, 장기 성과가 필요한 과업에서 미련 없이 판을 떠나는 <strong>'습관적 중도 포기'</strong>의 악순환을 경계해야 합니다."
-    }
-  },
-  SD: {
-    name: "자율성 (Self-Directedness)",
-    high: {
-      money: "💰 [주도적 자산 설계] 남의 성공담이나 유튜버의 말에 휘둘리지 않고, 본인만의 명확한 자산 로드맵을 수립하여 철저히 계획 하에 돈을 통제하고 굴립니다.",
-      work: "💼 [자기 완결형 탑 퍼포머] 누가 시키지 않아도 알아서 목표를 세우고 일의 우선순위를 정해 마스터피스를 뽑아냅니다. 환경 탓을 하지 않는 성숙한 핵심 인재입니다.",
-      love: "❤️ [건강하고 성숙한 파트너십] 상대에게 과하게 의존하거나 집착하지 않으며, 서로의 독립성을 존중하면서도 단단하게 지지해 주는 가장 이상적이고 편안한 연애를 합니다.",
-      caution: "⚡ 본인이 워낙 철저하다 보니 의지가 약해 흔들리거나 징징대는 타인을 속으로 한심하게 평가절하하거나 냉정하게 잘라낼 위험이 있습니다.",
-      symptom: "🧠 [심리적 취약성] 자아 통제력이 과도하게 발동할 경우, 본인 및 타인의 취약점이나 감정적 실수에 대해 지나치게 엄격한 잣대를 들이대며 심리적 압박을 가하는 <strong>'초자아적 검열'</strong> 패턴이 강화될 수 있습니다."
-    },
-    low: {
-      money: "💰 [충동적 스트레스 지출] 감정이 우울하거나 멘탈이 흔들릴 때 충동적인 '시발비용' 지출이 잦으며, 재테크도 남들이 좋다는 소문에 휩쓸리기 쉽습니다.",
-      work: "💼 [피드백 취약형 실무자] 상사의 사소한 꾸중이나 업무 피드백에도 크게 위축되어 일손을 놓거나, 실패했을 때 남 탓이나 환경 탓으로 도피하려는 경향이 있습니다.",
-      love: "❤️ [정서적 과의존 연애] 내 행복의 주도권을 상대방에게 통째로 넘겨주어, 연인의 반응에 따라 내 하루 전체가 천국과 지옥을 오가는 롤러코스터 연애를 하기 쉽습니다.",
-      caution: "⚡ 자존감 붕괴로 남에게 휘둘리기 쉬우니 매일 아침 물 한 컵 마시기, 이불 개기 같은 100% 통제 가능한 작은 성취부터 쌓아야 합니다.",
-      symptom: "🧠 [심리적 취약성] 스트레스 유발 상황에서 문제의 근원을 외부 환경이나 타인의 탓으로 돌려 책임을 회피하려는 <strong>'투사적 방어기제'</strong>나, 내면의 독립성 결여로 인한 극심한 <strong>'자아 취약성'</strong>을 보이기 쉽습니다."
-    }
-  },
-  CO: {
-    name: "연대감 (Cooperativeness)",
-    high: {
-      money: "💰 [상생 및 이타적 소비] 기부금이나 경조사비, 친환경 제품 등 가치 소비에 지갑을 잘 열며, 가족이나 연인을 위해 아낌없이 지출하지만 정작 본인을 위한 돈은 아끼는 편입니다.",
-      work: "💼 [조직의 위대한 중재자] 동료들의 고충을 잘 들어주고 부서 간의 이권 갈등을 윈-윈(Win-Win)으로 풀어내는 최고의 팀 플레이어이자 인덕이 넘치는 리더감입니다.",
-      love: "❤️ [무조건적인 포용과 헌신] 상대의 허물이나 치명적인 단점까지 '내가 품어줘야지'라며 너그럽게 포용하고 헌신합니다. 갈등을 피하려 본인의 서운함을 속으로 다 삭입니다.",
-      caution: "⚡ 악의를 가지고 접근하는 사람조차 봐주다가 경제적·정서적 호구가 될 수 있으니 상대를 확실히 파악하여 공과 사의 선을 칼같이 그어야 합니다.",
-      symptom: "🧠 [심리적 취약성] 집단이나 타인과의 마찰을 기피하여 자신의 정당한 권리나 감정을 의식적으로 무시하는 <strong>'만성적 자기 억압'</strong>에 빠지기 쉬우며, 이로 인한 내면의 정서적 피로감을 주의해야 합니다."
-    },
-    low: {
-      money: "💰 [철저한 기여도 중심 정산] 데이트 비용이든 동업 지출이든 1원 단위까지 칼같이 n분의 1로 정산하며, 내가 기여한 만큼 정당한 실리적 대가를 받아야 직성이 풀립니다.",
-      work: "💼 [날카로운 구조조정 비평가] 감상주의를 철저히 배격하고 오직 업무 효율성과 조직의 생존, 개인의 실리를 최우선으로 검토하는 냉정한 칼잡이 스타일입니다.",
-      love: "❤️ [손해 없는 기브앤테이크] 내가 배려한 만큼 상대방도 똑같이 움직여주길 기대하며, 선을 넘거나 대가 없는 헌신 요구를 마주하면 즉시 냉정하게 마음의 문을 닫아버립니다.",
-      caution: "⚡ 피도 눈물도 없다는 독선적인 평판을 얻어 결정적인 순간에 인맥의 도움을 받지 못하고 고립될 수 있으니 주의하세요.",
-      symptom: "🧠 [심리적 취약성] 타인의 정서적 어려움에 대해 공감을 철저히 배격하고 상황의 유불리만 따지는 <strong>'냉소주의적 방어'</strong>가 고착화될 수 있으며, 사회적 고립 상태로 진입하는 경향을 경계해야 합니다."
-    }
-  },
-  ST: {
-    name: "자기초월 (Self-Transcendence)",
-    high: {
-      money: "💰 [비물질적 가치 지향] 돈 자체에 얽매이기보다 내 정신을 풍요롭게 하는 예술품 감상, 전시회나 공연 관람, SF 소설이나 여행 같은 경험적 가치에 큰돈을 아끼지 않습니다.",
-      work: "💼 [창의적이고 영감 가득한 구도자] 눈앞의 성과보다 거시적인 비전과 철학, 인류에 기여하는 예술적 영감이나 깊은 의미가 있는 연구/크리에이티브 직무에서 천재성을 보입니다.",
-      love: "❤️ [소울메이트를 찾는 낭만파] 단순한 조건을 넘어 영혼이 통하는 정신적 깊이의 교감을 원합니다. 운명적인 인연을 믿으며, 연인과 함께 우주와 자연의 아름다움을 논하는 데 기쁨을 느낀다.",
-      caution: "⚡ 현실 감각이 옅어져 당장 내야 하는 가계부 정산, 공과금 납부 같은 경제적 의무를 귀찮아해 주변 사람을 고생시킬 수 있습니다.",
-      symptom: "🧠 [심리적 취약성] 직면한 현실 세계의 구체적인 고통이나 세속적 의무를 직시하기보다, 영적이거나 추상적인 대안 세계관 속으로 현실 복귀를 회피하는 <strong>'현실 유리(Detachment)'</strong> 상태를 주의해야 합니다."
-    },
-    low: {
-      money: "💰 [철저한 계량형 자산가] 눈에 보이지 않는 가치는 믿지 않습니다. 확실하게 계산되는 예적금 이자, 정확한 주식 포트폴리오 수익률 지표만 보며 자산을 굴립니다.",
-      work: "💼 [실용주의적 테크니컬 마스터] 추상적인 아이디어는 배격하고 현장에서 즉시 적용 가능한 실용적 기술, 구체적인 수치와 명확한 팩트를 다루는 필드 실무에 강합니다.",
-      love: "❤️ [지극히 현실적인 조건 매칭] 정서적인 환상이나 운명론을 믿지 않으며 성격, 직업, 경제력 등 눈에 보이는 조건과 가치관의 궁합을 차분하고 이성적으로 맞춰보며 연애합니다.",
-      caution: "⚡ 삶을 지나치게 숫자로만 해석해 정서적 건조함을 느끼기 쉽습니다. 나이 들수록 낭만 없는 고집쟁이가 되기 쉬우니 가끔은 예술을 강제 주입해 보세요.",
-      symptom: "🧠 [심리적 취약성] 규격화된 수치나 입증된 사실 외의 직관적 가능성을 배척함으로써 발생하는 <strong>'실존적 건조함'</strong>에 노출되기 쉬우며, 정서적 유연성의 결여로 인한 심리적 고립감이 생길 수 있습니다."
-    }
-  }
-};
-
-  function calculatePrescription(scores) {
-  console.log("🔥 들어온 점수값:", scores); // 이 줄을 추가!
-    // 1. 점수 분산 처리 (지터링) 및 정규화 통합 로직
-  // jitter: 0.9~1.1배 변동을 주어 점수 촘촘하게 만들기
-  // normalize: 10~90 범위로 고정 (0% 절대 방지)
-  var jitter = (s) => (s || 0) * (0.9 + Math.random() * 0.2);
-  var normalize = (s) => Math.round((Math.max(0, Math.min(100, s)) / 100) * 80 + 10);
-  
-  var ns = normalize(jitter(scores.NS)), 
-      ha = normalize(jitter(scores.HA)), 
-      ps = normalize(jitter(scores.PS)), 
-      sd = normalize(jitter(scores.SD));
-  
-  // 2. 6단계 레벨 변환 (구간 수정)
-  var getLevel = (s) => s <= 20 ? 0 : s <= 35 ? 1 : s <= 50 ? 2 : s <= 65 ? 3 : s <= 80 ? 4 : 5;
-  var lvlNS = getLevel(ns), lvlHA = getLevel(ha), lvlPS = getLevel(ps), lvlSD = getLevel(sd);
-
-  // 💡 [도움 함수] 구간 분석
-  function getAnalysis(score, type) {
-    // 각 배열에 마지막 단계(레벨 5) 문구 하나씩 추가함!
-    var mapping = { 
-      NS: ["초안정형", "신중형", "현실안정형", "균형성장형", "활동개척형", "열정탐험형"], 
-      HA: ["극낙천형", "여유관조형", "안전주의형", "분석신중형", "철저대비형", "완벽주의형"], 
-      PS: ["자기중심형", "독립지향형", "선별공감형", "유연소통형", "따뜻배려형", "헌신애정형"], 
-      SD: ["의존형", "수동조력형", "중립조절형", "자기주도형", "리더형", "완벽자립형"] 
-    };
-    var cautions = { 
-      NS: [
-    "현재 익숙한 방식에만 안주하여 새로운 기회를 놓치거나 정체될 우려가 있으니 주의하세요.", 
-    "급격한 변화보다는 안정감을 선호하지만, 가끔은 작은 변화를 시도해보는 것이 좋습니다.", 
-    "현실적이고 안정적인 성향이지만, 과도하면 새로운 도전을 두려워하거나 회피할 수 있습니다.", 
-    "새로운 일에 도전하려는 에너지와 적극적인 실행력이 삶의 활력을 높여줄 수 있습니다.", 
-    "행동력과 추진력이 강한 만큼, 충동적인 결정을 내리지 않도록 리스크 관리가 필요합니다.", 
-    "지나치게 새로운 자극만 좇다 보면 쉽게 지치거나 마무리가 흐려질 수 있으니 번아웃을 주의하세요."
-  ], 
-  HA: [
-    "위험이나 경고에 지나치게 무감각하여 안전사고나 예기치 못한 리스크를 겪지 않도록 주의하세요.", 
-    "매사 낙천적이고 여유롭지만, 중요한 마감일이나 현실적인 문제를 놓치지 않도록 관리해야 합니다.", 
-    "위험 대비와 심리적 안정이 균형을 이루고 있어, 현재의 안정적인 페이스를 유지하는 것이 좋습니다.", 
-    "상황을 철저하게 분석하고 대비하려는 자세가 실수를 줄이고 안전한 길을 안내해 줄 것입니다.", 
-    "안전에 대한 민감도가 높아 다소 긴장할 수 있으니, 과감하게 기회를 포착하는 연습이 필요합니다.", 
-    "일어나지 않은 일에 대한 지나친 걱정과 불안으로 에너지를 소모하지 않도록 마음을 다스려야 합니다."
-  ], 
-  PS: [
-    "타인의 감정이나 필요에 다소 무덤덤하여 의도치 않게 주변 사람에게 상처를 주지 않도록 주의하세요.", 
-    "독립적인 성향이 강해 편안함을 느끼지만, 대인관계의 폭을 조금 더 확장해보는 것도 좋습니다. ", 
-    "타인과의 적절한 심리적 거리를 양호하게 유지하며 건강한 인간관계를 형성하고 있습니다.", 
-    "상대방의 입장을 잘 헤아리고 공감하는 능력이 우수하여 주변 사람들과 조화롭게 소통합니다.", 
-    "주변을 배려하는 마음의 깊이가 깊은 만큼, 정작 본인의 감정은 소홀히 다루지 않도록 챙겨야 합니다.", 
-    "타인의 요구에 거절하지 못하고 과도하게 헌신하다가 상처받을 수 있으니 나를 위한 시간이 꼭 필요합니다."
-  ], 
-  SD: [
-    "타인이나 환경에 쉽게 휘둘려 중심을 잃을 수 있으니 스스로를 믿는 자존감 회복이 필요합니다.", 
-    "타인의 의견을 잘 따르는 조력자이지만, 중요한 순간에는 스스로 결정하는 힘을 키워야 합니다.", 
-    "상황에 따라 주도성과 협조성을 유연하게 조절하며 균형 잡힌 태도를 보여주고 있습니다.", 
-    "목표를 세우고 이를 스스로 달성해나가는 주도성이 매우 높아 성취감을 잘 느낍니다.", 
-    "자신에 대한 확신과 책임감이 강해 리더로서 주변을 이끌어가는 능력이 돋보입니다.", 
-    "모든 것을 완벽하게 혼자 책임지려다 고립될 수 있으니, 때로는 주변에 도움을 요청해도 괜찮습니다."
-    ],
-    };
-    
-    var idx = getLevel(score);
-    return { title: mapping[type][idx], caution: cautions[type][idx] };
-  }
-
-  // 1️⃣ [간이진단 모드]
-  if (window.currentMode === 'brief') {
-    var res = getAnalysis(ns, 'NS');
-    return { title: "⚠️ 맛보기 진단: " + res.title, caution: res.caution, advice: "💡 현재 간이진단 모드입니다. 귀하만을 위한 정밀 솔루션은 프리미엄 정밀진단을 잠금해제하면 즉시 열람할 수 있습니다. 😉" };
-  }
-
-  // 2️⃣ [심화진단 전용 프리미엄 로직] - 신지군 로직 그대로 유지!
-  var dimensions = [{ key: 'NS', name: '자극추구', score: ns }, { key: 'HA', name: '위험회피', score: ha }, { key: 'PS', name: '인내력', score: ps }, { key: 'SD', name: '자율성', score: sd }];
-  dimensions.sort(function(a, b) { return b.score - a.score; });
-  var maxDim = dimensions[0];
-  var minDim = dimensions[3];
-
-  var financeText = maxDim.key === 'NS' ? "새로운 투자처나 급등주에 충동적으로 자산이 쏠릴 위험이 극도로 높습니다. 전체 자산의 40%는 무조건 대형 고배당주나 보험과 같은 안전자산에 강제 락업(Lock-up)하시고, 매월 정해진 날짜에만 기계적으로 포트폴리오를 리밸런싱하는 방화벽을 구축해 보세요." : maxDim.key === 'HA' ? "원금 손실에 대한 과도한 공포로 인해 지나치게 현금성 자산에만 묶여 기회비용을 날리기 쉽습니다. 리스크가 검증된 지수 추종 ETF나 안정적인 성장 상품 위주로 매달 소액씩 자동 적립식 투자를 집행하여 심리적 저항선을 낮추세요." : maxDim.key === 'PS' ? "한번 선택한 투자 종목이나 자산에 과도하게 집착하여 시장의 트렌드가 변해도 무지성 존버를 할 위험이 있습니다. 손절매(Stop-loss) 기준을 명확히 수치화해 두고, 분기별로 자산 비중을 강제 조정하는 정기 리밸런싱이 필수적입니다." : "본인의 주관과 분석을 과신하다가 시장의 매크로 흐름을 놓치는 독단적 투자를 조심해야 합니다. 개인의 감을 배제하고 시장 지표와 철저한 데이터 기반의 분산 투자 원칙을 고수하는 것이 자산을 지키는 핵심입니다.";
-
-  var businessText = minDim.key === 'NS' ? "새로운 프로젝트를 기획하거나 변화에 적응하는 속도가 다소 정체될 수 있습니다. 의도적으로 주 1회 최신 트렌드 리포트를 분석하거나, 아이디어가 번뜩이는 동료와 강제 협업 세션을 배치하여 뇌에 지속적인 자극을 주는 건 어떨까요?" : minDim.key === 'HA' ? "마감 직전 검토나 세부 디테일 확인을 간과하여 어이없는 휴먼 에러나 계약상 리스크를 발생시킬 위험이 큽니다. 리스크 체크리스트를 최소 3단계로 고도화하고, 결재 전 방어형 성향을 가진 동료에게 크로스 체크를 받는 시스템을 가동하세요." : minDim.key === 'PS' ? "초반 추진력은 좋으나 마무리가 흐지부지되거나 장기 프로젝트에서 쉽게 지칠 수 있습니다. 업무 프로세스를 일주일 단위의 아주 작은 마일스톤(Small Win)으로 쪼개어 성취감을 자주 느끼게 만들고, 강제로 루틴화하는 환경이 요구됩니다." : "목표 추진력이 약해지거나 외부 피드백에 쉽게 흔들려 주도권을 잃을 수 있습니다. 타인의 감정이나 의견에 과몰입하는 것을 차단하고, 매일 아침 오늘 반드시 처리해야 할 주도적 태스크 3가지를 명확히 박아두고 업무에 임하십시오.";
-
-  var romanceText = "상대방에게 본인의 내면적 기준이나 불안을 투사하지 않도록 '감정적 독립 공간'을 확보하는 것이 최우선입니다. 특히 스트레스 상태에서 [" + maxDim.name + "] 성향이 폭주하고 [" + minDim.name + "] 에너지가 고갈되기 쉬우니, 멘탈 방화벽을 견고히 쌓으세요.";
-  var advice = "이를 극복하기 위한 심화 처방 시나리오를 제안합니다.<br><br><strong>1. 💰 재테크·금전운 솔루션:</strong> " + financeText + "<br><strong>2. 💼 직장 및 비즈니스 매칭:</strong> " + businessText + "<br><strong>3. ❤️ 맞춤형 감정·연애 메커니즘:</strong> " + romanceText;
-
-  // 💡 [여기가 중요!] 기존의 단순했던 caution을 아래 심층 분석 로직으로 대체!
-  var caution = "심화 분석 결과, 현재 [" + maxDim.name + "] 지표가 내면을 지배하고 있습니다.<br><br>";
-
-  if (maxDim.key === 'NS') {
-    caution += "⚠️ <strong>지나친 호기심의 부작용:</strong> 항상 '더 나은 것'을 찾아 헤매느라 정작 지금 손에 쥔 성취를 온전히 누리지 못합니다. 이로 인해 주변에선 당신을 '끊임없이 불만족하는 사람'으로 오해하기 쉽고, 스스로도 마음의 안식처를 찾지 못해 만성적인 번아웃에 시달릴 수 있습니다.";
-  } else if (maxDim.key === 'HA') {
-    caution += "⚠️ <strong>과도한 방어의 부작용:</strong> 리스크를 피하려다 보니 황금 같은 기회마저 '불안함'이라는 필터로 걸러버립니다. 막상 지나고 나면 '그때 할걸' 하는 후회가 길게 남으며, 주도적인 선택을 하지 못하고 환경에 휘둘리는 수동적인 삶이 반복될 수 있습니다.";
-  } else if (maxDim.key === 'PS') {
-    caution += "⚠️ <strong>완벽주의의 부작용:</strong> 인정받고자 하는 욕구가 강해 타인의 작은 비판에도 심리적으로 크게 동요합니다. 타인의 기준을 맞추려 본인의 에너지를 전부 쏟아붓다 보니, 정작 본인이 무엇을 원하는지 잊어버리는 '자아 고갈'이 가장 큰 문제입니다.";
-  } else if (maxDim.key === 'SD') {
-    caution += "⚠️ <strong>독단적 고립의 부작용:</strong> 스스로 모든 것을 해결하려는 의지가 너무 강해 타인과의 유대감을 약하게 만듭니다. 결과적으로 주변에 도움을 요청할 곳이 없는 외로운 리더가 되기 쉽고, 본인의 방식이 통하지 않는 변수 상황에서 급격한 무력감을 느낄 위험이 있습니다.";
-  }
-
-  caution += "<br><br>또한 [" + minDim.name + "] 에너지가 상대적으로 억제되어 있어, " + 
-             (minDim.key === 'NS' ? "일상의 변화가 부족해 활력을 잃기 쉽습니다." : 
-              minDim.key === 'HA' ? "충동적인 결정으로 인한 리스크 노출이 잦을 수 있습니다." :
-              minDim.key === 'PS' ? "관계에서의 깊은 정서적 유대가 약화될 수 있습니다." : 
-              "본인의 주관이 흔들릴 때 중심을 잡기 어렵습니다.") + 
-             " 이 점을 반드시 기억하고 의도적으로 보완하십시오.";
-
-  // 💡 [최종 타이틀] - getLevel 사용 (유지)
-  var title = "고도화된 밸런싱 크리티컬 프로파일";
-  if (lvlNS >= 3 && lvlHA <= 1) title = "💎 [PREMIUM] 초고도 하이엔드 개척자 시나리오";
-  else if (lvlNS <= 1 && lvlHA >= 3) title = "💎 [PREMIUM] 초고도 멜랑콜리아 디펜더 시나리오";
-  else if (lvlSD >= 3 && lvlPS >= 3) title = "💎 [PREMIUM] 절대적 자아 통제 마스터 시나리오";
-
-  // 💡 return은 그대로!
-  return { title: title, caution: caution, advice: advice };
-}
-
-  var questions = [];
-  var answers = [];
-  var currentPage = 0;
-  var itemsPerPage = 5;
-  var totalPages = 0;
-  window.currentMode = 'brief'; // 전역화
-
-  var btnStart = document.getElementById('btnStart');
-  var btnPrev = document.getElementById('btnPrev');
-  var btnNext = document.getElementById('btnNext');
-  
-  var commonOverlay = document.getElementById('commonModalOverlay');
-  var payModal = document.getElementById('payModal');
-  var policyModal = document.getElementById('policyModal');
-  
-  var btnPaySubmit = document.getElementById('btnPaySubmit');
-  var lockIcon = document.getElementById('lockIcon');
-  var toastMsg = document.getElementById('toastMsg');
-
-  var simulatedLevels = { NS: 'mid', HA: 'mid', RD: 'mid', PS: 'mid', SD: 'mid', CO: 'mid', ST: 'mid' };
-
-  window.showScreen = function(screenId) {
-    document.querySelectorAll('.screen').forEach(function(s) {
-      s.classList.remove('active');
-    });
-    var target = document.getElementById(screenId);
-    if (target) {
-      target.classList.add('active');
-    }
-    window.scrollTo(0, 0);
-  };
-
-  window.toggleSidebar = function(isOpen) {
-    var sidebar = document.getElementById('sidebar');
-    var overlay = document.getElementById('sidebar-overlay');
-    if (isOpen) {
-      sidebar.classList.add('active');
-      overlay.classList.add('active');
-    } else {
-      sidebar.classList.remove('active');
-      overlay.classList.remove('active');
-    }
-  };
-
-  window.switchMode = function(mode) {
-  // 🔒 [방어벽] 심화진단일 때 구글 로그인 상태를 가장 먼저 1순위로 체크!
-  if (mode === 'deep') {
-    var user = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : window.currentUser;
-    
-    // 로그인이 안 되어 있으면 경고창 띄우고 여기서 함수 강제 종료!
-    if (!user) {
-      alert("🔒 안전한 결제 환경을 위해 로그인을 먼저 진행해 주세요!");
-      if (typeof window.toggleSidebar === 'function') window.toggleSidebar(false); 
-      return; 
-    }
-    
-    // 💡 [핵심 수정] 기존에 있던 'if (!isPremiumUnlocked) { openPayModal(); return; }' 지움!
-    // 이제 결제를 안 했더라도 리턴되지 않고, 아래로 내려가서 화면 전환이 정상적으로 일어남임!
-  }
-
-  window.switchMode = function(mode) {
-  // 🔒 [방어벽] 심화진단일 때 구글 로그인 상태를 가장 먼저 1순위로 체크!
-  if (mode === 'deep') {
-    var user = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : window.currentUser;
-    
-    // 로그인이 안 되어 있으면 경고창 띄우고 여기서 함수 강제 종료!
-    if (!user) {
-      alert("🔒 안전한 결제 환경을 위해 로그인을 먼저 진행해 주세요!");
-      if (typeof window.toggleSidebar === 'function') window.toggleSidebar(false); 
-      return; 
-    }
-    // 💡 기존에 바로 결제창을 열어버리던 'openPayModal(); return;' 로직은 삭제해서 화면 전환이 먼저 일어나게 함임!
-  }
-
-  // 여기서부터 정상적으로 인트로 화면 전환 처리 진행!
-  window.currentMode = mode;
-  document.querySelectorAll('.menu-list .menu-item').forEach(function (el) {
-    el.classList.remove('active');
-  });
-  
-  var targetMenu = document.getElementById('menu-' + mode);
-  if (targetMenu) {
-    targetMenu.classList.add('active');
-  }
-  
-  var titleEl = document.getElementById('intro-title');
-  var subtitleEl = document.getElementById('intro-subtitle');
-  var metaEl = document.getElementById('intro-meta');
-  var barWrap = document.getElementById('quizProgressBarWrap');
-  
-  if (mode === 'brief') {
-    titleEl.textContent = '🧬 기질 및 성격 7차원 자가진단';
-    subtitleEl.textContent = 'Cloninger 성격 모델 기반 (기본 간이진단)';
-    metaEl.innerHTML = '총 <strong>42문항</strong> / 소요시간 약 <strong>5~7분</strong>';
-  } else {
-    titleEl.textContent = '👑 TCI 종합 심화 정밀진단';
-    subtitleEl.textContent = 'Cloninger 성격 모델 기반 (프리미엄 정밀 분석)';
-    metaEl.innerHTML = '총 <strong>105문항</strong> / 소요시간 약 <strong>15~20분</strong>';
-  }
-  
-  if (window.innerWidth <= 992) {
-    barWrap.classList.add('mobile-offset');
-  } else {
-    barWrap.classList.remove('mobile-offset');
-  }
-  
-  toggleSidebar(false);
-  resetQuiz(); // 👈 화면 바뀌면서 인트로 화면이 부드럽게 노출됨!
-};
-
-  function openPayModal() {
-    commonOverlay.classList.add('active');
-    policyModal.style.display = 'none';
-    payModal.style.display = 'block';
-  }
-
-  window.openPolicyModal = function(policyKey) {
-    var data = policyTexts[policyKey];
-    if (!data) return;
-    document.getElementById('policyModalTitle').textContent = data.title;
-    document.getElementById('policyModalBody').textContent = data.body;
-    commonOverlay.classList.add('active');
-    payModal.style.display = 'none';
-    policyModal.style.display = 'flex';
-  };
-
-  window.closeAllModals = function() {
-    commonOverlay.classList.remove('active');
-    setTimeout(function() {
-      payModal.style.display = 'none';
-      policyModal.style.display = 'none';
-    }, 300);
-  };
-
-  window.handleOverlayClick = function(e) {
-    if (e.target === commonOverlay) {
-      closeAllModals();
-    }
-  };
-
-  window.openPayModalFromUpsell = function() {
-    openPayModal();
-  };
-
-  btnPaySubmit.addEventListener('click', function() {
-  // 💡 [수정] 준비 중 경고창(CONFIG.isPaymentEnabled) 로직을 완전히 제거함!
-  // 이제 버튼을 누르면 즉시 프리미엄 잠금이 해제됨임! 🔥
-  isPremiumUnlocked = true;
-  if(lockIcon) lockIcon.style.display = 'none';
-  closeAllModals();
-  
-  // 🚀 결제창이 닫히자마자 유저가 퀴즈를 바로 시작할 수 있도록 퀴즈 화면으로 즉시 이동!
-  window.showScreen('screen-quiz');
-
-  // 결제 기능이 켜져 있을 때만 아래 로직 실행되던 부분을 심화 모드로 통합
-  window.switchMode('deep');
-});
-
-  window.tryEnterAdmin = function() {
-    var pw = prompt("관리자 인증 비밀번호를 입력하세요:");
-    if (pw === ADMIN_PASSWORD) {
-      alert("인증 성공! 마스터 컨트롤 패널을 활성화합니다.");
-      buildAdminPanel();
-      toggleSidebar(false);
-      window.showScreen('screen-admin');
-    } else if (pw !== null) {
-      alert("인증 실패! 권한이 없습니다.");
-    }
-  };
-
-  function buildAdminPanel() {
-    var grid = document.getElementById('adminGrid');
-    grid.innerHTML = '';
-    
-    var modeNotice = document.createElement('div');
-    modeNotice.className = 'admin-row';
-    modeNotice.style.background = '#eef2ff';
-    modeNotice.style.padding = '12px';
-    modeNotice.style.borderRadius = '8px';
-    modeNotice.style.width = '100%';
-    modeNotice.style.marginBottom = '15px';
-    modeNotice.innerHTML = '<div style="width:100%;"><strong style="color:#4f46e5;">⚙️ 시뮬레이션 출력 모드 설정</strong><br>'
-                         + '<label style="margin-right:15px; cursor:pointer;"><input type="radio" name="admin_mode_select" value="brief" ' + (window.currentMode === 'brief' ? 'checked' : '') + '> 간이진단 결과</label>'
-                         + '<label style="cursor:pointer;"><input type="radio" name="admin_mode_select" value="deep" ' + (window.currentMode === 'deep' ? 'checked' : '') + '> 👑 심화진단 결과</label></div>';
-    grid.appendChild(modeNotice);
-    
-    modeNotice.querySelectorAll('input[name="admin_mode_select"]').forEach(function(radio) {
-      radio.addEventListener('change', function(e) {
-        if (e.target.value === 'deep') {
-          isPremiumUnlocked = true;
-          if(lockIcon) lockIcon.style.display = 'none';
+        /**
+         * View Controller
+         */
+        function showView(viewId) {
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-test').classList.add('hidden');
+            document.getElementById('view-result').classList.add('hidden');
+
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-        window.currentMode = e.target.value;
-      });
-    });
 
-    Object.keys(dimensionMeta).forEach(function (key) {
-      var row = document.createElement('div');
-      row.className = 'admin-row';
-      row.innerHTML = '<span class="admin-label">' + dimensionMeta[key].name + '</span>';
-      
-      var selector = document.createElement('div');
-      selector.className = 'admin-selector';
-      
-      ['low', 'mid', 'high'].forEach(function (lvl) {
-        var btn = document.createElement('button');
-        btn.textContent = lvl.toUpperCase();
-        if (simulatedLevels[key] === lvl) btn.className = 'selected';
-        btn.addEventListener('click', function () {
-          simulatedLevels[key] = lvl;
-          selector.querySelectorAll('button').forEach(function (b) { b.classList.remove('remove'); b.className=''; });
-          btn.className = 'selected';
-        });
-        selector.appendChild(btn);
-      });
-      row.appendChild(selector);
-      grid.appendChild(row);
-    });
-  }
+        /**
+         * Start Test with Mode
+         */
+        function startTest(mode) {
+            currentMode = mode;
+            userAnswers = {};
+            currentIndex = 0;
 
-  window.generateSimulatedResult = function() {
-  var simulatedScores = {};
-  
-  // 1. simulatedLevels를 확인해서, 각 지표별로 진짜 값을 가져옴!
-  Object.keys(simulatedLevels).forEach(function (key) {
-    var level = simulatedLevels[key]; // 'low', 'mid', 'high'가 들어있음
-    
-    // 2. 이제 더 세밀하게 점수를 뽑아보자!
-    // 0~100 사이의 숫자를 랜덤하게 혹은 설정값대로 가져오게 바꿈
-    if (level === 'low') {
-        simulatedScores[key] = Math.floor(Math.random() * 30) + 10; // 10~40점
-    } else if (level === 'high') {
-        simulatedScores[key] = Math.floor(Math.random() * 30) + 70; // 70~100점
-    } else {
-        simulatedScores[key] = Math.floor(Math.random() * 40) + 30; // 30~70점 (mid)
-    }
-  });
+            const factors = ['NS', 'HA', 'RD', 'P', 'SD', 'CO', 'ST'];
+            let selectedQuestions = [];
 
-  // 3. 전역 window.scores에 이 결과를 저장해서 공유 함수가 낚아챌 수 있게 함!
-  window.scores = simulatedScores;
-  
-  return simulatedScores;
-};
-    
-    window.triggerSimulatedResult = function() {
-    var scores = window.generateSimulatedResult(); 
-    window.scores = scores;
-      localStorage.setItem('lastResult', JSON.stringify(scores));
-      window.renderFinalResult(scores);              
-    //window.showScreen('screen-result');           
-    
-    var targetMenu = document.getElementById('menu-' + window.currentMode);
-    if(targetMenu) {
-      document.querySelectorAll('.menu-list .menu-item').forEach(function(el) {
-        el.classList.remove('active');
-      });
-      targetMenu.classList.add('active');
-    }
-};
+            if (mode === 'quick') {
+                // Pick 2 random questions for each of the 7 factors
+                factors.forEach(f => {
+                    const factorPool = TCI_QUESTIONS.filter(q => q.factor === f);
+                    const shuffledPool = shuffleArray(factorPool);
+                    selectedQuestions.push(...shuffledPool.slice(0, 2));
+                });
+            } else {
+                // Pick all 7 questions for each of the 7 factors
+                selectedQuestions = [...TCI_QUESTIONS];
+            }
 
-// 🎯 함수 실행 및 UI 활성화 세트 (여기는 건드리지 말고 이대로 유지!)
-// ⚡ 브라우저가 웹페이지 로딩을 싹 다 끝내면 실행하라는 강력한 명령!!
-window.addEventListener('load', function() {
-  console.log("엔진 가동 준비 완료!");
+            // Shuffle the entire test question order so user can't memorize sequence
+            activeQuestions = shuffleArray(selectedQuestions);
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const hasParams = urlParams.get('ns') || urlParams.get('ha') || urlParams.get('uid');
+            // Update UI elements
+            document.getElementById('test-mode-badge').innerText = mode === 'quick' ? '⚡ 간이 검사 (14문항)' : '🔍 심화 검사 (49문항)';
+            document.getElementById('total-q-num').innerText = activeQuestions.length;
 
-  // 1. 공유 링크 접속 시 (결과 페이지로 보내기)
-  if (hasParams) {
-    console.log("공유 링크 감지! 결과 페이지로 이동 준비 🚀");
-    if (typeof checkSharedLink === 'function') {
-      checkSharedLink();
-    }
-  } 
-  // 2. 일반 접속 시 (메인 페이지 보여주기)
-  else {
-    console.log("일반 접속 감지! 메인 화면으로 고정 🌿");
-    if (typeof window.showScreen === 'function') {
-      window.showScreen('screen-intro'); // 👈 이제 무조건 메인부터 뜸!
-    }
-  }
+            showView('test');
+            renderQuestion();
+        }
 
-  // 메뉴 활성화 UI 로직은 유지
-  var targetMenu = document.getElementById('menu-' + window.currentMode);
-  if(targetMenu) {
-    document.querySelectorAll('.menu-list .menu-item').forEach(function(el) {
-      el.classList.remove('active');
-    });
-    targetMenu.classList.add('active');
-  }
-});
+        /**
+         * Render Current Question
+         */
+        function renderQuestion() {
+            const q = activeQuestions[currentIndex];
+            document.getElementById('current-q-num').innerText = currentIndex + 1;
+            document.getElementById('question-category').innerText = `${q.factorName} 측정 항목`;
+            document.getElementById('question-text').innerText = q.text;
 
-// 🍔 메뉴 활성화 UI 로직은 다시 살려놓음! (이게 있어야 메뉴가 이쁨)
-document.querySelectorAll('.menu-list .menu-item').forEach(function (el) {
-  el.classList.remove('active');
-});
-var targetMenu = document.getElementById('menu-' + window.currentMode);
-if(targetMenu) targetMenu.classList.add('active');
+            // Progress percentage
+            const progress = ((currentIndex + 1) / activeQuestions.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
 
-function shuffleQuestions() {
-    // 모드가 'deep'이면 105개짜리 고유 심화 문항(deepQuestions)을 쓰고, 아니면 간이용 42개를 씀!
-    var sourceQuestions = (window.currentMode === 'deep') ? deepQuestions : briefQuestions;
+            // Enable/Disable Prev Button
+            const btnPrev = document.getElementById('btn-prev');
+            btnPrev.disabled = currentIndex === 0;
 
-    // 깔끔하게 복사해서 퀴즈용 배열에 세팅! ([심화 척도] 꼬리표 루프는 완벽 제거됨)
-    questions = JSON.parse(JSON.stringify(sourceQuestions));
-    answers = new Array(questions.length).fill(0);
-    totalPages = Math.ceil(questions.length / itemsPerPage);
-  }
-
-  function renderPage(page) {
-    currentPage = page;
-    var quizBlock = document.getElementById('quizBlock');
-    quizBlock.innerHTML = '';
-    
-    var startIdx = page * itemsPerPage;
-    var endIdx = Math.min(startIdx + itemsPerPage, questions.length);
-    var fragment = document.createDocumentFragment();
-
-    for (var i = startIdx; i < endIdx; i++) {
-      var q = questions[i];
-      var card = document.createElement('div');
-      card.className = 'q-card';
-      
-      var html = '<div class="q-meta"><span class="q-num">문항 ' + (i + 1) + '</span></div>'
-               + '<p class="q-text">' + q.text + '</p>'
-               + '<div class="likert-wrap">';
-      
-      var options = [
-        {v:1, l:"전혀\n아니다"}, {v:2, l:"아닌\n편이다"},
-        {v:3, l:"보통\n이다"}, {v:4, l:"그런\n편이다"}, {v:5, l:"매우\n그렇다"}
-      ];
-      
-      options.forEach(function (opt) {
-        var isChecked = (answers[i] === opt.v) ? 'checked' : '';
-        var radioId = 'q_' + i + '_' + opt.v;
-        html += '<div class="likert-option">'
-              + '  <input type="radio" name="q_' + i + '" id="' + radioId + '" value="' + opt.v + '" ' + isChecked + ' data-qidx="' + i + '">'
-              + '  <label for="' + radioId + '" class="likert-label">'
-              + '    <div class="likert-circle">' + opt.v + '</div>'
-              + '    <span class="likert-desc">' + opt.l + '</span>'
-              + '  </label>'
-              + '</div>';
-      });
-      html += '</div>';
-      card.innerHTML = html;
-      fragment.appendChild(card);
-    }
-    quizBlock.appendChild(fragment);
-
-    btnPrev.style.display = (page === 0) ? 'none' : 'block';
-    btnNext.textContent = (page === totalPages - 1) ? '📊 결과 보러가기' : '다음 →';
-    
-    updateProgress();
-    bindRadioEvents();
-  }
-
-  function bindRadioEvents() {
-    var quizBlock = document.getElementById('quizBlock');
-    quizBlock.querySelectorAll('input[type="radio"]').forEach(function (radio) {
-      radio.addEventListener('change', function (e) {
-        var qidx = parseInt(e.target.getAttribute('data-qidx'), 10);
-        answers[qidx] = parseInt(e.target.value, 10);
-        updateProgress();
-      });
-    });
-  }
-
-  function updateProgress() {
-    var progressBar = document.getElementById('progressBar');
-    var progressText = document.getElementById('progressText');
-    var answeredCount = answers.filter(function (a) { return a > 0; }).length;
-    var pct = Math.round((answeredCount / questions.length) * 100);
-    if(progressBar) progressBar.style.width = pct + '%';
-    if(progressText) progressText.textContent = answeredCount + ' / ' + questions.length;
-  }
-
-  // 🔗 유저 고유 ID와 검사 시간이 결합된 진짜 공유 링크 복사 함수!
-window.shareResult = window.copyResultLink = function() {
-    // ⭕ [ㄹㅇ 해결책] 로그인 안 한 게스트 유저를 위한 우회 가드 설치!
-    if (!window.currentUser) {
-        // 회원 ID 기반이 아니라 현재 떠 있는 결과 페이지 링크를 그대로 복사해 줌!
-        var currentUrl = window.location.href;
-        
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(currentUrl).then(function() {
-                alert("🔗 링크가 클립보드에 복사되었습니다. 자유롭게 공유해보세요 😉");
-            }).catch(function(err) {
-                // 구형 브라우저나 모바일 환경 대비용 가드
-                fallbackCopyText(currentUrl);
+            // Reset selection highlights on scale buttons
+            const buttons = document.querySelectorAll('.scale-btn');
+            buttons.forEach((btn, idx) => {
+                const score = idx + 1;
+                if (userAnswers[q.id] === score) {
+                    btn.classList.add('bg-slate-900', 'text-white', 'border-slate-900');
+                    btn.classList.remove('border-slate-200', 'hover:bg-slate-50');
+                } else {
+                    btn.classList.remove('bg-slate-900', 'text-white', 'border-slate-900');
+                    btn.classList.add('border-slate-200');
+                }
             });
-        } else {
-            fallbackCopyText(currentUrl);
         }
-        return; // 게스트 처리 끝났으니 여기서 함수 종료!
-    }
 
-    // 🔥 방금 검사한 시간 or 과거 목록에서 클릭한 시간 확보
-    const currentTimestamp = window.lastSavedTimestamp || window.currentResultTimestamp || new Date().toISOString();
-    const uid = window.currentUser.uid;
+        /**
+         * Score Selection Handler
+         */
+        function selectScore(score) {
+            const q = activeQuestions[currentIndex];
+            userAnswers[q.id] = score;
 
-    // 절대 고유 주소 조립
-    const shareUrl = `${window.location.origin}${window.location.pathname}?uid=${uid}&time=${currentTimestamp}`;
-
-    // 만능 복사 함수 실행
-    copyToClipboard(shareUrl);
-};
-
-// 🚀 어떤 환경에서도 동작하는 만능 클립보드 복사 함수 (이것도 통째로 같이 붙여넣으세요)
-function copyToClipboard(text) {
-    if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(text).then(function() {
-            showCopySuccessMessage();
-        }).catch(function() {
-            fallbackCopyTextToClipboard(text);
-        });
-    } else {
-        fallbackCopyTextToClipboard(text);
-    }
-}
-
-// 🛠️ 구형 브라우저 및 인앱(카카오톡 등) 우회 복사 함수
-function fallbackCopyTextToClipboard(text) {
-    var textArea = document.createElement("textarea");
-    textArea.value = text;
-    textArea.style.top = "0";
-    textArea.style.left = "0";
-    textArea.style.position = "fixed";
-    textArea.style.opacity = "0";
-
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-
-    try {
-        var successful = document.execCommand('copy');
-        if (successful) {
-            showCopySuccessMessage();
-        } else {
-            // 자동 복사 실패 시 직접 복사할 수 있는 창 띄우기 (기존 로직 유지)
-            prompt("⚠️ 자동 복사를 지원하지 않습니다. 아래 고유 링크를 복사하세요:", text);
+            // Auto advance after slight delay for visual feedback
+            setTimeout(() => {
+                if (currentIndex < activeQuestions.length - 1) {
+                    currentIndex++;
+                    renderQuestion();
+                } else {
+                    calculateAndShowResults();
+                }
+            }, 180);
         }
-    } catch (err) {
-        prompt("⚠️ 자동 복사를 지원하지 않습니다. 아래 고유 링크를 복사하세요:", text);
-    } finally {
-        document.body.removeChild(textArea);
-    }
-}
 
-// 🎈 복사 성공 시 화면에 알림 띄우기 함수 (기존 토스트 기능 완벽 호환)
-function showCopySuccessMessage() {
-    var toast = document.getElementById('toastMsg');
-    if (toast) {
-        toast.textContent = "🔗 링크 복사 완료! 친구에게 공유해 보세요! 🎉";
-        if (typeof showToastPopup === 'function') showToastPopup();
-    } else {
-        alert("🔗 공유 링크가 복사되었습니다! 원하는 곳에 붙여넣으세요.");
-    }
-}
+        /**
+         * Previous Question Navigation
+         */
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderQuestion();
+            }
+        }
 
-  function fallbackCopy(text) {
-    var textArea = document.createElement("textarea");
-    textArea.value = text;
-    textArea.style.position = "fixed"; textArea.style.top = "0"; textArea.style.left = "0";
-    document.body.appendChild(textArea);
-    textArea.focus(); textArea.select();
-    try {
-      document.execCommand('copy');
-      showToastPopup();
-    } catch (err) {
-      alert("링크 주소: " + text);
-    }
-    document.body.removeChild(textArea);
-  }
+        /**
+         * Calculate Raw Scores & Percentiles
+         */
+        function calculateAndShowResults() {
+            const factors = ['NS', 'HA', 'RD', 'P', 'SD', 'CO', 'ST'];
+            const factorScores = {};
+            const factorCounts = {};
 
-  function showToastPopup() {
-    var toastMsg = document.getElementById('toastMsg');
-    toastMsg.classList.add('show');
-    setTimeout(function() { toastMsg.classList.remove('show'); }, 2500);
-  }
+            factors.forEach(f => {
+                factorScores[f] = 0;
+                factorCounts[f] = 0;
+            });
 
-  function processScores() {
-  var sums = { NS:0, HA:0, RD:0, PS:0, SD:0, CO:0, ST:0 };
-  var counts = { NS:0, HA:0, RD:0, PS:0, SD:0, CO:0, ST:0 };
-  
-  // 전역 answers를 확실하게 가져옴
-  var currentAnswers = window.answers || answers; 
+            // Sum up scores per factor
+            activeQuestions.forEach(q => {
+                if (userAnswers[q.id]) {
+                    factorScores[q.factor] += userAnswers[q.id];
+                    factorCounts[q.factor] += 1;
+                }
+            });
 
-  for (var i = 0; i < briefQuestions.length; i++) {
-    var d = briefQuestions[i].dim;
-    // 값이 없으면 0으로 처리해서 계산 오류 방지
-    var val = (currentAnswers[i] !== undefined) ? currentAnswers[i] : 0; 
-    sums[d] += val;
-    counts[d]++;
-  }
-  
-  var scores = {};
-  Object.keys(sums).forEach(function (d) {
-    var maxPossible = counts[d] * 5;
-    var minPossible = counts[d] * 1;
-    
-    // 점수 계산 로직
-    var rawPct = ((sums[d] - minPossible) / (maxPossible - minPossible)) * 100;
-    var amplified = 50 + (rawPct - 50) * 2.2;
-    var finalPct = Math.max(0, Math.min(100, amplified));
-    
-    scores[d] = Math.round(finalPct);
-  });
-  
-  return scores; // 여기서 딱 한 번 함수가 끝나야 함!
-}
+            // Convert to 0~100 normalized score for clear display
+            const normalizedScores = {};
+            factors.forEach(f => {
+                const maxPossible = factorCounts[f] * 5;
+                const minPossible = factorCounts[f] * 1;
+                const raw = factorScores[f];
+                // Normalized scale (0 ~ 100%)
+                const percentage = Math.round(((raw - minPossible) / (maxPossible - minPossible)) * 100);
+                normalizedScores[f] = isNaN(percentage) ? 50 : percentage;
+            });
 
-  window.renderFinalResult = function(scores) { // 전역화
-    var resultWrap = document.getElementById('resultWrap');
-    resultWrap.innerHTML = '';
-    var header = document.createDocumentFragment();
-    var hDiv = document.createElement('div');
-    hDiv.className = 'result-header';
-    
-    if (window.currentMode === 'deep') {
-      hDiv.innerHTML = '<h2>👑 프리미엄 종합 정밀 리포트 완료</h2><p>결제 회원 전용으로 잠금 해제된 3대 핵심 라이프 키워드 분석서입니다.</p>';
-    } else {
-      hDiv.innerHTML = '<h2>분석이 완료되었습니다 🎉</h2><p>기본 간이진단 프로파일 결과 보고서입니다.</p>';
-    }
-    header.appendChild(hDiv);
+            renderResultView(normalizedScores);
+        }
 
-    var tSection = document.createElement('h3');
-    tSection.className = 'section-title';
-    tSection.textContent = '🧭 4가지 기질 차원 (Temperament)';
-    header.appendChild(tSection);
-    
-    ['NS', 'HA', 'RD', 'PS'].forEach(function (d) { header.appendChild(createResultCard(d, scores[d])); });
+        /**
+         * Render Results View
+         */
+        function renderResultView(scores) {
+            // Mode Tag Update
+            document.getElementById('result-mode-tag').innerText = currentMode === 'quick' ? '⚡ 간이 검사 결과 리포트' : '🔍 심화 심층 검사 결과 리포트';
 
-    var cSection = document.createElement('h3');
-    cSection.className = 'section-title';
-    cSection.textContent = '🌟 3가지 성격 차원 (Character)';
-    header.appendChild(cSection);
-    
-    ['SD', 'CO', 'ST'].forEach(function (d) { header.appendChild(createResultCard(d, scores[d])); });
+            // Render Radar Chart
+            renderChart(scores);
 
-    var pData = calculatePrescription(scores);
-    var pSection = document.createElement('h3');
-    pSection.className = 'section-title';
-    pSection.textContent = '💊 맞춤형 통합 처방전 (Prescription)';
-    header.appendChild(pSection);
+            // Render Briefing Summary
+            const briefContainer = document.getElementById('brief-summary');
+            let briefHTML = '';
 
-    var pBox = document.createElement('div');
-    pBox.className = 'summary-box prescription';
-    pBox.innerHTML = '<div class="type-title">🎯 ' + pData.title + '</div>'
-                  + '<h3 style="color:#cf3c3c; margin-top:12px;">⚠️ 심층 주의 경계 사항</h3><p style="margin-bottom:14px; line-height:1.6;">' + pData.caution + '</p>'
-                  + '<h3 style="color:#4f46e5;">💡 라이프 밸런싱 성장 메커니즘 처방</h3><p style="line-height:1.6;">' + pData.advice + '</p>';
-    header.appendChild(pBox);
+            const topFactor = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
+            const lowestFactor = Object.keys(scores).reduce((a, b) => scores[a] < scores[b] ? a : b);
 
-    if (window.currentMode === 'brief') {
-      var upsellCard = document.createElement('div');
-      upsellCard.className = 'premium-upsell-card';
-      upsellCard.innerHTML = '<span class="upsell-tag">PREMIUM UPGRADE</span>'
-                           + '<div class="upsell-title" style="text-align: center;">더 자세히 알고 싶다면? 🤔</div>'
-                           + '<p class="upsell-desc" style="text-align: justify; text-justify: inter-character; max-width: 460px; margin: 14px auto; padding: 0 10px; line-height: 1.6; font-size: 0.92rem; word-break: keep-all; color: #334155;">'
-                           + '내 기질에 딱 맞춘 <strong>[💰재테크·금전운 / 💼직장 직무 매칭 / ❤️맞춤 연애 스타일]</strong>과 핵심 돌발 주의점까지!<br>'
-                           + '총 105문항 정밀 데이터로 나만의 성격을 완벽하게 해독해 보세요.'
-                           + '</p>'
-                           + '<button class="upsell-btn" onclick="openPayModalFromUpsell()">🧬 종합 심화 정밀진단 잠금해제하기 (1,990원)</button>';
-      header.appendChild(upsellCard);
-    }
+            briefHTML += `<p>• 가장 우세하게 두드러진 특성은 <strong>[${FACTOR_INFO[topFactor].name}] (${scores[topFactor]}점)</strong>입니다.</p>`;
+            briefHTML += `<p>• 상대적으로 가장 절제되거나 낮은 특성은 <strong>[${FACTOR_INFO[lowestFactor].name}] (${scores[lowestFactor]}점)</strong>입니다.</p>`;
+            if (currentMode === 'quick') {
+                briefHTML += `<p class="pt-2 text-slate-500">• 간이 검사는 직관적인 2줄 핵심 해석을 제공합니다. 더 깊은 대인관계 갈등 분석을 원하시면 <strong>심화 검사</strong>를 진행해 보세요.</p>`;
+            } else {
+                briefHTML += `<p class="pt-2 text-slate-500">• 심화 검사 결과에 기반하여 각 요인별 심리 상담 수준의 상세 해석 및 대인관계 가이드가 하단에 작성되었습니다.</p>`;
+            }
+            briefContainer.innerHTML = briefHTML;
 
-    var btnGroup = document.createElement('div');
-btnGroup.className = 'action-btn-group';
-// 💡 copyResultLink() 대신 window.copyResultLinkUnified() 로 매칭해줍니다.
-btnGroup.innerHTML = '<button class="share-btn" onclick="window.copyResultLinkUnified()">🔗 결과 링크 복사하기</button>'
-                   + '<button class="restart-btn" onclick="showScreen(\'screen-intro\')">🔄 테스트 다시 하기</button>';
-header.appendChild(btnGroup);
+            // Render Factor Cards
+            const detailsContainer = document.getElementById('factor-details-container');
+            detailsContainer.innerHTML = '';
 
-resultWrap.appendChild(header);
+            const factors = ['NS', 'HA', 'RD', 'P', 'SD', 'CO', 'ST'];
 
-// 💾 유저가 로그인 상태라면 영구 보존용 파이어베이스 저장 트리거 실행
-    if (window.currentUser) {
-      window.saveResultToFirestore(window.currentUser.uid, window.currentMode, scores);
-      
-      // 🔥 [성공] 방금 검사 완료하고 저장된 따끈따끈한 현재 시간을 기억해둠!
-      window.lastSavedTimestamp = new Date().toISOString();
-    }
-    
-    setTimeout(function () {
-      resultWrap.querySelectorAll('.bar-fill').forEach(function (bar) {
-        bar.style.width = bar.getAttribute('data-pct') + '%';
-      });
-    }, 50);
-  }
+            factors.forEach(f => {
+                const score = scores[f];
+                const info = FACTOR_INFO[f];
+                const isHigh = score >= 50;
+                const levelText = isHigh ? '높음 (High)' : '낮음 (Low)';
+                const levelBadgeClass = isHigh ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-800 border border-slate-300';
 
-  function createResultCard(d, pct) {
-    var meta = dimensionMeta[d];
-    var level = '보통';
-    var levelClass = 'level-mid';
-    var descHtml = '';
+                const card = document.createElement('div');
+                card.className = 'border border-slate-200 rounded-2xl p-4 sm:p-6 bg-white shadow-sm space-y-4 w-full min-w-0';
 
-    if (pct >= 65) { level = '높음'; levelClass = 'level-high'; } 
-    else if (pct <= 35) { level = '낮음'; levelClass = 'level-low'; }
+                let explanationBody = '';
+                if (currentMode === 'quick') {
+                    // 2 lines concise summary for Quick Mode
+                    explanationBody = `
+                        <div class="text-xs sm:text-sm text-slate-700 leading-relaxed bg-slate-50 p-3.5 sm:p-4 rounded-xl border border-slate-100">
+                            <strong>[핵심 진단]</strong> ${isHigh ? info.quick.high : info.quick.low}
+                        </div>
+                    `;
+                } else {
+                    // ~10 lines detailed psychological counseling style for Full Mode
+                    explanationBody = `
+                        <div class="text-xs sm:text-sm text-slate-800 leading-relaxed bg-slate-50 p-4 sm:p-5 rounded-xl border border-slate-200">
+                            ${isHigh ? info.full.high : info.full.low}
+                        </div>
+                    `;
+                }
 
-    if (window.currentMode === 'deep' && premiumDimensionMeta[d]) {
-      var pMeta = premiumDimensionMeta[d];
-      var pData = (level === '높음') ? pMeta.high : (level === '낮음' ? pMeta.low : null);
-      
-      if (pData) {
-        descHtml = '<div style="display:grid; gap:8px; margin-top:10px; font-size:0.9rem; color:#333;">'
-                 + '  <div style="background:#fffbeb; padding:10px; border-radius:6px;"><strong style="color:#b45309;">💰 금전 스타일:</strong> ' + pData.money + '</div>'
-                 + '  <div style="background:#f0fdf4; padding:10px; border-radius:6px;"><strong style="color:#15803d;">💼 직장 및 커리어:</strong> ' + pData.work + '</div>'
-                 + '  <div style="background:#fff5f5; padding:10px; border-radius:6px;"><strong style="color:#b91c1c;">❤️ 연애 및 대인관계:</strong> ' + pData.love + '</div>'
-                 // 💥 심리적 취약성(symptom) 화면에 그리기!
-                 + '  <div style="background:#f5f3ff; padding:10px; border-radius:6px;"><strong style="color:#6d28d9;">🧠 심리적 취약성:</strong> ' + (pData.symptom || '해당 데이터가 없습니다.') + '</div>'
-                 + '</div>'
-                 // 💥 잘렸던 맨 아랫줄 끝까지 안전하게 싹 닫아줌 리얼루다가!
-                 + '<p style="color: #cf3c3c; background: #fafafa; padding: 10px; border-radius: 8px; margin-top: 10px; border-left: 4px solid #cf3c3c; font-size:0.85rem;"><strong>⚡ 핵심 주의점:</strong> ' + pData.caution + '</p>';
-      } else {
-        descHtml = '<div style="display:grid; gap:8px; margin-top:10px; font-size:0.9rem; color:#333;">'
-                 + '  <div style="background:#f8fafc; padding:10px; border-radius:6px;">⚖️ <strong>[종합 밸런스형 프로파일]</strong> 금전, 직장, 연애 전반에 걸쳐 극단에 치우치지 않는 안정적인 조율력을 보여줍니다. 위기관리 능력이 우수하나 때로는 강력한 한 방의 돌파력이 부족해 보일 수 있으니 중요 타이밍에는 선명한 주관을 밀어붙이세요.</div>'
-                 + '</div>';
-      }
-    } else {
-      var briefDesc = (level === '높음') ? meta.high : (level === '낮음' ? meta.low : meta.mid);
-      descHtml = '<p class="dim-result-desc" style="padding-top:6px; font-size:0.88rem; line-height:1.65; color:#333;">' + briefDesc + '</p>';
-    }
+                card.innerHTML = `
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-slate-100 pb-3">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 shrink-0">${info.type}</span>
+                                <h4 class="text-base sm:text-lg font-bold text-slate-900">${info.name}</h4>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1">${info.desc}</p>
+                        </div>
+                        <div class="flex items-center justify-between sm:justify-end gap-3 pt-1 sm:pt-0">
+                            <span class="text-sm font-extrabold text-slate-900">${score}점</span>
+                            <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${levelBadgeClass}">${levelText}</span>
+                        </div>
+                    </div>
+                    <!-- Score Bar -->
+                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                        <div class="bg-slate-900 h-full rounded-full" style="width: ${score}%"></div>
+                    </div>
+                    ${explanationBody}
+                `;
 
-    var barColors = { NS:'#ec4899', HA:'#3b82f6', RD:'#10b981', PS:'#f59e0b', SD:'#8b5cf6', CO:'#14b8a6', ST:'#6366f1' };
+                detailsContainer.appendChild(card);
+            });
 
-    var card = document.createElement('div');
-    card.className = 'dim-result-card';
-    card.innerHTML = '<div class="dim-result-top">'
-      + '<span class="dim-result-name">' + meta.name + '</span>'
-      + '</div>'
-      + '<div class="bar-track"><div class="bar-fill" data-pct="' + pct + '" style="background:' + barColors[d] + ';\"></div></div>'
-      + '<span class="level-label ' + levelClass + '">' + level + ' (' + pct + '%)</span>'
-      + '<div style="margin-top: 10px;\">' + descHtml + '</div>';
-    return card;
-  }
+            showView('result');
+        }
 
-  function resetQuiz() {
-    var sourceQuestions = briefQuestions;
-    questions = JSON.parse(JSON.stringify(sourceQuestions)); 
-    answers  = new Array(questions.length).fill(0);
-    currentPage = 0;
-    totalPages = Math.ceil(questions.length / itemsPerPage);
-    var progressBar = document.getElementById('progressBar');
-    var progressText = document.getElementById('progressText');
-    if(progressBar) progressBar.style.width  = '0%';
-    if(progressText) progressText.textContent = '0 / ' + questions.length;
-    window.showScreen('screen-intro');
-  }
+        /**
+         * Render Chart.js Radar
+         */
+        function renderChart(scores) {
+            const ctx = document.getElementById('resultChart').getContext('2d');
 
- // 1. 시작 버튼 이벤트 (기존 기능 100% 유지 + 결제 방어벽 추가)
-if (btnStart) {
-  btnStart.addEventListener('click', function () { 
-    // 👑 현재 종합 심화진단 모드인데 아직 결제하지 않았다면, 여기서 결제창 팝업!
-    if (window.currentMode === 'deep' && !isPremiumUnlocked) {
-      openPayModal();
-      return; // 결제 완료 전까지는 다음 퀴즈 화면으로 넘어가지 못하게 블로킹 ✋
-    }
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
 
-    // 결제가 완료되었거나 간이진단일 때는 기존 로직대로 퀴즈 시작!
-    shuffleQuestions(); 
-    window.showScreen('screen-quiz'); 
-    renderPage(0); 
-  });
-}
+            chartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['자극추구(NS)', '위험회피(HA)', '사회적민감성(RD)', '인내력(P)', '자율성(SD)', '연대감(CO)', '자기초월(ST)'],
+                    datasets: [{
+                        label: 'TCI 요인 점수',
+                        data: [scores.NS, scores.HA, scores.RD, scores.P, scores.SD, scores.CO, scores.ST],
+                        backgroundColor: 'rgba(15, 23, 42, 0.15)',
+                        borderColor: '#0f172a',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#0f172a',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#0f172a'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        r: {
+                            min: 0,
+                            max: 100,
+                            ticks: {
+                                display: false,
+                                stepSize: 25
+                            },
+                            pointLabels: {
+                                font: {
+                                    family: 'Noto Sans KR',
+                                    size: 11,
+                                    weight: 'bold'
+                                },
+                                color: '#334155'
+                            },
+                            grid: {
+                                color: '#e2e8f0'
+                            },
+                            angleLines: {
+                                color: '#cbd5e1'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
 
-  // 2. 이전 버튼 이벤트 (기존 유지)
-  btnPrev.addEventListener('click', function () { 
-    if (currentPage > 0) renderPage(currentPage - 1); 
-  });
+        /**
+         * Copy Summary to Clipboard
+         */
+        function copyResultSummary() {
+            const textToCopy = `[Mind Insight - TCI 검사 결과 요약]\n` +
+                `• 검사 유형: ${currentMode === 'quick' ? '간이 검사' : '심화 검사'}\n` +
+                `• 상세 결과는 웹페이지 리포트를 참고하세요.`;
 
-  // 3. 🏁 다음/결과 버튼 통합 제어 함수 (모바일 터치 씹힘 완벽 방어) 🚀
-  // =========================================================================
-// 📱 다음 문항으로 이동 및 마지막 페이지 처리 이벤트 핸들러
-// =========================================================================
-function handleNextAction(e) {
-  if (e) {
-    // 모바일 브라우저에서 터치와 클릭이 연속으로 중복 발생해서 씹히는 현상 방지 ㄴㅁㅇ
-    e.preventDefault(); 
-    e.stopPropagation();
-  }
-  
-  var startIdx = currentPage * itemsPerPage;
-  var endIdx = Math.min(startIdx + itemsPerPage, questions.length);
-  for (var i = startIdx; i < endIdx; i++) { 
-    if (answers[i] === 0) {
-      alert("⚠️ 아직 체크하지 않은 문항이 있습니다. 모든 항목을 선택해 주세요!");
-      return; 
-    }
-  }
-  
-  // 💡 마지막 페이지일 때 결과 처리 로직 수정
-  if (currentPage === totalPages - 1) {
-    // 1. 점수 계산
-    var finalScores = processScores();
-    
-    // 2. 만약 계산된 점수가 다 0점이면 방어 코드 발동!
-    var isAllZero = Object.values(finalScores).every(function(v) { return v === 0; });
-    if (isAllZero) {
-        console.log("데이터 누락 감지! 50점으로 자동 보정됨.");
-        for (var key in finalScores) { finalScores[key] = 50; }
-    }
-    
-    // 3. 결과 렌더링 및 화면 전환
-    renderFinalResult(finalScores);
-    window.showScreen('screen-result');
-  } else {
-    // 다음 문항 페이지로 이동
-    renderPage(currentPage + 1);
-    window.scrollTo(0, 0); 
-  }
-}
+            const dummy = document.createElement('textarea');
+            document.body.appendChild(dummy);
+            dummy.value = textToCopy;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
 
-// 📱 PC 클릭과 모바일 터치 이벤트 둘 다 칼같이 반응하도록 2개 다 등록함 미쳤지!
-if (typeof btnNext !== 'undefined' && btnNext) {
-  btnNext.addEventListener('click', handleNextAction);
-  btnNext.addEventListener('touchstart', handleNextAction, { passive: false });
-}
-
-// 🔄 퀴즈 초기화 및 화면 세팅
-if (typeof resetQuiz === 'function') {
-  resetQuiz();
-}
-
-// ⚠️ 만약 이 밑에 원래 즉시 실행 함수를 닫는 괄호( }); 이나 })(); )가 들어가서 
-// 계속 SyntaxError 에러가 나면, 바로 아랫줄에 있는 닫는 괄호 찌꺼기들을 하나씩 지워보셈임!
-  window.copyResultLinkUnified = function() {
-    console.log("🔥 함수 호출 성공! 신지군이 고친 엔진 가동 중!");
-  var targetScores = window.scores || JSON.parse(localStorage.getItem('lastResult'));
-    const urlParams = new URLSearchParams(window.location.search);
-  const sharedUid = urlParams.get('uid');
-  const sharedTime = urlParams.get('time');
-
-  let uid = "";
-  let currentTimestamp = "";
-
-  if (sharedUid && sharedTime) {
-    uid = sharedUid;
-    currentTimestamp = sharedTime;
-  } else if (window.currentUser && window.currentUser.uid) {
-    uid = window.currentUser.uid;
-    currentTimestamp = window.lastSavedTimestamp || window.currentResultTimestamp || new Date().toISOString();
-  } else {
-    // ⭕ 1. 점수 상자 낚아채기 (데이터 누락 원천 방어)
-    var targetScores = window.currentScores || window.scores || (typeof scores !== 'undefined' ? scores : null);
-
-    // ⭕ 2. 점수 보정 엔진 (M이나 undefined가 나오면 무조건 50으로!)
-    const getRawNumber = (score) => {
-      if (score === 'M' || score === 'm') return 50;
-      const num = Number(score);
-      return isNaN(num) ? 50 : num;
-    };
-
-    var nsVal = getRawNumber(targetScores ? targetScores.NS : 50);
-    var haVal = getRawNumber(targetScores ? targetScores.HA : 50);
-    var rdVal = getRawNumber(targetScores ? targetScores.RD : 50);
-    var psVal = getRawNumber(targetScores ? targetScores.PS : 50);
-    var sdVal = getRawNumber(targetScores ? targetScores.SD : 50);
-    var coVal = getRawNumber(targetScores ? targetScores.CO : 50);
-    var stVal = getRawNumber(targetScores ? targetScores.ST : 50);
-
-    // 🔗 3. 주소창 링크 생성 (숫자로만 똭!)
-    var baseUrl = window.location.protocol + '//' + window.location.host + window.location.pathname;
-    var guestShareUrl = baseUrl + `?mode=deep&ns=${nsVal}&ha=${haVal}&rd=${rdVal}&ps=${psVal}&sd=${sdVal}&co=${coVal}&st=${stVal}`;
-    
-    // 📋 클립보드 복사 엔진
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(guestShareUrl).then(function() {
-            alert("🔗 내 결과 데이터가 담긴 공유 링크가 복사되었습니다! 원하는 곳에 공유해 보세요 😉");
-        }).catch(function(err) {
-            if (typeof fallbackTextCopyEngine === 'function') fallbackTextCopyEngine(guestShareUrl);
-        });
-    } else {
-        if (typeof fallbackTextCopyEngine === 'function') fallbackTextCopyEngine(guestShareUrl);
-    }
-    return;
-  }
-
-  // 🔒 회원 전용 기존 로직 (그대로 보존)
-  const shareUrl = `${window.location.origin}${window.location.pathname}?uid=${uid}&time=${currentTimestamp}`;
-
-  if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
-    navigator.clipboard.writeText(shareUrl)
-      .then(function() {
-        if (typeof handleCopyToastAlert === 'function') handleCopyToastAlert();
-        else alert("🔗 회원 전용 공유 링크가 클립보드에 복사되었습니다!");
-      })
-      .catch(function() {
-        if (typeof fallbackTextCopyEngine === 'function') fallbackTextCopyEngine(shareUrl);
-      });
-  } else {
-    if (typeof fallbackTextCopyEngine === 'function') fallbackTextCopyEngine(shareUrl);
-  }
-};
-
-function fallbackTextCopyEngine(text) {
-  const textArea = document.createElement("textarea");
-  textArea.value = text;
-  textArea.style.position = "fixed";
-  textArea.style.top = "0";
-  textArea.style.left = "0";
-  textArea.style.opacity = "0";
-  document.body.appendChild(textArea);
-  textArea.focus();
-  textArea.select();
-
-  try {
-    const successful = document.execCommand('copy');
-    if (successful) {
-      handleCopyToastAlert();
-    } else {
-      prompt("📋 아래 공유 주소를 길게 눌러 직접 복사해 주세요:", text);
-    }
-  } catch (err) {
-    prompt("📋 아래 공유 주소를 길게 눌러 직접 복사해 주세요:", text);
-  }
-  document.body.removeChild(textArea);
-}
-
-function handleCopyToastAlert() {
-  const toast = document.getElementById('toastMsg');
-  if (toast) {
-    // 기존 토스트 로직 유지
-    toast.textContent = "결과 링크가 복사되었습니다.";
-    if (typeof showToastPopup === 'function') showToastPopup();
-  } else {
-    // 토스트 요소가 없으면 그냥 alert 사용 (안전장치!)
-    alert("결과 링크가 복사되었습니다.");
-  }
-}
-
-</script>
-<script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+            alert('결과 요약이 클립보드에 복사되었습니다.');
+        }
+    </script>
 </body>
 </html>
