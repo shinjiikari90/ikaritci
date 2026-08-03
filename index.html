@@ -82,6 +82,7 @@
             <nav class="flex items-center space-x-1 sm:space-x-4 text-xs sm:text-sm font-medium">
                 <button onclick="startTest('quick')" class="px-2 sm:px-3 py-1.5 rounded hover:bg-slate-100 transition-colors text-slate-700 whitespace-nowrap">⚡ 간이 검사</button>
                 <button onclick="startTest('full')" class="px-2 sm:px-3 py-1.5 rounded hover:bg-slate-100 transition-colors text-slate-700 whitespace-nowrap">🔍 심화 검사</button>
+                <button onclick="openPartnerModal()" class="px-2 sm:px-3 py-1.5 rounded bg-slate-900 hover:bg-black text-white transition-colors whitespace-nowrap">💑 관계/궁합 분석</button>
             </nav>
         </div>
     </header>
@@ -160,6 +161,22 @@
                         <span>→</span>
                     </button>
                 </div>
+            </div>
+
+            <!-- Couple / Relationship Banner Card -->
+            <div class="border border-slate-900/20 bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6 w-full">
+                <div class="space-y-2 text-center md:text-left">
+                    <div class="inline-block px-2.5 py-0.5 rounded bg-white/10 text-xs font-semibold text-slate-200">
+                        💑 부부 · 연인 · 동료 맞춤형
+                    </div>
+                    <h3 class="text-xl sm:text-2xl font-bold">상대방과의 기질·성격 궁합 진단</h3>
+                    <p class="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
+                        두 사람의 TCI 프로필을 비교하여 서로 다른 정서적 반응, 자주 일어나는 갈등 원인, 부부상담 스타일의 상호 이해 솔루션을 제공합니다.
+                    </p>
+                </div>
+                <button onclick="openPartnerModal()" class="w-full md:w-auto py-3 px-6 bg-white hover:bg-slate-100 text-slate-900 font-bold rounded-xl transition-colors text-sm whitespace-nowrap shrink-0">
+                    궁합 분석 시작하기
+                </button>
             </div>
 
             <!-- Theory Overview & Legal Disclaimer -->
@@ -293,13 +310,196 @@
                 <button onclick="showView('home')" class="py-3 px-6 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold rounded-xl text-xs sm:text-sm transition-colors">
                     🔄 다시 검사하기
                 </button>
-                <button onclick="copyResultSummary()" class="py-3 px-6 bg-slate-900 hover:bg-black text-white font-semibold rounded-xl text-xs sm:text-sm transition-colors flex items-center justify-center gap-2">
-                    📋 결과 요약 복사하기
+                <button onclick="openPartnerModalWithCurrent()" class="py-3 px-6 bg-slate-900 hover:bg-black text-white font-semibold rounded-xl text-xs sm:text-sm transition-colors flex items-center justify-center gap-2">
+                    💑 이 결과로 상대방과 궁합 보기
+                </button>
+                <button onclick="copyResultSummary()" class="py-3 px-6 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold rounded-xl text-xs sm:text-sm transition-colors flex items-center justify-center gap-2">
+                    📋 결과 요약 복사
+                </button>
+            </div>
+        </section>
+
+        <!-- RELATIONSHIP RESULT VIEW -->
+        <section id="view-relationship" class="hidden space-y-8 sm:space-y-10 w-full">
+            <div class="text-center space-y-3 border-b border-slate-200 pb-6 sm:pb-8 w-full">
+                <div class="inline-block px-3 py-1 rounded-full border border-slate-200 text-xs font-semibold bg-slate-50 text-slate-700">
+                    💑 TCI 2인 관계·부부 궁합 리포트
+                </div>
+                <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight" id="rel-title">
+                    A님 & B님의 관계 상성 진단
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-500 max-w-xl mx-auto leading-relaxed px-2">
+                    서로의 선천적 기질 차이에서 발생하는 반응 양상과 후천적 성격 성숙도를 통한 갈등 극복 가이드입니다.
+                </p>
+            </div>
+
+            <!-- Comparative Radar Chart & Chemistry Summary -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 items-center border border-slate-200 rounded-2xl p-4 sm:p-8 bg-white shadow-sm w-full overflow-hidden">
+                <div class="md:col-span-6 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-slate-100 pb-6 md:pb-0 md:pr-6 w-full">
+                    <div class="w-full max-w-[280px] sm:max-w-[340px] aspect-square mx-auto relative flex items-center justify-center">
+                        <canvas id="relChart"></canvas>
+                    </div>
+                    <div class="flex items-center gap-4 mt-3 text-xs font-bold">
+                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-slate-900 inline-block"></span> <span id="label-person-a">A님</span></span>
+                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-indigo-600 inline-block"></span> <span id="label-person-b">B님</span></span>
+                    </div>
+                </div>
+                <div class="md:col-span-6 space-y-4 w-full">
+                    <h3 class="text-base sm:text-lg font-bold text-slate-900 border-b border-slate-200 pb-2">💞 종합 관계 브리핑</h3>
+                    <div id="rel-summary-body" class="text-xs sm:text-sm text-slate-700 space-y-3 leading-relaxed">
+                        <!-- Dynamic Couples Summary Injection -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Conflict & Solution Cards -->
+            <div class="space-y-6 w-full">
+                <h3 class="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2 border-b border-slate-200 pb-3">
+                    <span>🪵 기질·성격 차이로 본 심층 갈등 분석 & 솔루션</span>
+                </h3>
+                <div id="rel-details-container" class="space-y-6 w-full">
+                    <!-- Dynamic Relationship Cards -->
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 justify-center pt-4 sm:pt-6 border-t border-slate-200 w-full">
+                <button onclick="showView('home')" class="py-3 px-6 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold rounded-xl text-xs sm:text-sm transition-colors">
+                    🏠 메인으로 돌아가기
+                </button>
+                <button onclick="openPartnerModal()" class="py-3 px-6 bg-slate-900 hover:bg-black text-white font-semibold rounded-xl text-xs sm:text-sm transition-colors">
+                    🔄 다른 대상과 다시 분석하기
                 </button>
             </div>
         </section>
 
     </main>
+
+    <!-- PARTNER INPUT MODAL -->
+    <div id="partner-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-8 space-y-5 shadow-xl border border-slate-200 my-8">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <span>💑 두 사람의 프로필 정보 설정</span>
+                </h3>
+                <button onclick="closePartnerModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold px-2">✕</button>
+            </div>
+
+            <!-- Step 1: Names -->
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">내 이름 / 닉네임 (A)</label>
+                    <input type="text" id="input-name-a" value="나" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:border-slate-900">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">상대방 이름 / 닉네임 (B)</label>
+                    <input type="text" id="input-name-b" value="상대방" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:border-slate-900">
+                </div>
+            </div>
+
+            <!-- Tab Selection for Partner Input Method -->
+            <div class="space-y-2">
+                <label class="block text-xs font-bold text-slate-700">점수 설정 및 검사 방식</label>
+                <div class="grid grid-cols-3 gap-1.5 text-xs font-semibold">
+                    <button id="btn-tab-person-a" onclick="switchPartnerTab('person_a')" class="py-2 px-2 border border-slate-900 bg-slate-900 text-white rounded-lg truncate">
+                        👤 내 점수 설정
+                    </button>
+                    <button id="btn-tab-person-b" onclick="switchPartnerTab('person_b')" class="py-2 px-2 border border-slate-200 bg-slate-50 text-slate-700 rounded-lg hover:border-slate-400 truncate">
+                        👥 상대방 점수 설정
+                    </button>
+                    <button id="btn-tab-test" onclick="switchPartnerTab('test')" class="py-2 px-2 border border-slate-200 bg-slate-50 text-slate-700 rounded-lg hover:border-slate-400 truncate">
+                        📝 상대방 검사
+                    </button>
+                </div>
+            </div>
+
+            <!-- Person A Sliders Container -->
+            <div id="partner-a-container" class="space-y-3 max-h-[260px] overflow-y-auto pr-2 border-t border-b border-slate-100 py-3">
+                <div class="flex justify-between items-center">
+                    <p class="text-[11px] text-slate-500">내 백분위 점수(0~100점)를 직접 조절할 수 있습니다.</p>
+                    <span id="badge-a-status" class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600">기본값 적용 중</span>
+                </div>
+                
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between font-semibold"><span>자극추구 (NS)</span><span id="val-a-ns">50점</span></div>
+                    <input type="range" id="range-a-ns" min="0" max="100" value="50" oninput="document.getElementById('val-a-ns').innerText=this.value+'점'" class="w-full accent-slate-900">
+                </div>
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between font-semibold"><span>위험회피 (HA)</span><span id="val-a-ha">50점</span></div>
+                    <input type="range" id="range-a-ha" min="0" max="100" value="50" oninput="document.getElementById('val-a-ha').innerText=this.value+'점'" class="w-full accent-slate-900">
+                </div>
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between font-semibold"><span>사회적 민감성 (RD)</span><span id="val-a-rd">50점</span></div>
+                    <input type="range" id="range-a-rd" min="0" max="100" value="50" oninput="document.getElementById('val-a-rd').innerText=this.value+'점'" class="w-full accent-slate-900">
+                </div>
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between font-semibold"><span>인내력 (P)</span><span id="val-a-p">50점</span></div>
+                    <input type="range" id="range-a-p" min="0" max="100" value="50" oninput="document.getElementById('val-a-p').innerText=this.value+'점'" class="w-full accent-slate-900">
+                </div>
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between font-semibold"><span>자율성 (SD)</span><span id="val-a-sd">50점</span></div>
+                    <input type="range" id="range-a-sd" min="0" max="100" value="50" oninput="document.getElementById('val-a-sd').innerText=this.value+'점'" class="w-full accent-slate-900">
+                </div>
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between font-semibold"><span>연대감 (CO)</span><span id="val-a-co">50점</span></div>
+                    <input type="range" id="range-a-co" min="0" max="100" value="50" oninput="document.getElementById('val-a-co').innerText=this.value+'점'" class="w-full accent-slate-900">
+                </div>
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between font-semibold"><span>자기초월 (ST)</span><span id="val-a-st">50점</span></div>
+                    <input type="range" id="range-a-st" min="0" max="100" value="50" oninput="document.getElementById('val-a-st').innerText=this.value+'점'" class="w-full accent-slate-900">
+                </div>
+            </div>
+
+            <!-- Person B Sliders Container -->
+            <div id="partner-b-container" class="hidden space-y-3 max-h-[260px] overflow-y-auto pr-2 border-t border-b border-slate-100 py-3">
+                <p class="text-[11px] text-slate-500">상대방의 백분위 점수(0~100점)를 직접 입력하세요.</p>
+                
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between font-semibold"><span>자극추구 (NS)</span><span id="val-b-ns">50점</span></div>
+                    <input type="range" id="range-b-ns" min="0" max="100" value="50" oninput="document.getElementById('val-b-ns').innerText=this.value+'점'" class="w-full accent-indigo-600">
+                </div>
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between font-semibold"><span>위험회피 (HA)</span><span id="val-b-ha">50점</span></div>
+                    <input type="range" id="range-b-ha" min="0" max="100" value="50" oninput="document.getElementById('val-b-ha').innerText=this.value+'점'" class="w-full accent-indigo-600">
+                </div>
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between font-semibold"><span>사회적 민감성 (RD)</span><span id="val-b-rd">50점</span></div>
+                    <input type="range" id="range-b-rd" min="0" max="100" value="50" oninput="document.getElementById('val-b-rd').innerText=this.value+'점'" class="w-full accent-indigo-600">
+                </div>
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between font-semibold"><span>인내력 (P)</span><span id="val-b-p">50점</span></div>
+                    <input type="range" id="range-b-p" min="0" max="100" value="50" oninput="document.getElementById('val-b-p').innerText=this.value+'점'" class="w-full accent-indigo-600">
+                </div>
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between font-semibold"><span>자율성 (SD)</span><span id="val-b-sd">50점</span></div>
+                    <input type="range" id="range-b-sd" min="0" max="100" value="50" oninput="document.getElementById('val-b-sd').innerText=this.value+'점'" class="w-full accent-indigo-600">
+                </div>
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between font-semibold"><span>연대감 (CO)</span><span id="val-b-co">50점</span></div>
+                    <input type="range" id="range-b-co" min="0" max="100" value="50" oninput="document.getElementById('val-b-co').innerText=this.value+'점'" class="w-full accent-indigo-600">
+                </div>
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between font-semibold"><span>자기초월 (ST)</span><span id="val-b-st">50점</span></div>
+                    <input type="range" id="range-b-st" min="0" max="100" value="50" oninput="document.getElementById('val-b-st').innerText=this.value+'점'" class="w-full accent-indigo-600">
+                </div>
+            </div>
+
+            <!-- Start Partner Test Container -->
+            <div id="partner-test-container" class="hidden bg-slate-50 p-4 rounded-xl space-y-3 text-xs text-slate-600">
+                <p class="font-bold text-slate-900 text-sm">상대방이 지금 검사를 진행합니다.</p>
+                <p>내 데이터가 보존된 상태로 상대방이 설문(14문항 간이 또는 49문항 심화)을 완료하면 자동으로 두 사람의 궁합 분석 리포트가 생성됩니다.</p>
+                <div class="flex gap-2 pt-2">
+                    <button onclick="startPartnerTestFlow('quick')" class="flex-1 py-2 px-3 bg-slate-200 hover:bg-slate-300 font-semibold rounded text-slate-800">⚡ 간이 검사 시작</button>
+                    <button onclick="startPartnerTestFlow('full')" class="flex-1 py-2 px-3 bg-slate-900 hover:bg-black font-semibold rounded text-white">🔍 심화 검사 시작</button>
+                </div>
+            </div>
+
+            <div class="pt-2">
+                <button id="btn-submit-relationship" onclick="submitDirectRelationship()" class="w-full py-3 bg-slate-900 hover:bg-black text-white font-bold rounded-xl text-sm transition-colors">
+                    💑 궁합 리포트 생성하기
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="border-t border-slate-200 bg-slate-50 py-6 mt-12 text-center text-xs text-slate-500">
@@ -543,9 +743,136 @@
         let currentIndex = 0;
         let userAnswers = {}; // { questionId: score 1~5 }
         let chartInstance = null;
+        let relChartInstance = null;
+
+        // Couples State
+        let storedScoresA = null;
+        let storedNameA = '나';
+        let storedNameB = '상대방';
+        let isPartnerFlow = false;
+        let partnerInputTab = 'person_a';
 
         /**
-         * Fisher-Yates Random Shuffle Algorithm
+         * Modal Logic for Partner Input
+         */
+        function openPartnerModal() {
+            document.getElementById('partner-modal').classList.remove('hidden');
+
+            // Synchronize Person A's sliders with previous test scores if available
+            const badge = document.getElementById('badge-a-status');
+            const factors = ['NS', 'HA', 'RD', 'P', 'SD', 'CO', 'ST'];
+
+            if (storedScoresA) {
+                factors.forEach(f => {
+                    const val = storedScoresA[f] !== undefined ? storedScoresA[f] : 50;
+                    const lowF = f.toLowerCase();
+                    const slider = document.getElementById(`range-a-${lowF}`);
+                    const text = document.getElementById(`val-a-${lowF}`);
+                    if (slider) slider.value = val;
+                    if (text) text.innerText = `${val}점`;
+                });
+                badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800';
+                badge.innerText = '내 검사 결과 동기화됨';
+            } else {
+                badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600';
+                badge.innerText = '기본값 적용 중 (수정 가능)';
+            }
+
+            switchPartnerTab('person_a');
+        }
+
+        function openPartnerModalWithCurrent() {
+            calculateCurrentScoresToA();
+            openPartnerModal();
+        }
+
+        function closePartnerModal() {
+            document.getElementById('partner-modal').classList.add('hidden');
+        }
+
+        function switchPartnerTab(tab) {
+            partnerInputTab = tab;
+            const btnA = document.getElementById('btn-tab-person-a');
+            const btnB = document.getElementById('btn-tab-person-b');
+            const btnTest = document.getElementById('btn-tab-test');
+
+            const containerA = document.getElementById('partner-a-container');
+            const containerB = document.getElementById('partner-b-container');
+            const containerTest = document.getElementById('partner-test-container');
+            const btnSubmit = document.getElementById('btn-submit-relationship');
+
+            // Reset tab styles
+            const activeStyle = 'py-2 px-2 border border-slate-900 bg-slate-900 text-white rounded-lg truncate';
+            const inactiveStyle = 'py-2 px-2 border border-slate-200 bg-slate-50 text-slate-700 rounded-lg hover:border-slate-400 truncate';
+
+            btnA.className = tab === 'person_a' ? activeStyle : inactiveStyle;
+            btnB.className = tab === 'person_b' ? activeStyle : inactiveStyle;
+            btnTest.className = tab === 'test' ? activeStyle : inactiveStyle;
+
+            containerA.classList.toggle('hidden', tab !== 'person_a');
+            containerB.classList.toggle('hidden', tab !== 'person_b');
+            containerTest.classList.toggle('hidden', tab !== 'test');
+
+            btnSubmit.classList.toggle('hidden', tab === 'test');
+        }
+
+        function calculateCurrentScoresToA() {
+            const factors = ['NS', 'HA', 'RD', 'P', 'SD', 'CO', 'ST'];
+            const factorScores = {};
+            const factorCounts = {};
+            factors.forEach(f => { factorScores[f] = 0; factorCounts[f] = 0; });
+
+            activeQuestions.forEach(q => {
+                if (userAnswers[q.id]) {
+                    factorScores[q.factor] += userAnswers[q.id];
+                    factorCounts[q.factor] += 1;
+                }
+            });
+
+            const normalized = {};
+            factors.forEach(f => {
+                const maxP = factorCounts[f] * 5;
+                const minP = factorCounts[f] * 1;
+                const raw = factorScores[f];
+                const pct = Math.round(((raw - minP) / (maxP - minP)) * 100);
+                normalized[f] = isNaN(pct) ? 50 : pct;
+            });
+            storedScoresA = normalized;
+        }
+
+        function submitDirectRelationship() {
+            storedNameA = document.getElementById('input-name-a').value.trim() || '나';
+            storedNameB = document.getElementById('input-name-b').value.trim() || '상대방';
+
+            // Read Person A's scores directly from A sliders
+            const scoresA = {
+                NS: parseInt(document.getElementById('range-a-ns').value),
+                HA: parseInt(document.getElementById('range-a-ha').value),
+                RD: parseInt(document.getElementById('range-a-rd').value),
+                P: parseInt(document.getElementById('range-a-p').value),
+                SD: parseInt(document.getElementById('range-a-sd').value),
+                CO: parseInt(document.getElementById('range-a-co').value),
+                ST: parseInt(document.getElementById('range-a-st').value)
+            };
+
+            // Read Person B's scores directly from B sliders
+            const scoresB = {
+                NS: parseInt(document.getElementById('range-b-ns').value),
+                HA: parseInt(document.getElementById('range-b-ha').value),
+                RD: parseInt(document.getElementById('range-b-rd').value),
+                P: parseInt(document.getElementById('range-b-p').value),
+                SD: parseInt(document.getElementById('range-b-sd').value),
+                CO: parseInt(document.getElementById('range-b-co').value),
+                ST: parseInt(document.getElementById('range-b-st').value)
+            };
+
+            storedScoresA = scoresA;
+            closePartnerModal();
+            renderRelationshipReport(scoresA, storedNameA, scoresB, storedNameB);
+        }
+
+        /**
+         * Array Shuffle (Fisher-Yates Algorithm)
          */
         function shuffleArray(array) {
             const arr = [...array];
@@ -563,6 +890,7 @@
             document.getElementById('view-home').classList.add('hidden');
             document.getElementById('view-test').classList.add('hidden');
             document.getElementById('view-result').classList.add('hidden');
+            document.getElementById('view-relationship').classList.add('hidden');
 
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -580,26 +908,41 @@
             let selectedQuestions = [];
 
             if (mode === 'quick') {
-                // Pick 2 random questions for each of the 7 factors
                 factors.forEach(f => {
                     const factorPool = TCI_QUESTIONS.filter(q => q.factor === f);
                     const shuffledPool = shuffleArray(factorPool);
                     selectedQuestions.push(...shuffledPool.slice(0, 2));
                 });
             } else {
-                // Pick all 7 questions for each of the 7 factors
                 selectedQuestions = [...TCI_QUESTIONS];
             }
 
-            // Shuffle the entire test question order so user can't memorize sequence
             activeQuestions = shuffleArray(selectedQuestions);
 
-            // Update UI elements
             document.getElementById('test-mode-badge').innerText = mode === 'quick' ? '⚡ 간이 검사 (14문항)' : '🔍 심화 검사 (49문항)';
             document.getElementById('total-q-num').innerText = activeQuestions.length;
 
             showView('test');
             renderQuestion();
+        }
+
+        function startPartnerTestFlow(mode) {
+            storedNameA = document.getElementById('input-name-a').value.trim() || '나';
+            storedNameB = document.getElementById('input-name-b').value.trim() || '상대방';
+
+            storedScoresA = {
+                NS: parseInt(document.getElementById('range-a-ns').value),
+                HA: parseInt(document.getElementById('range-a-ha').value),
+                RD: parseInt(document.getElementById('range-a-rd').value),
+                P: parseInt(document.getElementById('range-a-p').value),
+                SD: parseInt(document.getElementById('range-a-sd').value),
+                CO: parseInt(document.getElementById('range-a-co').value),
+                ST: parseInt(document.getElementById('range-a-st').value)
+            };
+
+            closePartnerModal();
+            isPartnerFlow = true;
+            startTest(mode);
         }
 
         /**
@@ -674,7 +1017,6 @@
                 factorCounts[f] = 0;
             });
 
-            // Sum up scores per factor
             activeQuestions.forEach(q => {
                 if (userAnswers[q.id]) {
                     factorScores[q.factor] += userAnswers[q.id];
@@ -682,104 +1024,504 @@
                 }
             });
 
-            // Convert to 0~100 normalized score for clear display
             const normalizedScores = {};
             factors.forEach(f => {
                 const maxPossible = factorCounts[f] * 5;
                 const minPossible = factorCounts[f] * 1;
                 const raw = factorScores[f];
-                // Normalized scale (0 ~ 100%)
                 const percentage = Math.round(((raw - minPossible) / (maxPossible - minPossible)) * 100);
                 normalizedScores[f] = isNaN(percentage) ? 50 : percentage;
             });
 
-            renderResultView(normalizedScores);
+            if (isPartnerFlow) {
+                isPartnerFlow = false;
+                renderRelationshipReport(storedScoresA, storedNameA, normalizedScores, storedNameB);
+            } else {
+                storedScoresA = normalizedScores;
+                renderResultView(normalizedScores);
+            }
         }
 
         /**
-         * Render Results View
+         * Render Individual Test Result
          */
         function renderResultView(scores) {
-            // Mode Tag Update
-            document.getElementById('result-mode-tag').innerText = currentMode === 'quick' ? '⚡ 간이 검사 결과 리포트' : '🔍 심화 심층 검사 결과 리포트';
+            document.getElementById('result-mode-tag').innerText = currentMode === 'quick' ? '⚡ 간이 검사 리포트' : '🔍 심화 검사 리포트';
 
             // Render Radar Chart
             renderChart(scores);
 
-            // Render Briefing Summary
+            // Briefing Summary
             const briefContainer = document.getElementById('brief-summary');
-            let briefHTML = '';
+            let briefHTML = '<ul class="space-y-1.5 list-disc list-inside">';
+            
+            const highFactors = Object.keys(scores).filter(f => scores[f] >= 65);
+            const lowFactors = Object.keys(scores).filter(f => scores[f] <= 35);
 
-            const topFactor = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
-            const lowestFactor = Object.keys(scores).reduce((a, b) => scores[a] < scores[b] ? a : b);
-
-            briefHTML += `<p>• 가장 우세하게 두드러진 특성은 <strong>[${FACTOR_INFO[topFactor].name}] (${scores[topFactor]}점)</strong>입니다.</p>`;
-            briefHTML += `<p>• 상대적으로 가장 절제되거나 낮은 특성은 <strong>[${FACTOR_INFO[lowestFactor].name}] (${scores[lowestFactor]}점)</strong>입니다.</p>`;
-            if (currentMode === 'quick') {
-                briefHTML += `<p class="pt-2 text-slate-500">• 간이 검사는 직관적인 2줄 핵심 해석을 제공합니다. 더 깊은 대인관계 갈등 분석을 원하시면 <strong>심화 검사</strong>를 진행해 보세요.</p>`;
-            } else {
-                briefHTML += `<p class="pt-2 text-slate-500">• 심화 검사 결과에 기반하여 각 요인별 심리 상담 수준의 상세 해석 및 대인관계 가이드가 하단에 작성되었습니다.</p>`;
+            if (highFactors.length > 0) {
+                const names = highFactors.map(f => FACTOR_INFO[f].name.split(' ')[0]).join(', ');
+                briefHTML += `<li><strong>상대적 두각 요인:</strong> ${names} 요인이 백분위 상위권으로 뚜렷하게 나타납니다.</li>`;
             }
+            if (lowFactors.length > 0) {
+                const names = lowFactors.map(f => FACTOR_INFO[f].name.split(' ')[0]).join(', ');
+                briefHTML += `<li><strong>상대적 신중/절제 요인:</strong> ${names} 요인이 백분위 하위권으로 절제된 경향을 보입니다.</li>`;
+            }
+            if (highFactors.length === 0 && lowFactors.length === 0) {
+                briefHTML += `<li>전반적으로 요인들이 고르게 균형을 이루는 안정적인 성향입니다.</li>`;
+            }
+
+            briefHTML += `<li>성격적 자율성(SD: ${scores.SD}점)과 연대감(CO: ${scores.CO}점)을 바탕으로 개인의 역량과 사회적 관계를 성숙하게 관리할 수 있습니다.</li>`;
+            briefHTML += '</ul>';
             briefContainer.innerHTML = briefHTML;
 
-            // Render Factor Cards
+            // Factor Details
             const detailsContainer = document.getElementById('factor-details-container');
             detailsContainer.innerHTML = '';
 
             const factors = ['NS', 'HA', 'RD', 'P', 'SD', 'CO', 'ST'];
-
             factors.forEach(f => {
                 const score = scores[f];
                 const info = FACTOR_INFO[f];
                 const isHigh = score >= 50;
+                const levelKey = isHigh ? 'high' : 'low';
                 const levelText = isHigh ? '높음 (High)' : '낮음 (Low)';
-                const levelBadgeClass = isHigh ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-800 border border-slate-300';
+                
+                const explanation = currentMode === 'quick' 
+                    ? `<p class="leading-relaxed">${info.quick[levelKey]}</p>` 
+                    : info.full[levelKey];
 
                 const card = document.createElement('div');
-                card.className = 'border border-slate-200 rounded-2xl p-4 sm:p-6 bg-white shadow-sm space-y-4 w-full min-w-0';
-
-                let explanationBody = '';
-                if (currentMode === 'quick') {
-                    // 2 lines concise summary for Quick Mode
-                    explanationBody = `
-                        <div class="text-xs sm:text-sm text-slate-700 leading-relaxed bg-slate-50 p-3.5 sm:p-4 rounded-xl border border-slate-100">
-                            <strong>[핵심 진단]</strong> ${isHigh ? info.quick.high : info.quick.low}
-                        </div>
-                    `;
-                } else {
-                    // ~10 lines detailed psychological counseling style for Full Mode
-                    explanationBody = `
-                        <div class="text-xs sm:text-sm text-slate-800 leading-relaxed bg-slate-50 p-4 sm:p-5 rounded-xl border border-slate-200">
-                            ${isHigh ? info.full.high : info.full.low}
-                        </div>
-                    `;
-                }
-
+                card.className = 'border border-slate-200 rounded-2xl p-4 sm:p-6 bg-white shadow-sm space-y-3 w-full';
                 card.innerHTML = `
                     <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-slate-100 pb-3">
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 shrink-0">${info.type}</span>
-                                <h4 class="text-base sm:text-lg font-bold text-slate-900">${info.name}</h4>
-                            </div>
-                            <p class="text-xs text-slate-500 mt-1">${info.desc}</p>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-200">${info.type}</span>
+                            <h4 class="text-base sm:text-lg font-bold text-slate-900">${info.name}</h4>
                         </div>
-                        <div class="flex items-center justify-between sm:justify-end gap-3 pt-1 sm:pt-0">
-                            <span class="text-sm font-extrabold text-slate-900">${score}점</span>
-                            <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${levelBadgeClass}">${levelText}</span>
+                        <div class="flex items-center gap-2 text-xs font-semibold">
+                            <span class="px-2.5 py-0.5 rounded-full ${isHigh ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'}">${levelText}</span>
+                            <span class="text-slate-600 font-bold">${score}점 / 100</span>
                         </div>
                     </div>
-                    <!-- Score Bar -->
-                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                        <div class="bg-slate-900 h-full rounded-full" style="width: ${score}%"></div>
+                    <p class="text-xs text-slate-500">${info.desc}</p>
+                    <div class="text-xs sm:text-sm text-slate-800 bg-slate-50 p-3.5 sm:p-4 rounded-xl border border-slate-200">
+                        ${explanation}
                     </div>
-                    ${explanationBody}
                 `;
-
                 detailsContainer.appendChild(card);
             });
 
             showView('result');
+        }
+
+        /**
+         * Render Relationship / Couples Counseling Report
+         */
+        function renderRelationshipReport(scoresA, nameA, scoresB, nameB) {
+            document.getElementById('rel-title').innerText = `${nameA}님 & ${nameB}님의 관계 심층 진단`;
+            document.getElementById('label-person-a').innerText = `${nameA}님`;
+            document.getElementById('label-person-b').innerText = `${nameB}님`;
+
+            // Dual Radar Chart
+            renderRelChart(scoresA, nameA, scoresB, nameB);
+
+            // Calculate gaps
+            const gaps = {};
+            ['NS', 'HA', 'RD', 'P', 'SD', 'CO', 'ST'].forEach(f => {
+                gaps[f] = Math.abs(scoresA[f] - scoresB[f]);
+            });
+
+            // Overall Chemistry Briefing
+            const summaryContainer = document.getElementById('rel-summary-body');
+            let brief = '';
+
+            const maxGapFactor = Object.keys(gaps).reduce((a, b) => gaps[a] > gaps[b] ? a : b);
+            const minGapFactor = Object.keys(gaps).reduce((a, b) => gaps[a] < gaps[b] ? a : b);
+
+            // Chemistry Dynamic Type Determination
+            let relationshipType = "성향 상호보완형 커플";
+            let relationshipDesc = "서로의 다른 기질적 특성이 부족한 점을 채워주는 균형 잡힌 조합입니다.";
+
+            if (gaps.NS >= 35 && gaps.HA >= 35) {
+                relationshipType = "⚡ 역동적 스파크형 커플 (변화·안정의 대립)";
+                relationshipDesc = "한 사람은 모험과 즉흥성을, 한 사람은 신중함과 안정을 추구하여 상호 강한 끌림과 갈등이 공존하는 타입입니다.";
+            } else if (gaps.RD >= 35) {
+                relationshipType = "🌡️ 감성·이성 대화 패턴 차이형";
+                relationshipDesc = "정서적 위로와 감정 공감을 중시하는 성향과 이성적 문제 해결을 중시하는 성향이 부딪히는 유형입니다.";
+            } else if (scoresA.SD >= 55 && scoresB.SD >= 55 && scoresA.CO >= 55 && scoresB.CO >= 55) {
+                relationshipType = "🌿 고성숙도 주도형 상생 커플";
+                relationshipDesc = "두 사람 모두 자율성과 연대감이 높아 기질적 차이가 발생하더라도 존중과 대화로 해결하는 이상적인 동반자입니다.";
+            }
+
+            brief += `<div class="p-3 bg-slate-900 text-white rounded-xl space-y-1 mb-2">
+                <div class="text-[11px] font-semibold text-slate-300">💡 두 사람의 진단 종합 대표 유형</div>
+                <div class="text-base font-bold">${relationshipType}</div>
+                <div class="text-xs text-slate-200">${relationshipDesc}</div>
+            </div>`;
+
+            brief += `<div class="space-y-2 text-xs sm:text-sm">`;
+            brief += `<p>• <strong>최대 격차 기질 요인:</strong> [${FACTOR_INFO[maxGapFactor].name}] (격차 ${gaps[maxGapFactor]}점) - 일상적인 의사결정 방식이나 스트레스 상황에서 두 사람이 가장 크게 부딪힐 수 있는 핵심 스파크 지점입니다.</p>`;
+            brief += `<p>• <strong>최고 공감대 요인:</strong> [${FACTOR_INFO[minGapFactor].name}] (격차 ${gaps[minGapFactor]}점) - 별도의 설명이나 타협 없이도 두 사람이 서로를 자연스럽게 수용하고 기댈 수 있는 든든한 정서적 안식처입니다.</p>`;
+
+            // Maturity Check (SD & CO)
+            const avgMaturity = (scoresA.SD + scoresA.CO + scoresB.SD + scoresB.CO) / 4;
+            if (avgMaturity >= 55) {
+                brief += `<p class="text-emerald-900 bg-emerald-50 p-3 rounded-xl border border-emerald-200">✨ <strong>성숙도 진단 (상성 탄력성 우수):</strong> 두 사람 모두 자율성(SD)과 연대감(CO)이 안정적인 편입니다. 타고난 기질 차이로 의견이 엇갈려도 상대방을 비난하거나 조종하려 하지 않고, 원만한 대화로 갈등을 중재할 수 있는 뛰어난 심리적 쿠션을 갖추고 있습니다.</p>`;
+            } else {
+                brief += `<p class="text-amber-900 bg-amber-50 p-3 rounded-xl border border-amber-200">⚠️ <strong>성숙도 진단 (갈등 방어 주의):</strong> 두 사람 중 한 명 이상이 자율성이나 연대감 수치가 낮아, 스트레스가 누적되면 상대방을 탓하거나 방어적인 태도로 말을 닫아버릴 위험이 있습니다. 아래의 '상담가 맞춤 솔루션'을 필독해 보세요.</p>`;
+            }
+            brief += `</div>`;
+            summaryContainer.innerHTML = brief;
+
+            // Detailed Dynamics Section
+            const detailsContainer = document.getElementById('rel-details-container');
+            detailsContainer.innerHTML = '';
+
+            // Generate factor comparison cards for all 7 traits
+            const factorsToAnalyze = ['NS', 'HA', 'RD', 'P', 'SD', 'CO', 'ST'];
+            factorsToAnalyze.forEach(f => {
+                const scoreA = scoresA[f];
+                const scoreB = scoresB[f];
+                const gap = gaps[f];
+                const info = FACTOR_INFO[f];
+
+                let dynamicText = generateCouplesTraitText(f, scoreA, nameA, scoreB, nameB, gap);
+
+                const card = document.createElement('div');
+                card.className = 'border border-slate-200 rounded-2xl p-5 sm:p-7 bg-white shadow-sm space-y-4 w-full';
+                card.innerHTML = `
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-slate-100 pb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-200">${info.type}</span>
+                            <h4 class="text-base sm:text-lg font-bold text-slate-900">${info.name} 심층 관계 진단</h4>
+                        </div>
+                        <div class="text-xs font-semibold text-slate-600 flex items-center gap-2">
+                            <span class="px-2 py-0.5 bg-slate-900 text-white rounded font-medium">${nameA}: ${scoreA}점</span>
+                            <span>vs</span>
+                            <span class="px-2 py-0.5 bg-indigo-600 text-white rounded font-medium">${nameB}: ${scoreB}점</span>
+                            <span class="px-2 py-0.5 bg-slate-100 text-slate-800 rounded border border-slate-200">격차 ${gap}점</span>
+                        </div>
+                    </div>
+                    <div class="text-xs sm:text-sm text-slate-800 leading-relaxed space-y-4">
+                        ${dynamicText}
+                    </div>
+                `;
+                detailsContainer.appendChild(card);
+            });
+
+            showView('relationship');
+        }
+
+        /**
+         * Couples Psychological Analysis Generator (Professional Counseling Level)
+         */
+        function generateCouplesTraitText(factor, scoreA, nameA, scoreB, nameB, gap) {
+            const highA = scoreA >= 50;
+            const highB = scoreB >= 50;
+
+            if (factor === 'NS') {
+                if (highA && !highB) {
+                    return `
+                    <div class="space-y-3">
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">1. 심리적 메커니즘 대조 (변화 추구 vs 규칙 정돈)</h5>
+                            <p class="text-slate-700 leading-relaxed">${nameA}님은 뇌의 도파민 기전 반응이 활발하여 새로운 자극과 즉흥적 도전에 강한 흥미를 느끼는 타입입니다. 반면 ${nameB}님은 규칙적이고 예측 가능한 환경에서 심리적 편안함과 안정감을 얻는 성향입니다. 이러한 생물학적 기질 차이로 인해 라이프스타일 전반에서 행동 동기가 확연히 달라집니다.</p>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">2. 일상적 갈등 시나리오</h5>
+                            <p class="text-slate-700 leading-relaxed">데이트나 여행 계획, 주말 일정을 세울 때 갈등이 극대화됩니다. ${nameA}님이 "오늘 갑자기 바다 보러 떠날까?"라고 즉흥 제안을 하면, ${nameB}님은 "갑자기 왜 그래? 계획도 없이 어디를 가?"라며 당황하거나 거부감을 드러냅니다. 식사 메뉴 선택이나 재정 소비 방식에서도 ${nameA}님의 기분에 따른 소비와 ${nameB}님의 절제된 신중함이 부딪히기 쉽습니다.</p>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">3. 서로의 내면에서 일어나는 오해</h5>
+                            <p class="text-slate-700 leading-relaxed">${nameA}님은 ${nameB}님을 보고 '고집스럽고 지루하며 관계에 열정이 없다'고 오해할 수 있으며, ${nameB}님은 ${nameA}님을 '책임감이 부족하고 무모하며 불안정하다'고 평가절하하기 쉽습니다. 그러나 이는 열정의 차이가 아니라 불안과 자극에 반응하는 기질적 차이일 뿐입니다.</p>
+                        </div>
+                        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1.5">
+                            <h5 class="font-bold text-slate-900 text-sm">💬 전문 상담가의 추천 소통 스크립트</h5>
+                            <p class="text-slate-700"><strong>${nameA}님의 표현:</strong> "갑작스러운 제안으로 놀라게 해서 미안해. 내일 오후 시간 괜찮을 때 잠깐 바람 쐬러 다녀오는 건 어떨까?"</p>
+                            <p class="text-slate-700"><strong>${nameB}님의 표현:</strong> "너의 흥미로운 제안이 싫은 게 아니라 생각할 시간이 조금 필요해. 30분만 정리해 보고 같이 정하자."</p>
+                        </div>
+                    </div>`;
+                } else if (!highA && highB) {
+                    return `
+                    <div class="space-y-3">
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">1. 심리적 메커니즘 대조 (안정 선호 vs 자극 추구)</h5>
+                            <p class="text-slate-700 leading-relaxed">${nameA}님은 예측 불가능한 변수보다 체계적이고 검증된 일상을 신뢰하는 반면, ${nameB}님은 정체된 느낌을 지루해하며 색다른 이벤트와 자유로운 변화를 열망합니다. ${nameA}님은 신중함을 통해 에너지를 보존하고, ${nameB}님은 새로운 시도를 통해 생기를 얻습니다.</p>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">2. 일상적 갈등 시나리오</h5>
+                            <p class="text-slate-700 leading-relaxed">${nameB}님이 새로운 취미나 이벤트를 함께하자고 제안할 때, ${nameA}님이 신중하게 이것저것 따지며 거절하면 ${nameB}님은 깊은 서운함을 느낍니다. 반대로 ${nameB}님이 약속에 늦거나 세부 사항을 유야무야 넘어가려 할 때 ${nameA}님의 스트레스 지수가 급격히 상승합니다.</p>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">3. 서로의 내면에서 일어나는 오해</h5>
+                            <p class="text-slate-700 leading-relaxed">${nameA}님은 ${nameB}님에 대해 '경솔하고 참을성이 없다'고 지적할 수 있고, ${nameB}님은 ${nameA}님에 대해 '변화를 두려워하고 보수적이다'라며 대화를 회피할 수 있습니다. 상대를 바꾸려 하기보다 서로의 주파수가 다름을 인정해야 합니다.</p>
+                        </div>
+                        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1.5">
+                            <h5 class="font-bold text-slate-900 text-sm">💬 전문 상담가의 추천 소통 스크립트</h5>
+                            <p class="text-slate-700"><strong>${nameA}님의 표현:</strong> "네가 제안해 준 새로운 시도가 재미있어 보여. 다만 내 마음의 준비가 필요하니 이번 주말에 차근차근 계획해 보자."</p>
+                            <p class="text-slate-700"><strong>${nameB}님의 표현:</strong> "갑자기 통보하듯 말해서 미안해. 네가 편안하다고 느낄 만한 범위를 알려주면 맞춰볼게."</p>
+                        </div>
+                    </div>`;
+                } else if (highA && highB) {
+                    return `
+                    <div class="space-y-3">
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">1. 심리적 메커니즘 대조 (더블 에너지 역동)</h5>
+                            <p class="text-slate-700 leading-relaxed">두 사람 모두 자극추구 기질이 매우 높아 열정적이고 모험적인 시너지를 발휘합니다. 새로운 장소를 탐방하고 즐거움을 공유할 때는 세상 누구보다 완벽한 합을 자랑하지만, 두 사람 모두 충동성이 높아 충돌 시 폭발력이 큽니다.</p>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">2. 일상적 갈등 시나리오</h5>
+                            <p class="text-slate-700 leading-relaxed">두 사람 모두 지루함을 견디지 못하므로 무언가 일이 잘 풀리지 않을 때 쉽게 조급해집니다. 장기적인 재정 계획, 집안일 구체적 분담처럼 꼼꼼함이 요구되는 현실적인 과제 앞에서 서로 마무리를 미루다가 사소한 감정싸움으로 이어질 수 있습니다.</p>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">3. 전문 상담가의 처방 및 가이드</h5>
+                            <p class="text-slate-700 leading-relaxed">신나는 모험을 즐기되, 중요한 경제적 의사결정이나 약속에 대해서는 '24시간 냉각기'를 가지는 안전장치를 둘이 함께 서약해 보세요. 열정을 건설적인 공통 목표로 돌리는 지혜가 필요합니다.</p>
+                        </div>
+                    </div>`;
+                } else {
+                    return `
+                    <div class="space-y-3">
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">1. 심리적 메커니즘 대조 (평화로운 절제형)</h5>
+                            <p class="text-slate-700 leading-relaxed">두 사람 모두 신중하고 안정을 지향하므로 무모한 위험이나 쓸데없는 충돌이 거의 없는 조용하고 평화로운 관계를 유지합니다. 규칙적인 일상과 예측 가능한 생활 패턴에서 깊은 안정감을 공유합니다.</p>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">2. 주의할 점 및 권장 조언</h5>
+                            <p class="text-slate-700 leading-relaxed">마찰이 적은 대신 관계가 지나치게 단조롭거나 매너리즘에 빠지기 쉽습니다. 정기적으로 작은 소소한 이벤트나 생소한 장소 방문을 계획하여 관계에 신선한 자극을 부여해 주는 노력이 권장됩니다.</p>
+                        </div>
+                    </div>`;
+                }
+            }
+
+            if (factor === 'HA') {
+                if (highA && !highB) {
+                    return `
+                    <div class="space-y-3">
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">1. 심리적 메커니즘 대조 (신중한 불안 sensitivity vs 낙천적 담대함)</h5>
+                            <p class="text-slate-700 leading-relaxed">${nameA}님은 뇌의 세로토닌 시스템 특성상 위험과 실수를 사전에 감지하는 방어 기제가 발달하여 매사 신중하고 걱정이 많습니다. 반면 ${nameB}님은 낙천적이고 스트레스 회복력이 높아 "어떻게든 잘 될 거야"라는 긍정적 시각을 유지합니다.</p>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">2. 일상적 갈등 시나리오</h5>
+                            <p class="text-slate-700 leading-relaxed">${nameA}님이 만약의 사태를 염려하여 세심하게 질문하거나 준비하려 할 때, ${nameB}님이 "뭘 그렇게까지 사서 걱정해?"라며 가볍게 넘어가려 하면 ${nameA}님은 극심한 무시와 불안감을 느낍니다. 반대로 ${nameB}님은 ${nameA}님의 걱정을 피곤한 징징거림으로 받아들일 수 있습니다.</p>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">3. 오해 해소 및 심리 솔루션</h5>
+                            <p class="text-slate-700 leading-relaxed">${nameA}님의 걱정은 통제하려는 고집이 아니라 '안전하고 싶은 욕구'입니다. ${nameB}님은 ${nameA}님의 세심한 리스크 관리를 '관계의 안전벨트'로 인정해주고, ${nameA}님은 ${nameB}님의 낙천성을 불안을 다독여주는 '쉼터'로 받아들여야 합니다.</p>
+                        </div>
+                        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1.5">
+                            <h5 class="font-bold text-slate-900 text-sm">💬 전문 상담가의 추천 소통 스크립트</h5>
+                            <p class="text-slate-700"><strong>${nameA}님의 표현:</strong> "내 걱정을 나쁘게 보지 말고, 혹시 모를 상황에 대비한 가벼운 점검이라고 생각해 줘."</p>
+                            <p class="text-slate-700"><strong>${nameB}님의 표현:</strong> "네가 불안해하는 이유가 있겠지. 내가 같이 챙겨볼 테니 너무 마음 졸이지 마."</p>
+                        </div>
+                    </div>`;
+                } else if (!highA && highB) {
+                    return `
+                    <div class="space-y-3">
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">1. 심리적 메커니즘 대조 (담대함 vs 신중한 세심함)</h5>
+                            <p class="text-slate-700 leading-relaxed">${nameA}님은 웬만한 문제에 대해 의연하고 자신감이 넘치는 낙천성을 지닌 반면, ${nameB}님은 낯선 변화나 불확실한 미래에 대해 대비책을 세워야 마음이 편안해지는 섬세한 성향입니다.</p>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">2. 일상적 갈등 시나리오</h5>
+                            <p class="text-slate-700 leading-relaxed">이동 동선 수립, 이사, 경제적 투자 등의 결정을 내릴 때 ${nameA}님의 쿨한 결정에 대해 ${nameB}님이 "왜 제대로 알아보지도 않고 결정해?"라며 브레이크를 걸 수 있습니다. 이때 ${nameA}님이 답답하다는 표정을 지으면 ${nameB}님은 대화를 닫아버릴 수 있습니다.</p>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">3. 상담가 지침</h5>
+                            <p class="text-slate-700 leading-relaxed">${nameA}님은 ${nameB}님의 신중함을 미루기나 꼬투리로 보지 말고 존중해 주어야 하며, ${nameB}님 역시 자신의 불안을 상대방에게 일방적으로 전가하지 않도록 마음을 가다듬어야 합니다.</p>
+                        </div>
+                    </div>`;
+                } else if (highA && highB) {
+                    return `
+                    <div class="space-y-3">
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">1. 심리적 메커니즘 대조 (공동 불안 증폭 위험)</h5>
+                            <p class="text-slate-700 leading-relaxed">두 사람 모두 세심하고 위기관리 능력이 뛰어나지만, 예기치 않은 문제나 스트레스가 발생했을 때 서로의 불안을 증폭시키는 경향이 있습니다. "어떡하지?"라는 말이 오가며 집단적 위축 상태에 빠지기 쉽습니다.</p>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">2. 처방 가이드</h5>
+                            <p class="text-slate-700 leading-relaxed">막연한 걱정이 엄습할 때는 감정적 대화를 잠시 멈추고 '상황을 객관적 팩트로 적어보는 메모 습관'을 함께 길러보세요. 서로의 완벽주의적 불안을 다독여주는 따뜻한 언어가 필수적입니다.</p>
+                        </div>
+                    </div>`;
+                } else {
+                    return `
+                    <div class="space-y-3">
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">1. 심리적 메커니즘 대조 (쿨한 회복력)</h5>
+                            <p class="text-slate-700 leading-relaxed">두 사람 모두 걱정이 적고 낙천적이어서 웬만한 시련이나 갈등에 마음에 상처를 오래 남기지 않습니다. 매우 수월하고 쿨한 관계를 유지할 수 있는 큰 강점이 있습니다.</p>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">2. 주의점</h5>
+                            <p class="text-slate-700 leading-relaxed">둘 다 위기 신호에 둔감할 수 있으므로 중요 서류 점검, 건강 검진, 재정적 위험 요소 등 세심하게 챙겨야 할 실체적 리스크를 둘 다 놓치지 않도록 정기적인 점검이 필요합니다.</p>
+                        </div>
+                    </div>`;
+                }
+            }
+
+            if (factor === 'RD') {
+                if (highA && !highB) {
+                    return `
+                    <div class="space-y-3">
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">1. 심리적 메커니즘 대조 (정서적 친밀성 vs 이성적 독립성)</h5>
+                            <p class="text-slate-700 leading-relaxed">${nameA}님은 옥시토신 반응성이 높아 상대방과의 감정 공유, 따뜻한 말 한마디, 정서적 유대에서 깊은 활력을 얻습니다. 반면 ${nameB}님은 타인의 평가에 연연하지 않으며 감정적 표현보다는 논리적이고 실용적인 지지를 중시합니다.</p>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">2. 일상적 갈등 시나리오 (부부/연인 상담의 전형)</h5>
+                            <p class="text-slate-700 leading-relaxed">${nameA}님이 직장이나 대인관계에서 힘들었던 일을 털어놓을 때, ${nameB}님이 "그건 네가 이렇게 대처했어야지"라며 즉각 솔루션을 내놓으면 ${nameA}님은 "너는 내 편이 아니구나, 차갑다"라며 마음을 닫습니다. ${nameB}님은 정성껏 해결책을 주었는데 왜 화를 내는지 이해하지 못합니다.</p>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">3. 상호 오해 극복 솔루션</h5>
+                            <p class="text-slate-700 leading-relaxed">${nameA}님이 원하는 것은 '해결책'이 아니라 '내 마음을 알아주는 따뜻한 공감'입니다. ${nameB}님의 무덤덤함이 애정 부족이 아닌 기질적 표현 방식임을 ${nameA}님이 이해하고, ${nameB}님은 대화 초반 3분간 공감 스킬을 의식적으로 사용해야 합니다.</p>
+                        </div>
+                        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1.5">
+                            <h5 class="font-bold text-slate-900 text-sm">💬 전문 상담가의 추천 소통 스크립트</h5>
+                            <p class="text-slate-700"><strong>${nameA}님의 표현:</strong> "지금 조언보다는 그냥 '오늘 진짜 힘들었겠구나' 하고 안아주는 말이 필요해."</p>
+                            <p class="text-slate-700"><strong>${nameB}님의 표현:</strong> "내가 해결해 주려고만 해서 서운했지? 네 마음이 어땠을지 먼저 들어볼게."</p>
+                        </div>
+                    </div>`;
+                } else if (!highA && highB) {
+                    return `
+                    <div class="space-y-3">
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">1. 심리적 메커니즘 대조 (논리적 실용성 vs 정서적 공감)</h5>
+                            <p class="text-slate-700 leading-relaxed">${nameA}님은 독립적이고 객관적인 주관을 고수하는 반면, ${nameB}님은 다정다감하고 상대방의 정서 상태나 비언어적 표정 변화를 예민하게 감지하는 공감형입니다.</p>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">2. 일상적 갈등 시나리오</h5>
+                            <p class="text-slate-700 leading-relaxed">${nameB}님이 작은 칭찬이나 다정한 반응을 바라고 대화를 건넸을 때, ${nameA}님이 반응이 없거나 건성으로 대답하면 ${nameB}님은 깊은 상처와 거절감을 느낍니다. 반대로 ${nameA}님은 ${nameB}님이 지나치게 타인의 시선을 신경 쓴다며 답답해할 수 있습니다.</p>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">3. 처방전</h5>
+                            <p class="text-slate-700 leading-relaxed">${nameA}님은 마음속 애정을 말로 표현하는 '언어적 다정함'을 조금만 더 의식적으로 늘려보세요. 작은 리액션이 ${nameB}님에게는 큰 정서적 안정감이 됩니다.</p>
+                        </div>
+                    </div>`;
+                } else {
+                    return `
+                    <div class="space-y-3">
+                        <div>
+                            <h5 class="font-bold text-slate-900 text-sm mb-1">1. 심리적 메커니즘 대조 (유사한 정서 채널)</h5>
+                            <p class="text-slate-700 leading-relaxed">두 사람의 사회적 민감성 수준이 유사하여 대화의 정서적 주파수가 잘 맞습니다. 함께 감정을 나누고 교류할 때 오는 만족감이 크며, 서로의 소통 방식에 대해 별다른 이질감을 느끼지 않습니다.</p>
+                        </div>
+                    </div>`;
+                }
+            }
+
+            if (factor === 'P') {
+                return `
+                <div class="space-y-3">
+                    <div>
+                        <h5 class="font-bold text-slate-900 text-sm mb-1">1. 심리적 메커니즘 대조 (끈기와 완성도 추구)</h5>
+                        <p class="text-slate-700 leading-relaxed">인내력(P) 지표는 보상이 즉각 주어지지 않아도 목표를 향해 얼마나 지속하느냐를 나타냅니다. ${nameA}(${scoreA}점)과 ${nameB}(${scoreB}점)의 수치는 두 사람이 과업이나 약속을 이행할 때의 끈기와 완벽주의 성향을 대조해 줍니다.</p>
+                    </div>
+                    <div>
+                        <h5 class="font-bold text-slate-900 text-sm mb-1">2. 갈등 및 조율 포인트</h5>
+                        <p class="text-slate-700 leading-relaxed">한쪽의 인내력이 월등히 높을 경우, 자신의 엄격한 완성도 기준을 상대방에게 강요하면서 "너는 왜 일을 대충 끝내?"라고 지적할 수 있습니다. 반면 인내력이 낮은 쪽은 상대방을 '완벽주의로 피곤하게 만드는 사람'이라며 부담스러워할 수 있습니다.</p>
+                    </div>
+                    <div>
+                        <h5 class="font-bold text-slate-900 text-sm mb-1">3. 상담가 조언</h5>
+                        <p class="text-slate-700 leading-relaxed">완벽함보다는 '관계의 안녕'이 우선임을 기억해야 합니다. 목표 달성의 완급을 조율하며 서로의 페이스를 맞춰주는 여유가 필요합니다.</p>
+                    </div>
+                </div>`;
+            }
+
+            if (factor === 'SD') {
+                return `
+                <div class="space-y-3">
+                    <div>
+                        <h5 class="font-bold text-slate-900 text-sm mb-1">1. 심리적 메커니즘 대조 (성격적 자율성과 주도성)</h5>
+                        <p class="text-slate-700 leading-relaxed">자율성(SD)은 상황을 주도적으로 통제하고 자신의 행동에 책임을 지는 성숙도입니다. ${nameA}(${scoreA}점)님과 ${nameB}(${scoreB}점)님의 자율성 성숙도는 갈등 발생 시 상대를 비난하는지, 아니면 해결책을 찾는지 결정짓습니다.</p>
+                    </div>
+                    <div>
+                        <h5 class="font-bold text-slate-900 text-sm mb-1">2. 성숙한 동반자 관계를 위한 핵심</h5>
+                        <p class="text-slate-700 leading-relaxed">자율성이 높을수록 "너 때문에 이렇게 됐어"라는 피해의식적 원망을 하지 않고 자신의 선택을 인정합니다. 만약 한쪽의 자율성이 다소 낮다면, 의존적 태도에서 벗어나 스스로 선택하고 책임지는 경험을 격려해 주는 태도가 필요합니다.</p>
+                    </div>
+                </div>`;
+            }
+
+            if (factor === 'CO') {
+                return `
+                <div class="space-y-3">
+                    <div>
+                        <h5 class="font-bold text-slate-900 text-sm mb-1">1. 심리적 메커니즘 대조 (타인 수용성과 연대감)</h5>
+                        <p class="text-slate-700 leading-relaxed">연대감(CO)은 타인의 결점이나 나와의 차이를 있는 그대로 포용하고 협력하는 인격적 성숙도입니다. ${nameA}(${scoreA}점)님과 ${nameB}(${scoreB}점)님의 연대감 수치는 상대방의 단점을 접했을 때의 너그러움을 보여줍니다.</p>
+                    </div>
+                    <div>
+                        <h5 class="font-bold text-slate-900 text-sm mb-1">2. 관계 발전 가이드</h5>
+                        <p class="text-slate-700 leading-relaxed">연대감이 높은 사람은 상대방의 미숙함을 따뜻하게 품어줍니다. 다만 자기 희생적 참음으로 이어지지 않도록 건강한 거절의 기술을 겸비해야 하며, 비판적 시각이 강한 쪽은 상대방의 선의와 장점을 의식적으로 매일 인정해 주는 연습이 시급합니다.</p>
+                    </div>
+                </div>`;
+            }
+
+            if (factor === 'ST') {
+                return `
+                <div class="space-y-3">
+                    <div>
+                        <h5 class="font-bold text-slate-900 text-sm mb-1">1. 심리적 메커니즘 대조 (가치관과 영성, 직관적 영감)</h5>
+                        <p class="text-slate-700 leading-relaxed">자기초월(ST)은 일상적 차원을 넘어선 삶의 숭고한 의미, 자연과 예술에서의 몰입, 영적 연결감을 느끼는 성숙도 지표입니다. ${nameA}(${scoreA}점)님과 ${nameB}(${scoreB}점)님의 관점 차이는 가치관의 깊이를 대조합니다.</p>
+                    </div>
+                    <div>
+                        <h5 class="font-bold text-slate-900 text-sm mb-1">2. 상호 조화 가이드</h5>
+                        <p class="text-slate-700 leading-relaxed">한쪽이 자기초월이 높고 다른 쪽이 낮을 경우, 삶의 목적이나 가치관에 대해 대화할 때 "너무 허황된 소리 한다"거나 반대로 "너무 물질만능주의적이다"라며 대립할 수 있습니다. 각자의 실용성과 직관적 영감을 상호보완적 자산으로 통합하세요.</p>
+                    </div>
+                </div>`;
+            }
+
+            return `<p>두 사람의 기질 점수를 비교하여 상호 이해를 넓히는 기회로 삼으세요.</p>`;
+        }
+
+        /**
+         * Render Dual Radar Chart
+         */
+        function renderRelChart(scoresA, nameA, scoresB, nameB) {
+            const ctx = document.getElementById('relChart').getContext('2d');
+
+            if (relChartInstance) {
+                relChartInstance.destroy();
+            }
+
+            relChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['자극추구(NS)', '위험회피(HA)', '사회적민감성(RD)', '인내력(P)', '자율성(SD)', '연대감(CO)', '자기초월(ST)'],
+                    datasets: [
+                        {
+                            label: `${nameA}님`,
+                            data: [scoresA.NS, scoresA.HA, scoresA.RD, scoresA.P, scoresA.SD, scoresA.CO, scoresA.ST],
+                            backgroundColor: 'rgba(15, 23, 42, 0.2)',
+                            borderColor: '#0f172a',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#0f172a'
+                        },
+                        {
+                            label: `${nameB}님`,
+                            data: [scoresB.NS, scoresB.HA, scoresB.RD, scoresB.P, scoresB.SD, scoresB.CO, scoresB.ST],
+                            backgroundColor: 'rgba(79, 70, 229, 0.2)',
+                            borderColor: '#4f46e5',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#4f46e5'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        r: {
+                            min: 0,
+                            max: 100,
+                            ticks: { display: false, stepSize: 25 },
+                            pointLabels: {
+                                font: { family: 'Noto Sans KR', size: 11, weight: 'bold' },
+                                color: '#334155'
+                            },
+                            grid: { color: '#e2e8f0' },
+                            angleLines: { color: '#cbd5e1' }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
         }
 
         /**
